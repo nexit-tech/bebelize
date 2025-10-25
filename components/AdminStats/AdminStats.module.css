@@ -1,0 +1,100 @@
+/* Container de Estatísticas */
+.statsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+/* Card de Estatística */
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
+  transition: all 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(89, 78, 74, 0.08);
+}
+
+/* Ícone */
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background-color: rgba(166, 142, 128, 0.1);
+  border-radius: 12px;
+  color: var(--color-light-tan);
+  flex-shrink: 0;
+}
+
+/* Variantes de Cor */
+.statCard.warning .statIcon {
+  background-color: rgba(212, 194, 154, 0.15);
+  color: var(--color-warning);
+}
+
+.statCard.info .statIcon {
+  background-color: rgba(176, 196, 222, 0.15);
+  color: var(--color-info);
+}
+
+.statCard.success .statIcon {
+  background-color: rgba(163, 181, 159, 0.15);
+  color: var(--color-success);
+}
+
+.statCard.danger .statIcon {
+  background-color: rgba(217, 166, 160, 0.15);
+  color: var(--color-danger);
+}
+
+/* Conteúdo */
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statValue {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-browning);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-light-tan-grey);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .statsContainer {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+
+  .statCard {
+    padding: 20px;
+  }
+
+  .statIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .statValue {
+    font-size: 24px;
+  }
+}

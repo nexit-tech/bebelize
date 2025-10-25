@@ -1,0 +1,118 @@
+/* Container Principal */
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background-color: var(--color-pearl);
+}
+
+/* Card de Login */
+.loginCard {
+  width: 100%;
+  max-width: 440px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: 0 2px 16px rgba(89, 78, 74, 0.08);
+}
+
+/* Logo */
+.logoContainer {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.logoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.logo {
+  border-radius: 12px;
+  object-fit: contain;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  letter-spacing: 0.3px;
+}
+
+/* Formulário */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.inputWrapper {
+  position: relative;
+}
+
+.inputIcon {
+  position: absolute;
+  left: 16px;
+  top: 44px;
+  color: var(--color-light-tan-grey);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.inputWrapper input {
+  padding-left: 48px;
+}
+
+/* Link Esqueci Senha */
+.forgotPassword {
+  text-align: right;
+  margin-top: -8px;
+}
+
+.link {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-light-tan);
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+.link:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+
+/* Footer */
+.footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-pearl);
+  text-align: center;
+}
+
+.footerText {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  line-height: 1.5;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 480px) {
+  .loginCard {
+    padding: 32px 24px;
+  }
+
+  .logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,145 @@
+/* Container da Página */
+.pageContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-pearl);
+}
+
+/* Conteúdo Principal */
+.mainContent {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--color-browning);
+}
+
+.backButton:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.05);
+}
+
+.backButton:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Layout em 2 Colunas */
+.columnsLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  flex: 1;
+}
+
+.columnLeft,
+.columnRight {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Cards */
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 32px;
+  height: 100%;
+  box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
+}
+
+/* Responsividade Tablet */
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 32px 24px;
+  }
+
+  .columnsLayout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .headerActions button {
+    flex: 1;
+  }
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 80px;
+    padding: 24px 16px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerLeft {
+    flex-wrap: wrap;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .card {
+    padding: 24px 20px;
+  }
+}

@@ -1,0 +1,38 @@
+/* Tag Base */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Variantes de Status */
+.negociacao {
+  background-color: rgba(212, 194, 154, 0.15);
+  color: #B8A167;
+}
+
+.aprovado {
+  background-color: rgba(163, 181, 159, 0.15);
+  color: #7A9176;
+}
+
+.producao {
+  background-color: rgba(176, 196, 222, 0.15);
+  color: #7B92B0;
+}
+
+.finalizado {
+  background-color: rgba(163, 181, 159, 0.2);
+  color: #6B8167;
+}
+
+.cancelado {
+  background-color: rgba(217, 166, 160, 0.15);
+  color: #B8817A;
+}

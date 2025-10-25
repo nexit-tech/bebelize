@@ -1,0 +1,66 @@
+/* Importação da fonte */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap');
+
+/* Reset Global */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Variáveis de Cores */
+:root {
+  --color-browning: #594E4A;
+  --color-light-tan: #A68E80;
+  --color-light-tan-grey: #A69A94;
+  --color-pearl: #F2F2F2;
+  --color-success: #A3B59F;
+  --color-warning: #D4C29A;
+  --color-info: #B0C4DE;
+  --color-danger: #D9A6A0;
+}
+
+/* Corpo da aplicação */
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--color-pearl);
+  color: var(--color-browning);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tipografia */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--color-browning);
+}
+
+p {
+  font-weight: 400;
+}
+
+/* Links */
+a {
+  color: var(--color-light-tan);
+  text-decoration: none;
+  transition: opacity 0.3s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+a:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 4px;
+}
+
+/* Botões e elementos focáveis */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}

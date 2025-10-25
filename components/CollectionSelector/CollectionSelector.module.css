@@ -1,0 +1,94 @@
+/* Container */
+.collectionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  letter-spacing: 0.3px;
+}
+
+/* Lista de Coleções */
+.collectionList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card de Coleção */
+.collectionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  background-color: #FFFFFF;
+  border: 2px solid #E8E8E8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.collectionCard:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.03);
+  transform: translateX(4px);
+}
+
+.collectionCard:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+.collectionCard.selected {
+  border-color: var(--color-light-tan);
+  border-width: 3px;
+  background-color: rgba(166, 142, 128, 0.08);
+}
+
+/* Informações da Coleção */
+.collectionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.collectionName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+}
+
+.collectionDescription {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.itemCount {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-light-tan);
+}
+
+/* Seta */
+.arrow {
+  color: var(--color-light-tan-grey);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.collectionCard.selected .arrow {
+  color: var(--color-light-tan);
+  transform: translateX(4px);
+}

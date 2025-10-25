@@ -1,0 +1,96 @@
+/* Container de Ações */
+.actionsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Seções */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+/* Grupo de Botões */
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Botão de Ação */
+.actionButton {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background-color: #FFFFFF;
+  border: 2px solid #E8E8E8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.actionButton:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.03);
+  transform: translateX(4px);
+}
+
+.actionButton:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+/* Ícone */
+.icon {
+  color: var(--color-light-tan);
+  flex-shrink: 0;
+}
+
+/* Conteúdo do Botão */
+.buttonContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.buttonLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-browning);
+  font-family: 'Montserrat', sans-serif;
+}
+
+.buttonDescription {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Variante Danger */
+.actionButton.danger:hover {
+  border-color: var(--color-danger);
+  background-color: rgba(217, 166, 160, 0.05);
+}
+
+.actionButton.danger .icon {
+  color: var(--color-danger);
+}
+
+.actionButton.danger:hover .buttonLabel {
+  color: var(--color-danger);
+}

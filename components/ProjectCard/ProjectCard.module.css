@@ -1,0 +1,96 @@
+/* Card Base */
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--color-light-tan);
+  box-shadow: 0 4px 16px rgba(166, 142, 128, 0.12);
+  transform: translateY(-2px);
+}
+
+.card:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+/* Header */
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.projectName {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-browning);
+  line-height: 1.4;
+  flex: 1;
+}
+
+/* Informações */
+.cardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.infoItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  color: var(--color-light-tan-grey);
+  flex-shrink: 0;
+}
+
+.infoText {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-light-tan-grey);
+}
+
+/* Footer */
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-pearl);
+}
+
+.editButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-light-tan);
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.editButton:hover {
+  background-color: rgba(166, 142, 128, 0.1);
+}
+
+.editButton:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}

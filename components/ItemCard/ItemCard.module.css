@@ -1,0 +1,98 @@
+/* Card Base */
+.card {
+  background-color: rgba(166, 142, 128, 0.03);
+  border: 1px solid rgba(166, 142, 128, 0.2);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.06);
+  transform: translateY(-1px);
+}
+
+/* Header */
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.itemName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.itemCode {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* Descrição */
+.description {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Ações */
+.cardActions {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(166, 142, 128, 0.15);
+}
+
+.actionButton {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-light-tan);
+  background-color: transparent;
+  border: 1px solid var(--color-light-tan);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.actionButton:hover {
+  background-color: rgba(166, 142, 128, 0.1);
+}
+
+.actionButton:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+.actionButton.danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.actionButton.danger:hover {
+  background-color: rgba(217, 166, 160, 0.1);
+}

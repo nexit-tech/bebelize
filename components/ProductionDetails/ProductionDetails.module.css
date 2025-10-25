@@ -1,0 +1,98 @@
+/* Container */
+.detailsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Linha do Título */
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.projectName {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+  flex: 1;
+  min-width: 200px;
+}
+
+.priorityBadge {
+  padding: 8px 16px;
+  background-color: var(--color-warning);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(212, 194, 154, 0.4);
+}
+
+/* Grid de Informações */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Card de Informação */
+.infoCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  background-color: rgba(166, 142, 128, 0.04);
+  border: 1px solid rgba(166, 142, 128, 0.15);
+  border-radius: 10px;
+}
+
+/* Ícone */
+.infoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: rgba(166, 142, 128, 0.15);
+  border-radius: 10px;
+  color: var(--color-light-tan);
+  flex-shrink: 0;
+}
+
+/* Conteúdo */
+.infoContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.infoLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-light-tan-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.infoValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-browning);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .projectName {
+    font-size: 22px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+}

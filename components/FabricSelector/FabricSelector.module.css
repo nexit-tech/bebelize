@@ -1,0 +1,74 @@
+/* Container */
+.fabricContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-browning);
+  letter-spacing: 0.3px;
+}
+
+/* Grid de Tecidos */
+.fabricGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+/* Opção de Tecido */
+.fabricOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: #FFFFFF;
+  border: 2px solid #E8E8E8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.fabricOption:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.03);
+}
+
+.fabricOption:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+.fabricOption.selected {
+  border-color: var(--color-light-tan);
+  border-width: 3px;
+  background-color: rgba(166, 142, 128, 0.08);
+}
+
+/* Preview do Tecido */
+.fabricPreview {
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-pearl);
+  border: 1px solid #E8E8E8;
+}
+
+/* Nome do Tecido */
+.fabricName {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-browning);
+  text-align: center;
+}
+
+.fabricOption.selected .fabricName {
+  font-weight: 600;
+  color: var(--color-light-tan);
+}

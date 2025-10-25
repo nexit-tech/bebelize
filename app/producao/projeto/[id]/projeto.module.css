@@ -1,0 +1,136 @@
+/* Container da Página */
+.pageContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-pearl);
+}
+
+/* Conteúdo Principal */
+.mainContent {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Botão Voltar */
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-light-tan);
+  width: fit-content;
+}
+
+.backButton:hover {
+  background-color: rgba(166, 142, 128, 0.08);
+}
+
+.backButton:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+/* Layout em 2 Colunas */
+.columnsLayout {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  gap: 24px;
+}
+
+.columnLeft,
+.columnRight {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Cards */
+.card {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
+}
+
+/* Seção de Detalhes */
+.detailsSection {
+  margin-top: 8px;
+}
+
+.detailsTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0 0 20px 0;
+}
+
+.detailsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-light-tan-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detailValue {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-browning);
+}
+
+/* Responsividade Tablet */
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 32px 24px;
+  }
+
+  .columnsLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .detailsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+/* Responsividade Mobile */
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 80px;
+    padding: 24px 16px;
+  }
+
+  .card {
+    padding: 20px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

@@ -1,0 +1,44 @@
+/* Container de Busca */
+.searchContainer {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Ícone de Busca */
+.searchIcon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-light-tan-grey);
+  pointer-events: none;
+}
+
+/* Input de Busca */
+.searchInput {
+  width: 100%;
+  padding: 12px 16px 12px 48px;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
+  color: var(--color-browning);
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-light-tan-grey);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.searchInput::placeholder {
+  color: var(--color-light-tan-grey);
+  opacity: 0.7;
+}
+
+.searchInput:hover {
+  border-color: var(--color-light-tan);
+}
+
+.searchInput:focus {
+  border-color: var(--color-light-tan);
+  background-color: #FAFAFA;
+}
