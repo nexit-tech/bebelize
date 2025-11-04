@@ -1,11 +1,9 @@
-/* Container da Página */
 .pageContainer {
   display: flex;
   min-height: 100vh;
   background-color: var(--color-pearl);
 }
 
-/* Conteúdo Principal */
 .mainContent {
   flex: 1;
   margin-left: 260px;
@@ -15,7 +13,6 @@
   gap: 32px;
 }
 
-/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -49,7 +46,7 @@
   background-color: rgba(166, 142, 128, 0.05);
 }
 
-.backButton:focus {
+.backButton:focus-visible {
   outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
 }
@@ -74,7 +71,6 @@
   gap: 12px;
 }
 
-/* Layout em 2 Colunas */
 .columnsLayout {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -88,7 +84,6 @@
   flex-direction: column;
 }
 
-/* Cards */
 .card {
   background-color: #FFFFFF;
   border: 1px solid #E8E8E8;
@@ -98,7 +93,6 @@
   box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
 }
 
-/* Responsividade Tablet */
 @media (max-width: 1024px) {
   .mainContent {
     padding: 32px 24px;
@@ -119,7 +113,6 @@
   }
 }
 
-/* Responsividade Mobile */
 @media (max-width: 768px) {
   .mainContent {
     margin-left: 80px;

@@ -9,6 +9,9 @@ import Sidebar from '@/components/Sidebar/Sidebar';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import ProductionDetails from '@/components/ProductionDetails/ProductionDetails';
+import TechnicalSpecs from '@/components/TechnicalSpecs/TechnicalSpecs';
+import ProductionNotes from '@/components/ProductionNotes/ProductionNotes';
 import styles from './atelier-projeto.module.css';
 
 export default function AtelierProjetoPage() {
@@ -89,54 +92,24 @@ export default function AtelierProjetoPage() {
           </div>
         </header>
 
-        <div className={styles.detailsCard}>
-          <div className={styles.titleRow}>
-            <h1 className={styles.projectName}>{project.name}</h1>
-            {project.priority === 'urgente' && (
-              <span className={styles.priorityBadge}>Urgente</span>
-            )}
-          </div>
-
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Cliente</span>
-              <span className={styles.infoValue}>{project.clientName}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Coleção</span>
-              <span className={styles.infoValue}>{project.collectionName}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Criado em</span>
-              <span className={styles.infoValue}>{formatDate(project.createdAt)}</span>
-            </div>
-          </div>
+        <div className={styles.card}>
+          <ProductionDetails
+            projectName={project.name}
+            clientName={project.clientName}
+            createdAt={formatDate(project.createdAt)}
+            collectionName={project.collectionName}
+            priority={project.priority}
+          />
         </div>
 
         <div className={styles.columnsLayout}>
-          <div className={styles.specsCard}>
-            <h2 className={styles.cardTitle}>Especificações Técnicas</h2>
-            <div className={styles.specsList}>
-              {specs.map((spec, index) => (
-                <div key={index} className={styles.specItem}>
-                  <div className={styles.specHeader}>
-                    <span className={styles.specLabel}>{spec.label}</span>
-                    {spec.code && <span className={styles.specCode}>#{spec.code}</span>}
-                  </div>
-                  <span className={styles.specValue}>{spec.value}</span>
-                </div>
-              ))}
-            </div>
+          <div className={styles.card}>
+            <TechnicalSpecs specifications={specs} />
           </div>
-
-          <div className={styles.notesCard}>
-            <h2 className={styles.cardTitle}>Notas de Produção</h2>
-            <textarea
-              className={styles.textarea}
-              placeholder="Adicione observações sobre a produção..."
-              value={productionNotes}
-              onChange={(e) => setProductionNotes(e.target.value)}
-              rows={10}
+          <div className={styles.card}>
+            <ProductionNotes
+              notes={productionNotes}
+              onNotesChange={setProductionNotes}
             />
           </div>
         </div>

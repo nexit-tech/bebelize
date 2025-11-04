@@ -1,7 +1,6 @@
 export { 
   getStatusLabel, 
   getStatusColor, 
-  getStatusVariant 
 } from './statusHelpers';
 
 export { 

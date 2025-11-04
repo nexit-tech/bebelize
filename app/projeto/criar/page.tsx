@@ -3,48 +3,48 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiSave, FiFileText } from 'react-icons/fi';
+import { Item } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
-import Checklist from '@/components/Checklist/Checklist';
-import Visualizer from '@/components/Visualizer/Visualizer';
 import Button from '@/components/Button/Button';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import CatalogoBrowser from '@/components/CatalogoBrowser/CatalogoBrowser';
+import ProjetoCarrinho from '@/components/ProjetoCarrinho/ProjetoCarrinho';
 import styles from './criar.module.css';
 
 export default function CriarProjeto() {
   const router = useRouter();
 
-  // Estados do Projeto
   const [projectName, setProjectName] = useState('');
-  const [selectedCollection, setSelectedCollection] = useState('');
-  const [selectedFabric, setSelectedFabric] = useState('');
-  const [selectedPrimaryColor, setSelectedPrimaryColor] = useState('');
-  const [selectedSecondaryColor, setSelectedSecondaryColor] = useState('');
-  const [embroideryName, setEmbroideryName] = useState('');
-  const [embroideryStyle, setEmbroideryStyle] = useState('');
-
-  // Estados dos Modais
+  const [cartItems, setCartItems] = useState<Item[]>([]);
+  
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
     title: '',
     message: ''
   });
 
-  // Handlers
+  const handleAddItem = (item: Item) => {
+    setCartItems(prev => {
+      const isDuplicate = prev.find(i => i.id === item.id);
+      if (isDuplicate) return prev;
+      return [...prev, item];
+    });
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+    setCartItems(prev => prev.filter(i => i.id !== itemId));
+  };
+
   const handleSaveProject = () => {
     console.log('Salvando projeto:', {
       projectName,
-      selectedCollection,
-      selectedFabric,
-      selectedPrimaryColor,
-      selectedSecondaryColor,
-      embroideryName,
-      embroideryStyle
+      items: cartItems.map(item => item.id)
     });
     
     setSuccessModal({
       isOpen: true,
       title: 'Projeto Salvo!',
-      message: 'Seu projeto foi salvo com sucesso e está pronto para ser compartilhado com o cliente.'
+      message: 'Seu projeto foi salvo com sucesso e está pronto para ser compartilhado.'
     });
   };
 
@@ -65,13 +65,10 @@ export default function CriarProjeto() {
   return (
     <div className={styles.pageContainer}>
       
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Conteúdo Principal */}
       <main className={styles.mainContent}>
         
-        {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
             <button 
@@ -99,40 +96,21 @@ export default function CriarProjeto() {
           </div>
         </header>
 
-        {/* Layout em 2 Colunas */}
         <div className={styles.columnsLayout}>
           
-          {/* Coluna Esquerda: Checklist */}
           <div className={styles.columnLeft}>
             <div className={styles.card}>
-              <Checklist
-                projectName={projectName}
-                onProjectNameChange={setProjectName}
-                selectedCollection={selectedCollection}
-                onCollectionChange={setSelectedCollection}
-                selectedFabric={selectedFabric}
-                onFabricChange={setSelectedFabric}
-                selectedPrimaryColor={selectedPrimaryColor}
-                onPrimaryColorChange={setSelectedPrimaryColor}
-                selectedSecondaryColor={selectedSecondaryColor}
-                onSecondaryColorChange={setSelectedSecondaryColor}
-                embroideryName={embroideryName}
-                onEmbroideryNameChange={setEmbroideryName}
-                embroideryStyle={embroideryStyle}
-                onEmbroideryStyleChange={setEmbroideryStyle}
-              />
+              <CatalogoBrowser onAddItem={handleAddItem} />
             </div>
           </div>
 
-          {/* Coluna Direita: Visualizador */}
           <div className={styles.columnRight}>
             <div className={styles.card}>
-              <Visualizer
+              <ProjetoCarrinho
                 projectName={projectName}
-                selectedCollection={selectedCollection}
-                primaryColor={selectedPrimaryColor}
-                secondaryColor={selectedSecondaryColor}
-                embroideryName={embroideryName}
+                onProjectNameChange={setProjectName}
+                cartItems={cartItems}
+                onRemoveItem={handleRemoveItem}
               />
             </div>
           </div>
@@ -141,7 +119,6 @@ export default function CriarProjeto() {
 
       </main>
 
-      {/* Modal de Sucesso */}
       <SuccessModal
         isOpen={successModal.isOpen}
         onClose={() => setSuccessModal({ ...successModal, isOpen: false })}

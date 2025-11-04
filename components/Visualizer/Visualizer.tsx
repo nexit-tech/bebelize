@@ -18,7 +18,6 @@ export default function Visualizer({
   embroideryName
 }: VisualizerProps) {
 
-  // Mapeamento de cores para visualização
   const colorMap: { [key: string]: string } = {
     bege: '#D4C5B9',
     rosa: '#E8C4C4',
@@ -30,29 +29,27 @@ export default function Visualizer({
   return (
     <div className={styles.visualizerContainer}>
       
-      {/* Header */}
       <div className={styles.header}>
         <h2 className={styles.title}>Visualização do Projeto</h2>
         <p className={styles.subtitle}>Prévia em tempo real das personalizações</p>
       </div>
 
-      {/* Canvas de Visualização */}
       <div className={styles.canvas}>
         
         {!selectedCollection ? (
-          // Estado Vazio
           <div className={styles.emptyState}>
             <FiImage size={64} className={styles.emptyIcon} />
             <p className={styles.emptyText}>Selecione uma coleção</p>
             <p className={styles.emptySubtext}>A prévia do produto aparecerá aqui</p>
           </div>
         ) : (
-          // Mockup do Produto
           <div className={styles.mockup}>
             <div 
               className={styles.productPreview}
               style={{
-                background: `linear-gradient(135deg, ${colorMap[primaryColor] || '#F2F2F2'} 0%, ${colorMap[secondaryColor] || '#FFFFFF'} 100%)`
+                background: `linear-gradient(135deg, ${
+                  colorMap[primaryColor] || '#F2F2F2'
+                } 0%, ${colorMap[secondaryColor] || '#FFFFFF'} 100%)`
               }}
             >
               {embroideryName && (
@@ -66,7 +63,6 @@ export default function Visualizer({
 
       </div>
 
-      {/* Informações de Personalização */}
       {selectedCollection && (
         <div className={styles.infoPanel}>
           <h3 className={styles.infoPanelTitle}>Personalizações Aplicadas</h3>

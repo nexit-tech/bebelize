@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import './globals.css';
+import styles from './layout.module.css';
 
 export const metadata: Metadata = {
   title: 'Bebelize - Gestão de Enxovais Personalizados',
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body className={styles.layout}>{children}</body>
     </html>
   );
 }

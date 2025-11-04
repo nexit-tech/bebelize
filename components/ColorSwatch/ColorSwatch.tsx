@@ -9,7 +9,12 @@ interface ColorSwatchProps {
   onClick: () => void;
 }
 
-export default function ColorSwatch({ color, label, selected = false, onClick }: ColorSwatchProps) {
+export default function ColorSwatch({ 
+  color, 
+  label, 
+  selected = false, 
+  onClick 
+}: ColorSwatchProps) {
   return (
     <button
       className={`${styles.swatch} ${selected ? styles.selected : ''}`}

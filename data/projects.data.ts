@@ -13,7 +13,7 @@ export const projectsData: Project[] = [
     collectionName: 'Aviador',
     customization: {
       fabric: 'algodao-egipcio',
-      fabricName: 'Algodão Egípcio Premium',
+      fabricName: 'Algodão Egígio Premium',
       primaryColor: '#E8C4C4',
       secondaryColor: '#D4C5B9',
       embroideryName: 'Maria Alice',
@@ -64,7 +64,7 @@ export const projectsData: Project[] = [
     collectionName: 'Realeza Azul',
     customization: {
       fabric: 'algodao-egipcio',
-      fabricName: 'Algodão Egípcio Premium',
+      fabricName: 'Algodão Egígio Premium',
       primaryColor: '#B0C4DE',
       secondaryColor: '#F8F8F8',
       embroideryName: 'Sofia',
@@ -115,7 +115,7 @@ export const projectsData: Project[] = [
     collectionName: 'Cavalinho Rosê',
     customization: {
       fabric: 'algodao-egipcio',
-      fabricName: 'Algodão Egípcio Premium',
+      fabricName: 'Algodão Egígio Premium',
       primaryColor: '#E8C4C4',
       secondaryColor: '#F8F8F8',
       embroideryName: 'Isabella',

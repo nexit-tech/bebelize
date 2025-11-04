@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiUser, FiCalendar, FiPackage, FiTag } from 'react-icons/fi';
+import { ProjectPriority } from '@/types';
 import styles from './ProductionDetails.module.css';
 
 interface ProductionDetailsProps {
@@ -7,7 +8,7 @@ interface ProductionDetailsProps {
   clientName: string;
   createdAt: string;
   collectionName: string;
-  priority: 'normal' | 'urgent';
+  priority: ProjectPriority;
 }
 
 export default function ProductionDetails({
@@ -20,15 +21,13 @@ export default function ProductionDetails({
   return (
     <div className={styles.detailsContainer}>
       
-      {/* Título */}
       <div className={styles.titleRow}>
         <h1 className={styles.projectName}>{projectName}</h1>
-        {priority === 'urgent' && (
+        {priority === 'urgente' && (
           <span className={styles.priorityBadge}>Urgente</span>
         )}
       </div>
 
-      {/* Grid de Informações */}
       <div className={styles.infoGrid}>
         
         <div className={styles.infoCard}>

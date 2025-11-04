@@ -1,4 +1,3 @@
-/* Sidebar Container */
 .sidebar {
   width: 260px;
   height: 100vh;
@@ -12,7 +11,6 @@
   z-index: 100;
 }
 
-/* Logo */
 .logoContainer {
   display: flex;
   align-items: center;
@@ -33,7 +31,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Navegação */
 .navigation {
   flex: 1;
   padding: 24px 16px;
@@ -62,11 +59,10 @@
 }
 
 .navItem:hover {
-  background-color: rgba(166, 142, 128, 0.08);
   color: var(--color-browning);
 }
 
-.navItem:focus {
+.navItem:focus-visible {
   outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
 }
@@ -77,7 +73,6 @@
   font-weight: 600;
 }
 
-/* Footer da Sidebar */
 .sidebarFooter {
   padding: 16px;
   border-top: 1px solid var(--color-pearl);
@@ -86,7 +81,6 @@
   gap: 8px;
 }
 
-/* Responsividade Mobile */
 @media (max-width: 768px) {
   .sidebar {
     width: 80px;

@@ -1,13 +1,7 @@
 import React from 'react';
 import { FiChevronRight } from 'react-icons/fi';
+import { Collection } from '@/types';
 import styles from './CollectionSelector.module.css';
-
-interface Collection {
-  id: string;
-  name: string;
-  description: string;
-  itemCount: number;
-}
 
 interface CollectionSelectorProps {
   collections: Collection[];
@@ -15,7 +9,11 @@ interface CollectionSelectorProps {
   onSelect: (collectionId: string) => void;
 }
 
-export default function CollectionSelector({ collections, selectedCollection, onSelect }: CollectionSelectorProps) {
+export default function CollectionSelector({ 
+  collections, 
+  selectedCollection, 
+  onSelect 
+}: CollectionSelectorProps) {
   return (
     <div className={styles.collectionContainer}>
       <label className={styles.label}>Selecione uma Coleção</label>
@@ -23,7 +21,9 @@ export default function CollectionSelector({ collections, selectedCollection, on
         {collections.map((collection) => (
           <button
             key={collection.id}
-            className={`${styles.collectionCard} ${selectedCollection === collection.id ? styles.selected : ''}`}
+            className={`${styles.collectionCard} ${
+              selectedCollection === collection.id ? styles.selected : ''
+            }`}
             onClick={() => onSelect(collection.id)}
             aria-label={`Selecionar coleção ${collection.name}`}
           >

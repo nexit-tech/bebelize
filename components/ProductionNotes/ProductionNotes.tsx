@@ -15,12 +15,12 @@ export default function ProductionNotes({ notes, onNotesChange }: ProductionNote
       </div>
       
       <p className={styles.description}>
-        Adicione observações, dificuldades encontradas ou informações relevantes sobre a produção deste projeto.
+        Adicione observações, dificuldades encontradas ou informações relevantes sobre a produção.
       </p>
 
       <textarea
         className={styles.textarea}
-        placeholder="Ex: Ajuste necessário no tamanho do bordado, tecido com tonalidade ligeiramente diferente do padrão..."
+        placeholder="Ex: Ajuste necessário no tamanho do bordado..."
         value={notes}
         onChange={(e) => onNotesChange(e.target.value)}
         rows={6}

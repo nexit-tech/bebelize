@@ -1,11 +1,9 @@
-/* Container */
 .notesContainer {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -31,7 +29,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Descrição */
 .description {
   font-size: 14px;
   font-weight: 400;
@@ -40,12 +37,11 @@
   line-height: 1.5;
 }
 
-/* Textarea */
 .textarea {
   width: 100%;
   padding: 16px;
   font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: inherit;
   font-weight: 400;
   color: var(--color-browning);
   background-color: #FFFFFF;
@@ -65,14 +61,13 @@
   border-color: var(--color-light-tan);
 }
 
-.textarea:focus {
+.textarea:focus-visible {
   outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
   border-color: var(--color-light-tan);
   background-color: #FAFAFA;
 }
 
-/* Footer */
 .footer {
   display: flex;
   align-items: center;

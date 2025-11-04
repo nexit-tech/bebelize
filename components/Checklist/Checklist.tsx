@@ -3,6 +3,7 @@ import CollectionSelector from '../CollectionSelector/CollectionSelector';
 import FabricSelector from '../FabricSelector/FabricSelector';
 import ColorSwatch from '../ColorSwatch/ColorSwatch';
 import Input from '../Input/Input';
+import { collectionsData } from '@/data';
 import styles from './Checklist.module.css';
 
 interface ChecklistProps {
@@ -39,36 +40,12 @@ export default function Checklist({
   onEmbroideryStyleChange
 }: ChecklistProps) {
 
-  // Dados Mockados - Coleções
-  const collections = [
-    {
-      id: 'anjos',
-      name: 'Coleção Anjos',
-      description: 'Peças delicadas com tema celestial',
-      itemCount: 12
-    },
-    {
-      id: 'essencial',
-      name: 'Coleção Essencial',
-      description: 'Itens básicos e práticos para o dia a dia',
-      itemCount: 8
-    },
-    {
-      id: 'premium',
-      name: 'Coleção Premium',
-      description: 'Enxoval completo de luxo',
-      itemCount: 15
-    }
-  ];
-
-  // Dados Mockados - Tecidos
   const fabrics = [
     { id: 'algodao', name: 'Algodão', texture: '/textures/cotton.jpg' },
     { id: 'linho', name: 'Linho', texture: '/textures/linen.jpg' },
     { id: 'misto', name: 'Misto', texture: '/textures/mixed.jpg' }
   ];
 
-  // Dados Mockados - Cores
   const colors = [
     { id: 'bege', color: '#D4C5B9', label: 'Bege' },
     { id: 'rosa', color: '#E8C4C4', label: 'Rosa' },
@@ -77,7 +54,6 @@ export default function Checklist({
     { id: 'branco', color: '#F8F8F8', label: 'Branco' }
   ];
 
-  // Estilos de Bordado
   const embroideryStyles = [
     { value: 'script', label: 'Script (Cursiva)' },
     { value: 'block', label: 'Block (Maiúscula)' },
@@ -87,7 +63,6 @@ export default function Checklist({
   return (
     <div className={styles.checklistContainer}>
       
-      {/* Seção: Nome do Projeto */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Informações do Projeto</h2>
         <Input
@@ -101,19 +76,16 @@ export default function Checklist({
         />
       </section>
 
-      {/* Seção: Coleção */}
       <section className={styles.section}>
         <CollectionSelector
-          collections={collections}
+          collections={collectionsData}
           selectedCollection={selectedCollection}
           onSelect={onCollectionChange}
         />
       </section>
 
-      {/* Seção: Personalização (aparece só se coleção selecionada) */}
       {selectedCollection && (
         <>
-          {/* Tecido */}
           <section className={styles.section}>
             <FabricSelector
               fabrics={fabrics}
@@ -122,7 +94,6 @@ export default function Checklist({
             />
           </section>
 
-          {/* Cor Principal */}
           <section className={styles.section}>
             <label className={styles.sectionTitle}>Cor Principal</label>
             <div className={styles.colorGrid}>
@@ -138,7 +109,6 @@ export default function Checklist({
             </div>
           </section>
 
-          {/* Cor Secundária */}
           <section className={styles.section}>
             <label className={styles.sectionTitle}>Cor Secundária</label>
             <div className={styles.colorGrid}>
@@ -154,7 +124,6 @@ export default function Checklist({
             </div>
           </section>
 
-          {/* Bordado */}
           <section className={styles.section}>
             <h3 className={styles.sectionTitle}>Personalização do Bordado</h3>
             <div className={styles.embroideryGroup}>

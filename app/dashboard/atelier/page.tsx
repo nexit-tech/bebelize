@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiFilter } from 'react-icons/fi';
 import { useProjects } from '@/hooks';
-import { getStatusLabel } from '@/utils';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ProductionCard from '@/components/ProductionCard/ProductionCard';

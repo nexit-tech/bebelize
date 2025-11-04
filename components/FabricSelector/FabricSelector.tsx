@@ -21,12 +21,17 @@ export default function FabricSelector({ fabrics, selectedFabric, onSelect }: Fa
         {fabrics.map((fabric) => (
           <button
             key={fabric.id}
-            className={`${styles.fabricOption} ${selectedFabric === fabric.id ? styles.selected : ''}`}
+            className={`${styles.fabricOption} ${
+              selectedFabric === fabric.id ? styles.selected : ''
+            }`}
             onClick={() => onSelect(fabric.id)}
             aria-label={`Selecionar tecido ${fabric.name}`}
             aria-pressed={selectedFabric === fabric.id}
           >
-            <div className={styles.fabricPreview} style={{ backgroundImage: `url(${fabric.texture})` }} />
+            <div 
+              className={styles.fabricPreview} 
+              style={{ backgroundImage: `url(${fabric.texture})` }} 
+            />
             <span className={styles.fabricName}>{fabric.name}</span>
           </button>
         ))}

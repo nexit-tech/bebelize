@@ -1,11 +1,9 @@
-/* Container */
 .detailsContainer {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* Linha do Título */
 .titleRow {
   display: flex;
   align-items: center;
@@ -34,14 +32,12 @@
   box-shadow: 0 2px 8px rgba(212, 194, 154, 0.4);
 }
 
-/* Grid de Informações */
 .infoGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
 }
 
-/* Card de Informação */
 .infoCard {
   display: flex;
   align-items: center;
@@ -52,7 +48,6 @@
   border-radius: 10px;
 }
 
-/* Ícone */
 .infoIcon {
   display: flex;
   align-items: center;
@@ -65,7 +60,6 @@
   flex-shrink: 0;
 }
 
-/* Conteúdo */
 .infoContent {
   display: flex;
   flex-direction: column;
@@ -86,7 +80,6 @@
   color: var(--color-browning);
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
   .projectName {
     font-size: 22px;
