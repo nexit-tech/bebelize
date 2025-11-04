@@ -1,15 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { FiPlus, FiFilter } from 'react-icons/fi';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
 import Button from '@/components/Button/Button';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import { mockProjects } from '@/mocks';
 import styles from './dashboard.module.css';
 
 export default function DashboardConsultora() {
+  const router = useRouter();
+
   // Estados
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
@@ -21,65 +25,17 @@ export default function DashboardConsultora() {
     message: ''
   });
 
-  // Dados Mockados
-  const mockProjects = [
-    {
-      id: '1',
-      name: 'Enxoval - Maria Alice',
-      clientName: 'Ana Paula Silva',
-      createdAt: '15/10/2024',
-      status: 'negociacao' as const,
-      statusLabel: 'Em Negociação'
-    },
-    {
-      id: '2',
-      name: 'Kit Berço - Pedro Henrique',
-      clientName: 'Carla Mendes',
-      createdAt: '12/10/2024',
-      status: 'aprovado' as const,
-      statusLabel: 'Aprovado'
-    },
-    {
-      id: '3',
-      name: 'Enxoval Completo - Sofia',
-      clientName: 'Juliana Costa',
-      createdAt: '08/10/2024',
-      status: 'producao' as const,
-      statusLabel: 'Em Produção'
-    },
-    {
-      id: '4',
-      name: 'Kit Maternidade - Lucas',
-      clientName: 'Beatriz Santos',
-      createdAt: '05/10/2024',
-      status: 'finalizado' as const,
-      statusLabel: 'Finalizado'
-    },
-    {
-      id: '5',
-      name: 'Enxoval Premium - Isabella',
-      clientName: 'Fernanda Oliveira',
-      createdAt: '20/09/2024',
-      status: 'negociacao' as const,
-      statusLabel: 'Em Negociação'
-    },
-    {
-      id: '6',
-      name: 'Kit Berço Anjos - Miguel',
-      clientName: 'Patricia Lima',
-      createdAt: '18/09/2024',
-      status: 'aprovado' as const,
-      statusLabel: 'Aprovado'
-    }
-  ];
+  // Filtrar projetos da consultora (simulando usuário logado)
+  const currentUserId = 'ana'; // Simulando usuário logado
+  const userProjects = mockProjects.filter(p => p.consultantId === currentUserId);
 
   // Handlers
   const handleCreateProject = () => {
-    console.log('Criar novo projeto');
+    router.push('/projeto/criar');
   };
 
   const handleProjectClick = (id: string) => {
-    console.log('Abrir projeto:', id);
+    router.push(`/projeto/${id}`);
   };
 
   return (
@@ -133,7 +89,7 @@ export default function DashboardConsultora() {
 
         {/* Grid de Projetos */}
         <div className={styles.projectsGrid}>
-          {mockProjects.map((project) => (
+          {userProjects.map((project) => (
             <ProjectCard
               key={project.id}
               id={project.id}
@@ -148,7 +104,7 @@ export default function DashboardConsultora() {
         </div>
 
         {/* Empty State */}
-        {mockProjects.length === 0 && (
+        {userProjects.length === 0 && (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>Nenhum projeto encontrado</p>
             <p className={styles.emptySubtext}>Crie seu primeiro projeto para começar</p>

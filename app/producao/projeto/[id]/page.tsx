@@ -10,7 +10,7 @@ import ProductionNotes from '@/components/ProductionNotes/ProductionNotes';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import styles from './producao-projeto.module.css';
+import styles from './projeto.module.css';
 
 export default function ProducaoProjetoPage() {
   const router = useRouter();

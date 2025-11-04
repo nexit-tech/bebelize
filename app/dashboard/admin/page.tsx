@@ -10,6 +10,7 @@ import AdminProjectCard from '@/components/AdminProjectCard/AdminProjectCard';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import { mockProjects } from '@/mocks';
 import styles from './admin.module.css';
 
 export default function DashboardAdmin() {
@@ -34,82 +35,6 @@ export default function DashboardAdmin() {
     title: '',
     message: ''
   });
-
-  // Dados Mockados
-  const mockProjects = [
-    {
-      id: '1',
-      projectName: 'Enxoval - Maria Alice',
-      clientName: 'Ana Paula Silva',
-      consultantName: 'Ana Paula Silva',
-      createdAt: '15/10/2024',
-      status: 'negociacao' as const,
-      statusLabel: 'Em Negociação'
-    },
-    {
-      id: '2',
-      projectName: 'Kit Berço - Pedro Henrique',
-      clientName: 'Cliente de Carla',
-      consultantName: 'Carla Mendes',
-      createdAt: '12/10/2024',
-      status: 'aprovado' as const,
-      statusLabel: 'Aprovado'
-    },
-    {
-      id: '3',
-      projectName: 'Enxoval Completo - Sofia',
-      clientName: 'Cliente de Juliana',
-      consultantName: 'Juliana Costa',
-      createdAt: '08/10/2024',
-      status: 'producao' as const,
-      statusLabel: 'Em Produção'
-    },
-    {
-      id: '4',
-      projectName: 'Kit Maternidade - Lucas',
-      clientName: 'Cliente de Beatriz',
-      consultantName: 'Beatriz Santos',
-      createdAt: '05/10/2024',
-      status: 'finalizado' as const,
-      statusLabel: 'Finalizado'
-    },
-    {
-      id: '5',
-      projectName: 'Enxoval Premium - Isabella',
-      clientName: 'Fernanda Oliveira',
-      consultantName: 'Ana Paula Silva',
-      createdAt: '20/09/2024',
-      status: 'negociacao' as const,
-      statusLabel: 'Em Negociação'
-    },
-    {
-      id: '6',
-      projectName: 'Kit Berço Anjos - Miguel',
-      clientName: 'Patricia Lima',
-      consultantName: 'Carla Mendes',
-      createdAt: '18/09/2024',
-      status: 'aprovado' as const,
-      statusLabel: 'Aprovado'
-    },
-    {
-      id: '7',
-      projectName: 'Enxoval Cancelado - Gabriel',
-      clientName: 'Cliente Desistente',
-      consultantName: 'Juliana Costa',
-      createdAt: '10/09/2024',
-      status: 'cancelado' as const,
-      statusLabel: 'Cancelado'
-    },
-    {
-      id: '8',
-      projectName: 'Kit Premium - Laura',
-      clientName: 'Amanda Ferreira',
-      consultantName: 'Beatriz Santos',
-      createdAt: '01/10/2024',
-      status: 'finalizado' as const,
-      statusLabel: 'Finalizado'
-    }
-  ];
 
   // Estatísticas
   const stats = {
@@ -212,7 +137,7 @@ export default function DashboardAdmin() {
             <AdminProjectCard
               key={project.id}
               id={project.id}
-              projectName={project.projectName}
+              projectName={project.name}
               clientName={project.clientName}
               consultantName={project.consultantName}
               createdAt={project.createdAt}

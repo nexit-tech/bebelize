@@ -9,6 +9,7 @@ import ProductionCard from '@/components/ProductionCard/ProductionCard';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import { mockProjects } from '@/mocks';
 import styles from './producao.module.css';
 
 export default function DashboardProducao() {
@@ -33,57 +34,12 @@ export default function DashboardProducao() {
     message: ''
   });
 
-  // Dados Mockados
-  const mockProjects = [
-    {
-      id: '1',
-      projectName: 'Enxoval Completo - Sofia',
-      clientName: 'Juliana Costa',
-      createdAt: '08/10/2024',
-      priority: 'urgent' as const
-    },
-    {
-      id: '2',
-      projectName: 'Kit Berço - Pedro Henrique',
-      clientName: 'Carla Mendes',
-      createdAt: '12/10/2024',
-      priority: 'normal' as const
-    },
-    {
-      id: '3',
-      projectName: 'Enxoval Premium - Isabella',
-      clientName: 'Fernanda Oliveira',
-      createdAt: '20/09/2024',
-      priority: 'urgent' as const
-    },
-    {
-      id: '4',
-      projectName: 'Kit Maternidade - Gabriel',
-      clientName: 'Patricia Santos',
-      createdAt: '15/10/2024',
-      priority: 'normal' as const
-    },
-    {
-      id: '5',
-      projectName: 'Enxoval Anjos - Laura',
-      clientName: 'Beatriz Lima',
-      createdAt: '18/10/2024',
-      priority: 'normal' as const
-    },
-    {
-      id: '6',
-      projectName: 'Kit Berço Premium - Lucas',
-      clientName: 'Amanda Ferreira',
-      createdAt: '10/10/2024',
-      priority: 'urgent' as const
-    }
-  ];
-
-  const urgentProjects = mockProjects.filter(p => p.priority === 'urgent').length;
+  // Filtrar apenas projetos em produção
+  const productionProjects = mockProjects.filter(p => p.status === 'producao');
+  const urgentProjects = productionProjects.filter(p => p.priority === 'urgent').length;
 
   // Handlers
   const handleViewDetails = (projectId: string) => {
-    console.log('Ver detalhes do projeto:', projectId);
     router.push(`/producao/projeto/${projectId}`);
   };
 
@@ -123,7 +79,7 @@ export default function DashboardProducao() {
 
         {/* Header de Estatísticas */}
         <ProductionHeader 
-          totalProjects={mockProjects.length}
+          totalProjects={productionProjects.length}
           urgentProjects={urgentProjects}
         />
 
@@ -152,14 +108,14 @@ export default function DashboardProducao() {
 
         {/* Grid de Projetos */}
         <div className={styles.projectsGrid}>
-          {mockProjects.map((project) => (
+          {productionProjects.map((project) => (
             <ProductionCard
               key={project.id}
               id={project.id}
-              projectName={project.projectName}
+              projectName={project.name}
               clientName={project.clientName}
               createdAt={project.createdAt}
-              priority={project.priority}
+              priority={project.priority || 'normal'}
               onViewDetails={() => handleViewDetails(project.id)}
               onMarkAsComplete={() => handleMarkAsComplete(project.id)}
             />
@@ -167,7 +123,7 @@ export default function DashboardProducao() {
         </div>
 
         {/* Empty State */}
-        {mockProjects.length === 0 && (
+        {productionProjects.length === 0 && (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>Nenhum projeto em produção</p>
             <p className={styles.emptySubtext}>Todos os projetos estão finalizados</p>
