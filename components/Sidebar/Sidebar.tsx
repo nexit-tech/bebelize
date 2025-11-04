@@ -3,48 +3,82 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { FiGrid, FiFolderPlus, FiPackage, FiSettings, FiLogOut } from 'react-icons/fi';
+import { usePathname, useRouter } from 'next/navigation';
+import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut } from 'react-icons/fi';
+import { useAuth } from '@/hooks';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { currentUser, logout } = useAuth();
 
-  // Menu Items - Atualizado com rotas corretas
-  const menuItems = [
-    {
-      label: 'Dashboard',
-      href: '/dashboard/consultora',
-      icon: FiGrid
-    },
-    {
-      label: 'Produção',
-      href: '/dashboard/producao',
-      icon: FiFolderPlus
-    },
-    {
-      label: 'Admin',
-      href: '/dashboard/admin',
-      icon: FiGrid
-    },
-    {
-      label: 'Catálogo',
-      href: '/catalogo',
-      icon: FiPackage
+  const getMenuItems = () => {
+    if (currentUser?.role === 'consultora') {
+      return [
+        {
+          label: 'Meus Projetos',
+          href: '/dashboard/consultora',
+          icon: FiGrid
+        },
+        {
+          label: 'Catálogo',
+          href: '/catalogo',
+          icon: FiPackage
+        }
+      ];
     }
-  ];
+
+    if (currentUser?.role === 'atelier') {
+      return [
+        {
+          label: 'Fila de Produção',
+          href: '/dashboard/atelier',
+          icon: FiGrid
+        },
+        {
+          label: 'Catálogo',
+          href: '/catalogo',
+          icon: FiPackage
+        }
+      ];
+    }
+
+    if (currentUser?.role === 'admin') {
+      return [
+        {
+          label: 'Dashboard',
+          href: '/dashboard/admin',
+          icon: FiGrid
+        },
+        {
+          label: 'Usuários',
+          href: '/admin/usuarios',
+          icon: FiUsers
+        },
+        {
+          label: 'Catálogo',
+          href: '/catalogo',
+          icon: FiPackage
+        }
+      ];
+    }
+
+    return [];
+  };
+
+  const menuItems = getMenuItems();
 
   const handleLogout = () => {
     const confirmed = confirm('Deseja realmente sair?');
     if (confirmed) {
-      window.location.href = '/login';
+      logout();
+      router.push('/login');
     }
   };
 
   return (
     <aside className={styles.sidebar}>
-      
-      {/* Logo */}
       <div className={styles.logoContainer}>
         <Image 
           src="/bebelizelogo.jpg" 
@@ -56,7 +90,6 @@ export default function Sidebar() {
         <span className={styles.brandName}>Bebelize</span>
       </div>
 
-      {/* Navegação Principal */}
       <nav className={styles.navigation}>
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -75,19 +108,17 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer da Sidebar */}
       <div className={styles.sidebarFooter}>
         <Link href="/configuracoes" className={styles.navItem}>
           <FiSettings size={20} />
           <span>Configurações</span>
         </Link>
         
-        <button className={styles.navItem} onClick={handleLogout} aria-label="Sair">
+        <button className={styles.navItem} onClick={handleLogout}>
           <FiLogOut size={20} />
           <span>Sair</span>
         </button>
       </div>
-
     </aside>
   );
 }

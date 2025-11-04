@@ -33,7 +33,6 @@ export default function Input({
         onChange={onChange}
         className={styles.input}
         required={required}
-        aria-label={label}
       />
     </div>
   );

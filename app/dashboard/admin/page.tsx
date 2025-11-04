@@ -2,7 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiPlus, FiDownload } from 'react-icons/fi';
+import { FiPlus, FiDownload, FiUsers } from 'react-icons/fi';
+import { useProjects, useUsers } from '@/hooks';
+import { getStatusLabel } from '@/utils';
+import { ProjectStatus } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import AdminStats from '@/components/AdminStats/AdminStats';
 import FilterBar from '@/components/FilterBar/FilterBar';
@@ -10,44 +13,52 @@ import AdminProjectCard from '@/components/AdminProjectCard/AdminProjectCard';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import { mockProjects } from '@/mocks';
 import styles from './admin.module.css';
 
 export default function DashboardAdmin() {
   const router = useRouter();
+  const { allProjects, searchQuery, setSearchQuery, deleteProject } = useProjects();
+  const { users } = useUsers();
 
-  // Estados
-  const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterConsultant, setFilterConsultant] = useState('todos');
-
-  // Estados dos Modais
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-    type: 'warning' as 'warning' | 'success' | 'info' | 'danger'
+    projectId: '',
+    projectName: ''
   });
-
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
     title: '',
     message: ''
   });
 
-  // Estatísticas
+  const filteredProjects = allProjects.filter(project => {
+    const matchesSearch = 
+      project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.consultantName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus = filterStatus === 'todos' || project.status === filterStatus;
+    const matchesConsultant = filterConsultant === 'todos' || project.consultantId === filterConsultant;
+
+    return matchesSearch && matchesStatus && matchesConsultant;
+  });
+
   const stats = {
-    total: mockProjects.length,
-    negociacao: mockProjects.filter(p => p.status === 'negociacao').length,
-    producao: mockProjects.filter(p => p.status === 'producao').length,
-    finalizado: mockProjects.filter(p => p.status === 'finalizado').length,
-    cancelado: mockProjects.filter(p => p.status === 'cancelado').length
+    total: allProjects.length,
+    negociacao: allProjects.filter(p => p.status === 'negociacao').length,
+    producao: allProjects.filter(p => p.status === 'producao').length,
+    finalizado: allProjects.filter(p => p.status === 'finalizado').length,
+    cancelado: allProjects.filter(p => p.status === 'cancelado').length
   };
 
-  // Handlers
   const handleCreateProject = () => {
     router.push('/projeto/criar');
+  };
+
+  const handleManageUsers = () => {
+    router.push('/admin/usuarios');
   };
 
   const handleExportReport = () => {
@@ -63,43 +74,49 @@ export default function DashboardAdmin() {
   };
 
   const handleEditProject = (projectId: string) => {
-    router.push(`/projeto/criar?id=${projectId}`);
+    router.push(`/projeto/editar/${projectId}`);
   };
 
-  const handleDeleteProject = (projectId: string) => {
+  const handleDeleteProject = (projectId: string, projectName: string) => {
     setConfirmModal({
       isOpen: true,
-      title: 'Excluir Projeto',
-      message: 'Tem certeza que deseja excluir este projeto? Esta ação é irreversível e todos os dados serão perdidos permanentemente.',
-      type: 'danger',
-      onConfirm: () => {
-        console.log('Projeto excluído:', projectId);
-        setSuccessModal({
-          isOpen: true,
-          title: 'Projeto Excluído!',
-          message: 'O projeto foi removido com sucesso do sistema.'
-        });
-      }
+      projectId,
+      projectName
     });
+  };
+
+  const confirmDelete = () => {
+    deleteProject(confirmModal.projectId);
+    setConfirmModal({ isOpen: false, projectId: '', projectName: '' });
+    setSuccessModal({
+      isOpen: true,
+      title: 'Projeto Excluído!',
+      message: 'O projeto foi removido com sucesso do sistema.'
+    });
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setFilterStatus(value);
   };
 
   return (
     <div className={styles.dashboardContainer}>
-      
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Conteúdo Principal */}
       <main className={styles.mainContent}>
-        
-        {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <div>
               <h1 className={styles.title}>Painel do Administrador</h1>
-              <p className={styles.subtitle}>Visão completa de todos os projetos e consultoras</p>
+              <p className={styles.subtitle}>
+                Visão completa de todos os projetos e consultoras
+              </p>
             </div>
             <div className={styles.headerActions}>
+              <Button variant="secondary" onClick={handleManageUsers}>
+                <FiUsers size={18} />
+                Gerenciar Usuários
+              </Button>
               <Button variant="secondary" onClick={handleExportReport}>
                 <FiDownload size={18} />
                 Exportar Relatório
@@ -112,7 +129,6 @@ export default function DashboardAdmin() {
           </div>
         </header>
 
-        {/* Estatísticas */}
         <AdminStats
           totalProjects={stats.total}
           inNegotiation={stats.negociacao}
@@ -121,19 +137,17 @@ export default function DashboardAdmin() {
           cancelled={stats.cancelado}
         />
 
-        {/* Barra de Filtros */}
         <FilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           filterStatus={filterStatus}
-          onFilterStatusChange={setFilterStatus}
+          onFilterStatusChange={handleStatusFilterChange}
           filterConsultant={filterConsultant}
           onFilterConsultantChange={setFilterConsultant}
         />
 
-        {/* Grid de Projetos */}
         <div className={styles.projectsGrid}>
-          {mockProjects.map((project) => (
+          {filteredProjects.map((project) => (
             <AdminProjectCard
               key={project.id}
               id={project.id}
@@ -142,43 +156,41 @@ export default function DashboardAdmin() {
               consultantName={project.consultantName}
               createdAt={project.createdAt}
               status={project.status}
-              statusLabel={project.statusLabel}
+              statusLabel={getStatusLabel(project.status)}
               onView={() => handleViewProject(project.id)}
               onEdit={() => handleEditProject(project.id)}
-              onDelete={() => handleDeleteProject(project.id)}
+              onDelete={() => handleDeleteProject(project.id, project.name)}
             />
           ))}
         </div>
 
-        {/* Empty State */}
-        {mockProjects.length === 0 && (
+        {filteredProjects.length === 0 && (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>Nenhum projeto encontrado</p>
-            <p className={styles.emptySubtext}>Ajuste os filtros ou crie um novo projeto</p>
+            <p className={styles.emptySubtext}>
+              Ajuste os filtros ou crie um novo projeto
+            </p>
           </div>
         )}
-
       </main>
 
-      {/* Modais */}
       <ConfirmModal
         isOpen={confirmModal.isOpen}
-        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
-        onConfirm={confirmModal.onConfirm}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        type={confirmModal.type}
+        onClose={() => setConfirmModal({ isOpen: false, projectId: '', projectName: '' })}
+        onConfirm={confirmDelete}
+        title="Excluir Projeto"
+        message={`Tem certeza que deseja excluir o projeto "${confirmModal.projectName}"? Esta ação é irreversível.`}
+        type="danger"
         confirmText="Sim, Excluir"
         cancelText="Cancelar"
       />
 
       <SuccessModal
         isOpen={successModal.isOpen}
-        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+        onClose={() => setSuccessModal({ isOpen: false, title: '', message: '' })}
         title={successModal.title}
         message={successModal.message}
       />
-
     </div>
   );
 }

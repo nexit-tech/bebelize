@@ -1,4 +1,3 @@
-/* Tag Base */
 .tag {
   display: inline-flex;
   align-items: center;
@@ -11,7 +10,11 @@
   white-space: nowrap;
 }
 
-/* Variantes de Status */
+.rascunho {
+  background-color: rgba(166, 154, 148, 0.15);
+  color: #A69A94;
+}
+
 .negociacao {
   background-color: rgba(212, 194, 154, 0.15);
   color: #B8A167;

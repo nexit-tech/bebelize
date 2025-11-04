@@ -1,0 +1,246 @@
+.pageContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-pearl);
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 260px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-light-tan);
+}
+
+.backButton:hover {
+  background-color: rgba(166, 142, 128, 0.08);
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.detailsCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 32px;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.projectName {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+  flex: 1;
+}
+
+.priorityBadge {
+  padding: 8px 16px;
+  background-color: var(--color-warning);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: 20px;
+}
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-light-tan-grey);
+  text-transform: uppercase;
+}
+
+.infoValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-browning);
+}
+
+.columnsLayout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.specsCard,
+.notesCard,
+.checklistCard {
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0 0 20px 0;
+}
+
+.specsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.specItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background-color: rgba(166, 142, 128, 0.04);
+  border-left: 4px solid var(--color-light-tan);
+  border-radius: 6px;
+}
+
+.specHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.specLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-light-tan-grey);
+  text-transform: uppercase;
+}
+
+.specCode {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.specValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-browning);
+}
+
+.textarea {
+  width: 100%;
+  padding: 16px;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--color-browning);
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-light-tan-grey);
+  border-radius: 8px;
+  resize: vertical;
+  transition: all 0.3s ease;
+}
+
+.textarea:focus {
+  outline: 2px solid var(--color-light-tan);
+  border-color: var(--color-light-tan);
+}
+
+.checklistItems {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.checklistItem:hover {
+  background-color: rgba(166, 142, 128, 0.04);
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: var(--color-light-tan);
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    padding: 32px 24px;
+  }
+
+  .columnsLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 80px;
+    padding: 24px 16px;
+  }
+
+  .projectName {
+    font-size: 22px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+}

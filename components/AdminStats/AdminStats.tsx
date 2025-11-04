@@ -19,41 +19,36 @@ export default function AdminStats({
 }: AdminStatsProps) {
   return (
     <div className={styles.statsContainer}>
-      
-      {/* Card: Total de Projetos */}
       <div className={styles.statCard}>
         <div className={styles.statIcon}>
           <FiFolderPlus size={24} />
         </div>
         <div className={styles.statContent}>
           <span className={styles.statValue}>{totalProjects}</span>
-          <span className={styles.statLabel}>Total de Projetos</span>
+          <span className={styles.statLabel}>Total</span>
         </div>
       </div>
 
-      {/* Card: Em Negociação */}
       <div className={`${styles.statCard} ${styles.warning}`}>
         <div className={styles.statIcon}>
           <FiClock size={24} />
         </div>
         <div className={styles.statContent}>
           <span className={styles.statValue}>{inNegotiation}</span>
-          <span className={styles.statLabel}>Em Negociação</span>
+          <span className={styles.statLabel}>Negociação</span>
         </div>
       </div>
 
-      {/* Card: Em Produção */}
       <div className={`${styles.statCard} ${styles.info}`}>
         <div className={styles.statIcon}>
           <FiClock size={24} />
         </div>
         <div className={styles.statContent}>
           <span className={styles.statValue}>{inProduction}</span>
-          <span className={styles.statLabel}>Em Produção</span>
+          <span className={styles.statLabel}>Produção</span>
         </div>
       </div>
 
-      {/* Card: Finalizados */}
       <div className={`${styles.statCard} ${styles.success}`}>
         <div className={styles.statIcon}>
           <FiCheckCircle size={24} />
@@ -64,7 +59,6 @@ export default function AdminStats({
         </div>
       </div>
 
-      {/* Card: Cancelados */}
       <div className={`${styles.statCard} ${styles.danger}`}>
         <div className={styles.statIcon}>
           <FiXCircle size={24} />
@@ -74,7 +68,6 @@ export default function AdminStats({
           <span className={styles.statLabel}>Cancelados</span>
         </div>
       </div>
-
     </div>
   );
 }

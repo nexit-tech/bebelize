@@ -24,20 +24,14 @@ export default function ConfirmModal({
   confirmText = 'Confirmar',
   cancelText = 'Cancelar'
 }: ConfirmModalProps) {
-
   if (!isOpen) return null;
 
-  // Ícone baseado no tipo
   const getIcon = () => {
     switch (type) {
-      case 'warning':
-        return <FiAlertTriangle size={48} />;
-      case 'success':
-        return <FiCheckCircle size={48} />;
-      case 'danger':
-        return <FiAlertTriangle size={48} />;
-      default:
-        return <FiInfo size={48} />;
+      case 'warning': return <FiAlertTriangle size={48} />;
+      case 'success': return <FiCheckCircle size={48} />;
+      case 'danger': return <FiAlertTriangle size={48} />;
+      default: return <FiInfo size={48} />;
     }
   };
 
@@ -49,33 +43,21 @@ export default function ConfirmModal({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-        
-        {/* Ícone */}
         <div className={`${styles.iconContainer} ${styles[type]}`}>
           {getIcon()}
         </div>
 
-        {/* Título */}
         <h2 className={styles.title}>{title}</h2>
-
-        {/* Mensagem */}
         <p className={styles.message}>{message}</p>
 
-        {/* Ações */}
         <div className={styles.actions}>
           <Button type="button" variant="secondary" onClick={onClose} fullWidth>
             {cancelText}
           </Button>
-          <Button 
-            type="button" 
-            variant="primary" 
-            onClick={handleConfirm}
-            fullWidth
-          >
+          <Button type="button" variant="primary" onClick={handleConfirm} fullWidth>
             {confirmText}
           </Button>
         </div>
-
       </div>
     </div>
   );

@@ -8,7 +8,11 @@ interface SearchBarProps {
   placeholder?: string;
 }
 
-export default function SearchBar({ value, onChange, placeholder = 'Buscar projetos...' }: SearchBarProps) {
+export default function SearchBar({ 
+  value, 
+  onChange, 
+  placeholder = 'Buscar...' 
+}: SearchBarProps) {
   return (
     <div className={styles.searchContainer}>
       <FiSearch className={styles.searchIcon} size={20} />
@@ -18,7 +22,6 @@ export default function SearchBar({ value, onChange, placeholder = 'Buscar proje
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        aria-label="Buscar projetos"
       />
     </div>
   );

@@ -1,0 +1,131 @@
+import { Project } from '@/types';
+
+export const projectsData: Project[] = [
+  {
+    id: 'proj-001',
+    name: 'Enxoval Maria Alice',
+    clientName: 'Juliana Costa',
+    clientPhone: '(21) 98765-4321',
+    clientEmail: 'juliana.costa@email.com',
+    consultantId: 'user-001',
+    consultantName: 'Ana Paula Silva',
+    collectionId: 'aviador',
+    collectionName: 'Aviador',
+    customization: {
+      fabric: 'algodao-egipcio',
+      fabricName: 'Algodão Egípcio Premium',
+      primaryColor: '#E8C4C4',
+      secondaryColor: '#D4C5B9',
+      embroideryName: 'Maria Alice',
+      embroideryStyle: 'script',
+      embroideryStyleName: 'Script Cursiva',
+      observations: 'Cliente prefere tons mais suaves'
+    },
+    status: 'negociacao',
+    priority: 'normal',
+    createdAt: '2024-10-15',
+    updatedAt: '2024-10-15',
+    deliveryDate: '2024-11-30'
+  },
+  {
+    id: 'proj-002',
+    name: 'Enxoval Pedro Henrique',
+    clientName: 'Fernanda Lima',
+    clientPhone: '(11) 99876-5432',
+    clientEmail: 'fernanda.lima@email.com',
+    consultantId: 'user-002',
+    consultantName: 'Carla Mendes',
+    collectionId: 'safari-baby',
+    collectionName: 'Safari Baby',
+    customization: {
+      fabric: 'linho-premium',
+      fabricName: 'Linho Premium',
+      primaryColor: '#C8D5B9',
+      secondaryColor: '#F8F8F8',
+      embroideryName: 'Pedro',
+      embroideryStyle: 'block',
+      embroideryStyleName: 'Block Maiúscula'
+    },
+    status: 'aprovado',
+    priority: 'normal',
+    createdAt: '2024-10-10',
+    updatedAt: '2024-10-12',
+    deliveryDate: '2024-11-20'
+  },
+  {
+    id: 'proj-003',
+    name: 'Enxoval Sofia',
+    clientName: 'Patricia Oliveira',
+    clientPhone: '(21) 97654-3210',
+    clientEmail: 'patricia.oliveira@email.com',
+    consultantId: 'user-001',
+    consultantName: 'Ana Paula Silva',
+    collectionId: 'realeza-azul',
+    collectionName: 'Realeza Azul',
+    customization: {
+      fabric: 'algodao-egipcio',
+      fabricName: 'Algodão Egípcio Premium',
+      primaryColor: '#B0C4DE',
+      secondaryColor: '#F8F8F8',
+      embroideryName: 'Sofia',
+      embroideryStyle: 'elegant',
+      embroideryStyleName: 'Elegant Serifada'
+    },
+    status: 'producao',
+    priority: 'urgente',
+    createdAt: '2024-10-05',
+    updatedAt: '2024-10-14',
+    deliveryDate: '2024-11-10',
+    productionNotes: 'Atenção especial ao bordado'
+  },
+  {
+    id: 'proj-004',
+    name: 'Enxoval Lucas',
+    clientName: 'Amanda Santos',
+    clientPhone: '(11) 98765-1234',
+    clientEmail: 'amanda.santos@email.com',
+    consultantId: 'user-003',
+    consultantName: 'Beatriz Santos',
+    collectionId: 'garden',
+    collectionName: 'Garden',
+    customization: {
+      fabric: 'misto-premium',
+      fabricName: 'Misto Premium',
+      primaryColor: '#C8D5B9',
+      secondaryColor: '#E8C4C4',
+      embroideryName: 'Lucas',
+      embroideryStyle: 'script',
+      embroideryStyleName: 'Script Cursiva'
+    },
+    status: 'finalizado',
+    priority: 'normal',
+    createdAt: '2024-09-20',
+    updatedAt: '2024-10-08',
+    deliveryDate: '2024-10-15'
+  },
+  {
+    id: 'proj-005',
+    name: 'Enxoval Isabella',
+    clientName: 'Mariana Rodrigues',
+    clientPhone: '(21) 96543-2109',
+    clientEmail: 'mariana.rodrigues@email.com',
+    consultantId: 'user-002',
+    consultantName: 'Carla Mendes',
+    collectionId: 'cavalinho-rose',
+    collectionName: 'Cavalinho Rosê',
+    customization: {
+      fabric: 'algodao-egipcio',
+      fabricName: 'Algodão Egípcio Premium',
+      primaryColor: '#E8C4C4',
+      secondaryColor: '#F8F8F8',
+      embroideryName: 'Isabella',
+      embroideryStyle: 'elegant',
+      embroideryStyleName: 'Elegant Serifada'
+    },
+    status: 'producao',
+    priority: 'normal',
+    createdAt: '2024-10-08',
+    updatedAt: '2024-10-13',
+    deliveryDate: '2024-11-25'
+  }
+];

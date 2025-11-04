@@ -3,33 +3,26 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiPlus, FiFilter } from 'react-icons/fi';
+import { useAuth, useProjects } from '@/hooks';
+import { getStatusLabel } from '@/utils';
+import { ProjectStatus } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
 import Button from '@/components/Button/Button';
-import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import { mockProjects } from '@/mocks';
 import styles from './dashboard.module.css';
 
 export default function DashboardConsultora() {
   const router = useRouter();
+  const { currentUser } = useAuth();
+  const {
+    projects,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter
+  } = useProjects(currentUser?.id);
 
-  // Estados
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('todos');
-
-  // Estados dos Modais
-  const [successModal, setSuccessModal] = useState({
-    isOpen: false,
-    title: '',
-    message: ''
-  });
-
-  // Filtrar projetos da consultora (simulando usuário logado)
-  const currentUserId = 'ana'; // Simulando usuário logado
-  const userProjects = mockProjects.filter(p => p.consultantId === currentUserId);
-
-  // Handlers
   const handleCreateProject = () => {
     router.push('/projeto/criar');
   };
@@ -38,21 +31,26 @@ export default function DashboardConsultora() {
     router.push(`/projeto/${id}`);
   };
 
+  const handleStatusChange = (value: string) => {
+    if (value === 'todos') {
+      setStatusFilter('todos');
+    } else {
+      setStatusFilter(value as ProjectStatus);
+    }
+  };
+
   return (
     <div className={styles.dashboardContainer}>
-      
-      {/* Sidebar */}
       <Sidebar />
 
-      {/* Conteúdo Principal */}
       <main className={styles.mainContent}>
-        
-        {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <div>
               <h1 className={styles.title}>Meus Projetos</h1>
-              <p className={styles.subtitle}>Gerencie todos os seus enxovais personalizados</p>
+              <p className={styles.subtitle}>
+                Gerencie todos os seus enxovais personalizados
+              </p>
             </div>
             <Button variant="primary" onClick={handleCreateProject}>
               <FiPlus size={20} />
@@ -60,7 +58,6 @@ export default function DashboardConsultora() {
             </Button>
           </div>
 
-          {/* Barra de Ferramentas */}
           <div className={styles.toolbar}>
             <SearchBar 
               value={searchQuery}
@@ -72,11 +69,11 @@ export default function DashboardConsultora() {
               <FiFilter size={18} className={styles.filterIcon} />
               <select 
                 className={styles.filterSelect}
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                aria-label="Filtrar por status"
+                value={statusFilter}
+                onChange={(e) => handleStatusChange(e.target.value)}
               >
                 <option value="todos">Todos os Status</option>
+                <option value="rascunho">Rascunho</option>
                 <option value="negociacao">Em Negociação</option>
                 <option value="aprovado">Aprovado</option>
                 <option value="producao">Em Produção</option>
@@ -87,9 +84,8 @@ export default function DashboardConsultora() {
           </div>
         </header>
 
-        {/* Grid de Projetos */}
         <div className={styles.projectsGrid}>
-          {userProjects.map((project) => (
+          {projects.map((project) => (
             <ProjectCard
               key={project.id}
               id={project.id}
@@ -97,30 +93,21 @@ export default function DashboardConsultora() {
               clientName={project.clientName}
               createdAt={project.createdAt}
               status={project.status}
-              statusLabel={project.statusLabel}
+              statusLabel={getStatusLabel(project.status)}
               onClick={() => handleProjectClick(project.id)}
             />
           ))}
         </div>
 
-        {/* Empty State */}
-        {userProjects.length === 0 && (
+        {projects.length === 0 && (
           <div className={styles.emptyState}>
             <p className={styles.emptyText}>Nenhum projeto encontrado</p>
-            <p className={styles.emptySubtext}>Crie seu primeiro projeto para começar</p>
+            <p className={styles.emptySubtext}>
+              Crie seu primeiro projeto para começar
+            </p>
           </div>
         )}
-
       </main>
-
-      {/* Modal de Sucesso */}
-      <SuccessModal
-        isOpen={successModal.isOpen}
-        onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
-        title={successModal.title}
-        message={successModal.message}
-      />
-
     </div>
   );
 }

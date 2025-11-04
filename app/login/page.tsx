@@ -3,29 +3,41 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiMail, FiLock } from 'react-icons/fi';
+import Image from 'next/image';
+import { useAuth } from '@/hooks';
 import Input from '@/components/Input/Input';
 import Button from '@/components/Button/Button';
 import styles from './login.module.css';
-import Image from 'next/image';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  // Handlers
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login realizado:', { email, password });
-    // Navegação mockada para dashboard
-    // router.push('/dashboard');
+    setError('');
+
+    const user = login(email, password);
+
+    if (user) {
+      if (user.role === 'consultora') {
+        router.push('/dashboard/consultora');
+      } else if (user.role === 'atelier') {
+        router.push('/dashboard/atelier');
+      } else if (user.role === 'admin') {
+        router.push('/dashboard/admin');
+      }
+    } else {
+      setError('E-mail ou senha incorretos');
+    }
   };
 
   return (
     <div className={styles.loginContainer}>
       <div className={styles.loginCard}>
-        
-        {/* Logo */}
         <div className={styles.logoContainer}>
           <div className={styles.logoWrapper}>
             <Image 
@@ -40,10 +52,7 @@ export default function LoginPage() {
           <p className={styles.subtitle}>Gestão de Enxovais Personalizados</p>
         </div>
 
-        {/* Formulário */}
         <form className={styles.form} onSubmit={handleSubmit}>
-          
-          {/* Campo Email */}
           <div className={styles.inputWrapper}>
             <div className={styles.inputIcon}>
               <FiMail size={20} />
@@ -59,7 +68,6 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Campo Senha */}
           <div className={styles.inputWrapper}>
             <div className={styles.inputIcon}>
               <FiLock size={20} />
@@ -75,27 +83,18 @@ export default function LoginPage() {
             />
           </div>
 
-          {/* Link Esqueci Senha */}
-          <div className={styles.forgotPassword}>
-            <a href="#" className={styles.link}>
-              Esqueci minha senha
-            </a>
-          </div>
+          {error && <p className={styles.error}>{error}</p>}
 
-          {/* Botão Entrar */}
           <Button type="submit" variant="primary" fullWidth>
             Entrar
           </Button>
-
         </form>
 
-        {/* Footer */}
         <div className={styles.footer}>
           <p className={styles.footerText}>
             Plataforma exclusiva para funcionários da Bebelize
           </p>
         </div>
-
       </div>
     </div>
   );

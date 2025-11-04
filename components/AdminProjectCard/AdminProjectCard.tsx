@@ -1,5 +1,7 @@
 import React from 'react';
 import { FiCalendar, FiUser, FiEdit2, FiTrash2, FiEye } from 'react-icons/fi';
+import { ProjectStatus } from '@/types';
+import { formatDate } from '@/utils';
 import StatusTag from '../StatusTag/StatusTag';
 import styles from './AdminProjectCard.module.css';
 
@@ -9,7 +11,7 @@ interface AdminProjectCardProps {
   clientName: string;
   consultantName: string;
   createdAt: string;
-  status: 'negociacao' | 'aprovado' | 'producao' | 'finalizado' | 'cancelado';
+  status: ProjectStatus;
   statusLabel: string;
   onView: () => void;
   onEdit: () => void;
@@ -30,14 +32,11 @@ export default function AdminProjectCard({
 }: AdminProjectCardProps) {
   return (
     <div className={styles.card}>
-      
-      {/* Header */}
       <div className={styles.cardHeader}>
         <h3 className={styles.projectName}>{projectName}</h3>
         <StatusTag status={status}>{statusLabel}</StatusTag>
       </div>
 
-      {/* Informações */}
       <div className={styles.cardInfo}>
         <div className={styles.infoItem}>
           <FiUser size={16} className={styles.icon} />
@@ -51,25 +50,22 @@ export default function AdminProjectCard({
 
         <div className={styles.infoItem}>
           <FiCalendar size={16} className={styles.icon} />
-          <span className={styles.infoText}>{createdAt}</span>
+          <span className={styles.infoText}>{formatDate(createdAt)}</span>
         </div>
       </div>
 
-      {/* Ações */}
       <div className={styles.cardActions}>
         <button 
           className={styles.actionButton}
           onClick={onView}
-          aria-label="Visualizar projeto"
         >
           <FiEye size={18} />
-          <span>Visualizar</span>
+          <span>Ver</span>
         </button>
 
         <button 
           className={styles.actionButton}
           onClick={onEdit}
-          aria-label="Editar projeto"
         >
           <FiEdit2 size={18} />
           <span>Editar</span>
@@ -78,13 +74,11 @@ export default function AdminProjectCard({
         <button 
           className={`${styles.actionButton} ${styles.danger}`}
           onClick={onDelete}
-          aria-label="Excluir projeto"
         >
           <FiTrash2 size={18} />
           <span>Excluir</span>
         </button>
       </div>
-
     </div>
   );
 }
