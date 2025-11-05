@@ -1,35 +1,29 @@
 import React, { useState } from 'react';
 import { FiChevronDown, FiCheck } from 'react-icons/fi';
+import { ProjectStatus } from '@/types';
+import { getStatusLabel, getStatusColor } from '@/utils';
 import styles from './StatusSelector.module.css';
 
-interface StatusOption {
-  value: 'negociacao' | 'aprovado' | 'producao' | 'finalizado' | 'cancelado';
-  label: string;
-  color: string;
+interface StatusSelectorProps {
+  currentStatus: ProjectStatus;
+  onStatusChange: (status: ProjectStatus) => void;
 }
 
-interface StatusSelectorProps {
-  currentStatus: string;
-  onStatusChange: (status: string) => void;
-}
+const statusOptions: { value: ProjectStatus, label: string, color: string }[] = [
+  { value: 'rascunho', label: getStatusLabel('rascunho'), color: getStatusColor('rascunho') },
+  { value: 'negociacao', label: getStatusLabel('negociacao'), color: getStatusColor('negociacao') },
+  { value: 'aprovado', label: getStatusLabel('aprovado'), color: getStatusColor('aprovado') },
+  { value: 'producao', label: getStatusLabel('producao'), color: getStatusColor('producao') },
+  { value: 'finalizado', label: getStatusLabel('finalizado'), color: getStatusColor('finalizado') },
+  { value: 'cancelado', label: getStatusLabel('cancelado'), color: getStatusColor('cancelado') }
+];
 
 export default function StatusSelector({ currentStatus, onStatusChange }: StatusSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  // Opções de Status
-  const statusOptions: StatusOption[] = [
-    { value: 'negociacao', label: 'Em Negociação', color: '#D4C29A' },
-    { value: 'aprovado', label: 'Aprovado', color: '#A3B59F' },
-    { value: 'producao', label: 'Em Produção', color: '#B0C4DE' },
-    { value: 'finalizado', label: 'Finalizado', color: '#A3B59F' },
-    { value: 'cancelado', label: 'Cancelado', color: '#D9A6A0' }
-  ];
-
-  // Encontra o status atual
   const currentStatusObj = statusOptions.find(s => s.value === currentStatus);
 
-  // Handlers
-  const handleStatusSelect = (status: string) => {
+  const handleStatusSelect = (status: ProjectStatus) => {
     onStatusChange(status);
     setIsOpen(false);
   };

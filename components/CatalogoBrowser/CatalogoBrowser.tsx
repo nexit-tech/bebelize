@@ -7,12 +7,12 @@ import BrowseItemCard from '../BrowseItemCard/BrowseItemCard';
 import styles from './CatalogoBrowser.module.css';
 
 interface CatalogoBrowserProps {
-  onAddItem: (item: Item) => void;
+  onCustomizeItem: (item: Item) => void;
 }
 
 type View = 'collections' | 'items';
 
-export default function CatalogoBrowser({ onAddItem }: CatalogoBrowserProps) {
+export default function CatalogoBrowser({ onCustomizeItem }: CatalogoBrowserProps) {
   const [view, setView] = useState<View>('collections');
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
@@ -70,7 +70,7 @@ export default function CatalogoBrowser({ onAddItem }: CatalogoBrowserProps) {
           <BrowseItemCard
             key={item.id}
             item={item}
-            onAddItem={onAddItem}
+            onCustomizeItem={onCustomizeItem}
           />
         ))}
       </div>

@@ -1,0 +1,39 @@
+.toolbarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
+  margin-bottom: 32px;
+}
+
+.searchWrapper {
+  width: 100%;
+}
+
+.filterWrapper {
+  /* O FilterBar já é responsável pela layoutização interna dos filtros */
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .toolbarContainer {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .searchWrapper {
+    flex: 1; /* Ocupa o máximo de espaço possível */
+    max-width: 400px;
+  }
+}
+
+@media (max-width: 767px) {
+  .toolbarContainer {
+    padding: 16px;
+  }
+}

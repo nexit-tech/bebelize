@@ -22,16 +22,13 @@ export default function ItemCard({
   return (
     <div className={styles.card}>
       
-      {/* Header */}
       <div className={styles.cardHeader}>
         <h4 className={styles.itemName}>{name}</h4>
         <span className={styles.itemCode}>#{code}</span>
       </div>
 
-      {/* Descrição */}
       <p className={styles.description}>{description}</p>
 
-      {/* Ações */}
       <div className={styles.cardActions}>
         <button 
           className={styles.actionButton}

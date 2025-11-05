@@ -29,14 +29,14 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Montserrat', sans-serif;
+  font-family: inherit;
 }
 
 .dropdownButton:hover {
   border-color: var(--color-light-tan);
 }
 
-.dropdownButton:focus {
+.dropdownButton:focus-visible {
   outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
 }
@@ -108,7 +108,7 @@
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-family: 'Montserrat', sans-serif;
+  font-family: inherit;
   text-align: left;
 }
 

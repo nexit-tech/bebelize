@@ -1,3 +1,4 @@
+/* Sidebar Container */
 .sidebar {
   width: 260px;
   height: 100vh;
@@ -11,6 +12,7 @@
   z-index: 100;
 }
 
+/* Logo */
 .logoContainer {
   display: flex;
   align-items: center;
@@ -31,26 +33,28 @@
   letter-spacing: 0.5px;
 }
 
+/* Navegação - CORREÇÃO CRÍTICA */
 .navigation {
   flex: 1;
-  padding: 24px 16px;
+  padding: 24px 0 24px 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto; 
+  overflow-x: hidden; /* IMPEDE A BARRA DE ROLAGEM HORIZONTAL */
 }
 
 .navItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 14px 24px;
   font-size: 15px;
   font-weight: 400;
   font-family: 'Montserrat', sans-serif;
   color: var(--color-light-tan-grey);
   background-color: transparent;
   border: none;
-  border-radius: 8px;
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -71,8 +75,11 @@
   background-color: rgba(166, 142, 128, 0.12);
   color: var(--color-light-tan);
   font-weight: 600;
+  /* Garante que o fundo preencha 100% da área visível */
+  border-radius: 0; 
 }
 
+/* Footer da Sidebar */
 .sidebarFooter {
   padding: 16px;
   border-top: 1px solid var(--color-pearl);
@@ -81,9 +88,15 @@
   gap: 8px;
 }
 
+/* Responsividade Mobile */
 @media (max-width: 768px) {
   .sidebar {
     width: 80px;
+  }
+  
+  .navItem {
+    padding: 14px 0;
+    justify-content: center;
   }
 
   .brandName {

@@ -9,6 +9,7 @@ interface InputProps {
   label: string;
   id: string;
   required?: boolean;
+  inputClassName?: string; // NOVO: Propriedade para classes adicionais no Input
 }
 
 export default function Input({
@@ -18,7 +19,8 @@ export default function Input({
   onChange,
   label,
   id,
-  required = false
+  required = false,
+  inputClassName = ''
 }: InputProps) {
   return (
     <div className={styles.inputContainer}>
@@ -31,7 +33,7 @@ export default function Input({
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={styles.input}
+        className={`${styles.input} ${inputClassName}`}
         required={required}
       />
     </div>

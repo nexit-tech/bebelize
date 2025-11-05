@@ -1,17 +1,19 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '@/hooks';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import styles from './Sidebar.module.css';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout } = useAuth();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const getMenuItems = () => {
     if (currentUser?.role === 'consultora') {
@@ -69,12 +71,14 @@ export default function Sidebar() {
 
   const menuItems = getMenuItems();
 
-  const handleLogout = () => {
-    const confirmed = confirm('Deseja realmente sair?');
-    if (confirmed) {
-      logout();
-      router.push('/login');
-    }
+  const handleLogoutConfirmation = () => {
+    setIsLogoutModalOpen(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    router.push('/login');
+    setIsLogoutModalOpen(false);
   };
 
   return (
@@ -114,11 +118,22 @@ export default function Sidebar() {
           <span>Configurações</span>
         </Link>
         
-        <button className={styles.navItem} onClick={handleLogout}>
+        <button className={styles.navItem} onClick={handleLogoutConfirmation}>
           <FiLogOut size={20} />
           <span>Sair</span>
         </button>
       </div>
+
+      <ConfirmModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={confirmLogout}
+        title="Sair da Plataforma"
+        message="Tem certeza que deseja encerrar sua sessão e voltar para a tela de login?"
+        type="warning"
+        confirmText="Sim, Sair"
+        cancelText="Permanecer"
+      />
     </aside>
   );
 }

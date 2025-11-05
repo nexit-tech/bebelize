@@ -42,7 +42,6 @@ export default function ItemModal({ isOpen, onClose, onSave, editData }: ItemMod
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         
-        {/* Header */}
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
             {editData ? 'Editar Item' : 'Novo Item'}
@@ -52,7 +51,6 @@ export default function ItemModal({ isOpen, onClose, onSave, editData }: ItemMod
           </button>
         </div>
 
-        {/* Formulário */}
         <form className={styles.form} onSubmit={handleSubmit}>
           
           <Input
@@ -90,7 +88,6 @@ export default function ItemModal({ isOpen, onClose, onSave, editData }: ItemMod
             />
           </div>
 
-          {/* Ações */}
           <div className={styles.modalActions}>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancelar

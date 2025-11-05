@@ -90,7 +90,7 @@
   gap: 24px;
 }
 
-.textareaContainer {
+.selectContainer {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -100,38 +100,27 @@
   font-size: 14px;
   font-weight: 400;
   color: var(--color-browning);
-  letter-spacing: 0.3px;
 }
 
-.textarea {
-  width: 100%;
+.select {
+  font-family: inherit;
   padding: 14px 16px;
   font-size: 15px;
-  font-family: inherit;
-  font-weight: 400;
   color: var(--color-browning);
   background-color: #FFFFFF;
   border: 1px solid var(--color-light-tan-grey);
   border-radius: 8px;
-  resize: vertical;
+  cursor: pointer;
   transition: all 0.3s ease;
-  line-height: 1.6;
 }
 
-.textarea::placeholder {
-  color: var(--color-light-tan-grey);
-  opacity: 0.7;
-}
-
-.textarea:hover {
+.select:hover {
   border-color: var(--color-light-tan);
 }
 
-.textarea:focus-visible {
+.select:focus-visible {
   outline: 2px solid var(--color-light-tan);
-  outline-offset: 2px;
   border-color: var(--color-light-tan);
-  background-color: #FAFAFA;
 }
 
 .modalActions {
@@ -142,18 +131,4 @@
 
 .modalActions button {
   flex: 1;
-}
-
-@media (max-width: 768px) {
-  .modalHeader {
-    padding: 20px 24px;
-  }
-
-  .modalTitle {
-    font-size: 20px;
-  }
-
-  .form {
-    padding: 24px;
-  }
 }

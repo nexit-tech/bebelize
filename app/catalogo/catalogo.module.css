@@ -1,18 +1,15 @@
-/* Container da Página */
 .pageContainer {
   display: flex;
   min-height: 100vh;
   background-color: var(--color-pearl);
 }
 
-/* Conteúdo Principal */
 .mainContent {
   flex: 1;
   margin-left: 260px;
   padding: 40px;
 }
 
-/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -49,7 +46,7 @@
   background-color: rgba(166, 142, 128, 0.08);
 }
 
-.backButton:focus {
+.backButton:focus-visible {
   outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
 }
@@ -67,21 +64,18 @@
   color: var(--color-light-tan-grey);
 }
 
-/* Grid de Coleções */
 .collectionsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 24px;
 }
 
-/* Grid de Itens */
 .itemsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
-/* Empty State */
 .emptyState {
   text-align: center;
   padding: 80px 24px;
@@ -103,7 +97,6 @@
   color: var(--color-light-tan-grey);
 }
 
-/* Responsividade Tablet */
 @media (max-width: 1024px) {
   .mainContent {
     padding: 32px 24px;
@@ -128,7 +121,6 @@
   }
 }
 
-/* Responsividade Mobile */
 @media (max-width: 768px) {
   .mainContent {
     margin-left: 80px;

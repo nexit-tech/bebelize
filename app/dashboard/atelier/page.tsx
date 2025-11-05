@@ -2,26 +2,22 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiFilter } from 'react-icons/fi';
 import { useProjects } from '@/hooks';
 import Sidebar from '@/components/Sidebar/Sidebar';
-import SearchBar from '@/components/SearchBar/SearchBar';
 import ProductionCard from '@/components/ProductionCard/ProductionCard';
 import ProductionHeader from '@/components/ProductionHeader/ProductionHeader';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
+import FilterBar from '@/components/FilterBar/FilterBar';
 import styles from './atelier.module.css';
 
 export default function DashboardAtelier() {
   const router = useRouter();
-  const {
-    allProjects,
-    searchQuery,
-    setSearchQuery,
-    updateProject
-  } = useProjects();
-
+  const { allProjects, updateProject } = useProjects();
+  
+  const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState('todos');
+  const [filterStatus, setFilterStatus] = useState('todos');
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     projectId: '',
@@ -33,43 +29,31 @@ export default function DashboardAtelier() {
     message: ''
   });
 
-  const productionProjects = allProjects.filter(p => 
-    p.status === 'aprovado' || p.status === 'producao'
+  // A Fila de Produção do Atelier foca em projetos que precisam de atenção (não cancelados/rascunho)
+  const relevantProjects = allProjects.filter(p => 
+    p.status !== 'cancelado' && p.status !== 'rascunho'
   );
 
-  const urgentProjects = productionProjects.filter(p => p.priority === 'urgente');
+  const urgentProjects = relevantProjects.filter(p => p.priority === 'urgente').length;
 
-  const filteredProjects = filterPriority === 'urgente' 
-    ? urgentProjects 
-    : filterPriority === 'normal'
-    ? productionProjects.filter(p => p.priority === 'normal')
-    : productionProjects;
+  const filteredProjects = relevantProjects.filter(p => {
+    const matchesSearch = 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      p.clientName.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const searchFiltered = filteredProjects.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.clientName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const matchesStatus = filterStatus === 'todos' || p.status === filterStatus;
+    const matchesPriority = filterPriority === 'todos' || p.priority === filterPriority;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
 
   const handleViewDetails = (projectId: string) => {
     router.push(`/atelier/projeto/${projectId}`);
   };
 
-  const handleMarkAsComplete = (projectId: string, projectName: string) => {
-    setConfirmModal({
-      isOpen: true,
-      projectId,
-      projectName
-    });
-  };
-
-  const confirmComplete = () => {
-    updateProject(confirmModal.projectId, { status: 'finalizado' });
-    setConfirmModal({ isOpen: false, projectId: '', projectName: '' });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Projeto Finalizado!',
-      message: 'O projeto foi marcado como concluído e está pronto para entrega.'
-    });
+  const handleEditStatus = (projectId: string) => {
+    // Redireciona para a página de detalhes onde a mudança de status é o foco
+    router.push(`/atelier/projeto/${projectId}`);
   };
 
   return (
@@ -80,38 +64,29 @@ export default function DashboardAtelier() {
         <header className={styles.header}>
           <div>
             <h1 className={styles.title}>Fila de Produção</h1>
-            <p className={styles.subtitle}>Projetos aguardando fabricação</p>
+            <p className={styles.subtitle}>Visão prática das tarefas em andamento, aprovadas e pendentes</p>
           </div>
         </header>
 
+        {/* Novo Header que exibe estatísticas relevantes para a Fila */}
         <ProductionHeader 
-          totalProjects={productionProjects.length}
-          urgentProjects={urgentProjects.length}
+          totalProjects={relevantProjects.length}
+          urgentProjects={urgentProjects}
         />
 
-        <div className={styles.toolbar}>
-          <SearchBar 
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Buscar por nome do projeto ou cliente..."
-          />
-
-          <div className={styles.filterContainer}>
-            <FiFilter size={18} className={styles.filterIcon} />
-            <select 
-              className={styles.filterSelect}
-              value={filterPriority}
-              onChange={(e) => setFilterPriority(e.target.value)}
-            >
-              <option value="todos">Todas as Prioridades</option>
-              <option value="urgente">Urgente</option>
-              <option value="normal">Normal</option>
-            </select>
-          </div>
-        </div>
+        {/* Novo Componente de Filtro Unificado e Esteticamente Corrigido */}
+        <FilterBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          filterStatus={filterStatus}
+          onFilterStatusChange={setFilterStatus}
+          filterPriority={filterPriority}
+          onFilterPriorityChange={setFilterPriority}
+        />
 
         <div className={styles.projectsGrid}>
-          {searchFiltered.map((project) => (
+          {filteredProjects.map((project) => (
+            // O ProductionCard já exibe o status e as ações principais para o Atelier
             <ProductionCard
               key={project.id}
               id={project.id}
@@ -120,30 +95,29 @@ export default function DashboardAtelier() {
               createdAt={project.createdAt}
               priority={project.priority}
               onViewDetails={() => handleViewDetails(project.id)}
-              onMarkAsComplete={() => handleMarkAsComplete(project.id, project.name)}
+              onMarkAsComplete={() => handleEditStatus(project.id)}
             />
           ))}
         </div>
 
-        {searchFiltered.length === 0 && (
+        {filteredProjects.length === 0 && (
           <div className={styles.emptyState}>
-            <p className={styles.emptyText}>Nenhum projeto em produção</p>
-            <p className={styles.emptySubtext}>Todos os projetos estão finalizados</p>
+            <p className={styles.emptyText}>Fila de Produção vazia</p>
+            <p className={styles.emptySubtext}>Nenhum projeto requer sua atenção no momento</p>
           </div>
         )}
       </main>
-
+      
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={() => setConfirmModal({ isOpen: false, projectId: '', projectName: '' })}
-        onConfirm={confirmComplete}
-        title="Finalizar Projeto"
-        message={`Confirma que o projeto "${confirmModal.projectName}" foi produzido e está pronto para entrega?`}
-        type="success"
-        confirmText="Sim, Finalizar"
-        cancelText="Cancelar"
+        onConfirm={() => console.log('Confirmado')}
+        title="Atualização de Status"
+        message="Use a página de detalhes do projeto para marcar como concluído."
+        type="info"
+        confirmText="Entendi"
+        cancelText="Fechar"
       />
-
       <SuccessModal
         isOpen={successModal.isOpen}
         onClose={() => setSuccessModal({ isOpen: false, title: '', message: '' })}

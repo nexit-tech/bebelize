@@ -3,19 +3,22 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiSave, FiFileText } from 'react-icons/fi';
-import { Item } from '@/types';
+import { Item, CustomizedItem } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Button from '@/components/Button/Button';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
 import CatalogoBrowser from '@/components/CatalogoBrowser/CatalogoBrowser';
 import ProjetoCarrinho from '@/components/ProjetoCarrinho/ProjetoCarrinho';
+import ItemCustomizerModal from '@/components/ItemCustomizerModal/ItemCustomizerModal';
 import styles from './criar.module.css';
 
 export default function CriarProjeto() {
   const router = useRouter();
 
   const [projectName, setProjectName] = useState('');
-  const [cartItems, setCartItems] = useState<Item[]>([]);
+  const [cartItems, setCartItems] = useState<CustomizedItem[]>([]);
+  const [isCustomizerModalOpen, setIsCustomizerModalOpen] = useState(false);
+  const [itemToCustomize, setItemToCustomize] = useState<Item | null>(null);
   
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
@@ -23,22 +26,30 @@ export default function CriarProjeto() {
     message: ''
   });
 
-  const handleAddItem = (item: Item) => {
-    setCartItems(prev => {
-      const isDuplicate = prev.find(i => i.id === item.id);
-      if (isDuplicate) return prev;
-      return [...prev, item];
-    });
+  const handleOpenCustomizer = (item: Item) => {
+    setItemToCustomize(item);
+    setIsCustomizerModalOpen(true);
   };
 
-  const handleRemoveItem = (itemId: string) => {
-    setCartItems(prev => prev.filter(i => i.id !== itemId));
+  const handleCloseCustomizer = () => {
+    setIsCustomizerModalOpen(false);
+    setItemToCustomize(null);
+  };
+
+  const handleAddItem = (customizedItem: CustomizedItem) => {
+    // Add the customized item to the cart. It uses cartItemId for unique identification.
+    setCartItems(prev => [...prev, customizedItem]);
+    handleCloseCustomizer();
+  };
+
+  const handleRemoveItem = (cartItemId: string) => {
+    setCartItems(prev => prev.filter(i => i.cartItemId !== cartItemId));
   };
 
   const handleSaveProject = () => {
     console.log('Salvando projeto:', {
       projectName,
-      items: cartItems.map(item => item.id)
+      items: cartItems
     });
     
     setSuccessModal({
@@ -100,7 +111,7 @@ export default function CriarProjeto() {
           
           <div className={styles.columnLeft}>
             <div className={styles.card}>
-              <CatalogoBrowser onAddItem={handleAddItem} />
+              <CatalogoBrowser onCustomizeItem={handleOpenCustomizer} />
             </div>
           </div>
 
@@ -118,6 +129,17 @@ export default function CriarProjeto() {
         </div>
 
       </main>
+
+      <ItemCustomizerModal
+        isOpen={isCustomizerModalOpen}
+        onClose={handleCloseCustomizer}
+        item={itemToCustomize}
+        onSave={(itemWithCustomization) => handleAddItem({
+          ...itemWithCustomization,
+          // Garante que cada item no carrinho tenha um ID ÚNICO, mesmo que seja o mesmo ITEM (ID original)
+          cartItemId: `cart-${Date.now()}` 
+        })}
+      />
 
       <SuccessModal
         isOpen={successModal.isOpen}

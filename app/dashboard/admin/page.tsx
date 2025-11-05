@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiPlus, FiDownload, FiUsers } from 'react-icons/fi';
+import { FiDownload } from 'react-icons/fi';
 import { useProjects, useUsers } from '@/hooks';
 import { getStatusLabel } from '@/utils';
 import { ProjectStatus } from '@/types';
@@ -22,6 +22,7 @@ export default function DashboardAdmin() {
 
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterConsultant, setFilterConsultant] = useState('todos');
+  const [filterPriority, setFilterPriority] = useState('todos'); // NOVO: Estado para prioridade
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     projectId: '',
@@ -41,8 +42,9 @@ export default function DashboardAdmin() {
 
     const matchesStatus = filterStatus === 'todos' || project.status === filterStatus;
     const matchesConsultant = filterConsultant === 'todos' || project.consultantId === filterConsultant;
+    const matchesPriority = filterPriority === 'todos' || project.priority === filterPriority; // NOVO: Lógica de filtro
 
-    return matchesSearch && matchesStatus && matchesConsultant;
+    return matchesSearch && matchesStatus && matchesConsultant && matchesPriority;
   });
 
   const stats = {
@@ -51,14 +53,6 @@ export default function DashboardAdmin() {
     producao: allProjects.filter(p => p.status === 'producao').length,
     finalizado: allProjects.filter(p => p.status === 'finalizado').length,
     cancelado: allProjects.filter(p => p.status === 'cancelado').length
-  };
-
-  const handleCreateProject = () => {
-    router.push('/projeto/criar');
-  };
-
-  const handleManageUsers = () => {
-    router.push('/admin/usuarios');
   };
 
   const handleExportReport = () => {
@@ -95,10 +89,6 @@ export default function DashboardAdmin() {
     });
   };
 
-  const handleStatusFilterChange = (value: string) => {
-    setFilterStatus(value);
-  };
-
   return (
     <div className={styles.dashboardContainer}>
       <Sidebar />
@@ -113,17 +103,9 @@ export default function DashboardAdmin() {
               </p>
             </div>
             <div className={styles.headerActions}>
-              <Button variant="secondary" onClick={handleManageUsers}>
-                <FiUsers size={18} />
-                Gerenciar Usuários
-              </Button>
               <Button variant="secondary" onClick={handleExportReport}>
                 <FiDownload size={18} />
                 Exportar Relatório
-              </Button>
-              <Button variant="primary" onClick={handleCreateProject}>
-                <FiPlus size={20} />
-                Criar Projeto
               </Button>
             </div>
           </div>
@@ -141,9 +123,12 @@ export default function DashboardAdmin() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           filterStatus={filterStatus}
-          onFilterStatusChange={handleStatusFilterChange}
+          onFilterStatusChange={setFilterStatus}
           filterConsultant={filterConsultant}
           onFilterConsultantChange={setFilterConsultant}
+          filterPriority={filterPriority} 
+          onFilterPriorityChange={setFilterPriority} 
+          showConsultantFilter={true}
         />
 
         <div className={styles.projectsGrid}>

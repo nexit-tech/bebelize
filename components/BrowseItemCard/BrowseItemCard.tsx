@@ -6,12 +6,12 @@ import styles from './BrowseItemCard.module.css';
 
 interface BrowseItemCardProps {
   item: Item;
-  onAddItem: (item: Item) => void;
+  onCustomizeItem: (item: Item) => void;
 }
 
 export default function BrowseItemCard({
   item,
-  onAddItem
+  onCustomizeItem
 }: BrowseItemCardProps) {
   return (
     <div className={styles.card}>
@@ -26,11 +26,11 @@ export default function BrowseItemCard({
         <Button 
           variant="secondary" 
           size="small" 
-          onClick={() => onAddItem(item)}
+          onClick={() => onCustomizeItem(item)}
           fullWidth
         >
           <FiPlus size={16} />
-          <span>Adicionar</span>
+          <span>Personalizar</span>
         </Button>
       </div>
     </div>

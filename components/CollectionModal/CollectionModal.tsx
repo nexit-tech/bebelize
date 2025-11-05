@@ -38,7 +38,6 @@ export default function CollectionModal({ isOpen, onClose, onSave, editData }: C
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
         
-        {/* Header */}
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>
             {editData ? 'Editar Coleção' : 'Nova Coleção'}
@@ -48,7 +47,6 @@ export default function CollectionModal({ isOpen, onClose, onSave, editData }: C
           </button>
         </div>
 
-        {/* Formulário */}
         <form className={styles.form} onSubmit={handleSubmit}>
           
           <Input
@@ -76,7 +74,6 @@ export default function CollectionModal({ isOpen, onClose, onSave, editData }: C
             />
           </div>
 
-          {/* Ações */}
           <div className={styles.modalActions}>
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancelar

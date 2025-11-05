@@ -1,15 +1,18 @@
+/* Container Principal */
 .dashboardContainer {
   display: flex;
   min-height: 100vh;
   background-color: var(--color-pearl);
 }
 
+/* Conteúdo Principal */
 .mainContent {
   flex: 1;
   margin-left: 260px;
   padding: 40px;
 }
 
+/* Header */
 .header {
   margin-bottom: 32px;
 }
@@ -27,56 +30,27 @@
   color: var(--color-light-tan-grey);
 }
 
-.toolbar {
+/* Filtros Aprimorados */
+.filtersRow {
   display: flex;
-  align-items: center;
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 32px;
 }
 
 .filterContainer {
-  position: relative;
-  display: flex;
-  align-items: center;
+  flex: 1;
+  min-width: 200px;
 }
 
-.filterIcon {
-  position: absolute;
-  left: 16px;
-  color: var(--color-light-tan-grey);
-  pointer-events: none;
-}
-
-.filterSelect {
-  font-family: inherit;
-  padding: 12px 16px 12px 48px;
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--color-browning);
-  background-color: #FFFFFF;
-  border: 1px solid var(--color-light-tan-grey);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 220px;
-}
-
-.filterSelect:hover {
-  border-color: var(--color-light-tan);
-}
-
-.filterSelect:focus-visible {
-  outline: 2px solid var(--color-light-tan);
-  outline-offset: 2px;
-}
-
+/* Grid de Projetos */
 .projectsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 24px;
 }
 
+/* Empty State */
 .emptyState {
   text-align: center;
   padding: 80px 24px;
@@ -119,13 +93,8 @@
     font-size: 24px;
   }
 
-  .toolbar {
+  .filtersRow {
     flex-direction: column;
-    align-items: stretch;
-  }
-
-  .filterSelect {
-    width: 100%;
   }
 
   .projectsGrid {

@@ -11,7 +11,10 @@ import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
 import ProductionDetails from '@/components/ProductionDetails/ProductionDetails';
 import TechnicalSpecs from '@/components/TechnicalSpecs/TechnicalSpecs';
+import StatusSelector from '@/components/StatusSelector/StatusSelector';
 import ProductionNotes from '@/components/ProductionNotes/ProductionNotes';
+import ProjectDetailCard from '@/components/ProjectDetailCard/ProjectDetailCard';
+import { ProjectStatus } from '@/types';
 import styles from './atelier-projeto.module.css';
 
 export default function AtelierProjetoPage() {
@@ -20,6 +23,7 @@ export default function AtelierProjetoPage() {
   const { getProjectById, updateProject } = useProjects();
   const project = getProjectById(params.id as string);
 
+  const [currentStatus, setCurrentStatus] = useState<ProjectStatus>(project?.status || 'rascunho');
   const [productionNotes, setProductionNotes] = useState(project?.productionNotes || '');
   const [confirmModal, setConfirmModal] = useState({ isOpen: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
@@ -43,11 +47,21 @@ export default function AtelierProjetoPage() {
     });
   };
 
-  const handleMarkAsComplete = () => {
+  const handleStatusChange = (newStatus: ProjectStatus) => {
+    setCurrentStatus(newStatus);
+    updateProject(project.id, { status: newStatus });
+    setSuccessModal({
+      isOpen: true,
+      title: 'Status Atualizado!',
+      message: `O status do projeto foi alterado para: ${newStatus}.`
+    });
+  };
+
+  const handleFinalizeProject = () => {
     setConfirmModal({ isOpen: true });
   };
 
-  const confirmComplete = () => {
+  const confirmFinalize = () => {
     updateProject(project.id, { 
       status: 'finalizado',
       productionNotes 
@@ -56,15 +70,28 @@ export default function AtelierProjetoPage() {
     setSuccessModal({
       isOpen: true,
       title: 'Projeto Finalizado!',
-      message: 'O projeto foi marcado como concluído.'
+      message: 'O projeto foi marcado como concluído e está pronto para entrega.'
     });
     setTimeout(() => router.push('/dashboard/atelier'), 2000);
   };
 
+  const clientDetails = [
+    { label: 'Cliente', value: project.clientName },
+    { label: 'Telefone', value: project.clientPhone || 'N/A' },
+    { label: 'E-mail', value: project.clientEmail || 'N/A' },
+    { label: 'Consultora', value: project.consultantName },
+  ];
+
+  const projectDetails = [
+    { label: 'Coleção', value: project.collectionName },
+    { label: 'Criado em', value: formatDate(project.createdAt) },
+    { label: 'Previsão de Entrega', value: project.deliveryDate ? formatDate(project.deliveryDate) : 'Não definida' },
+  ];
+
   const specs = [
     { label: 'Tecido', value: project.customization.fabricName, code: project.customization.fabric },
-    { label: 'Cor Principal', value: project.customization.primaryColor, code: '' },
-    { label: 'Cor Secundária', value: project.customization.secondaryColor, code: '' },
+    { label: 'Cor Principal', value: project.customization.primaryColor, code: project.customization.primaryColor },
+    { label: 'Cor Secundária', value: project.customization.secondaryColor, code: project.customization.secondaryColor },
     { label: 'Bordado - Nome', value: project.customization.embroideryName, code: '' },
     { label: 'Bordado - Estilo', value: project.customization.embroideryStyleName, code: project.customization.embroideryStyle }
   ];
@@ -85,13 +112,18 @@ export default function AtelierProjetoPage() {
               <FiDownload size={18} />
               Baixar Planta
             </Button>
-            <Button variant="primary" onClick={handleMarkAsComplete}>
+            <Button 
+              variant="primary" 
+              onClick={handleFinalizeProject}
+              disabled={currentStatus !== 'producao'}
+            >
               <FiCheckCircle size={18} />
-              Finalizar
+              Finalizar Produção
             </Button>
           </div>
         </header>
 
+        {/* Informações de Destaque */}
         <div className={styles.card}>
           <ProductionDetails
             projectName={project.name}
@@ -102,41 +134,53 @@ export default function AtelierProjetoPage() {
           />
         </div>
 
+        {/* Detalhes e Status Selector (2 Colunas) */}
+        <div className={styles.columnsLayout}>
+          <ProjectDetailCard title="Informações do Cliente" items={clientDetails} />
+          
+          <div className={`${styles.card} ${styles.statusManagementCard}`}>
+            <StatusSelector 
+              currentStatus={currentStatus}
+              onStatusChange={handleStatusChange}
+            />
+            <div style={{ marginTop: '20px' }}>
+              <ProjectDetailCard title="Detalhes do Pedido" items={projectDetails} />
+            </div>
+          </div>
+        </div>
+
+        {/* Especificações Técnicas e Checklist (2 Colunas) */}
         <div className={styles.columnsLayout}>
           <div className={styles.card}>
             <TechnicalSpecs specifications={specs} />
           </div>
+
           <div className={styles.card}>
             <ProductionNotes
               notes={productionNotes}
               onNotesChange={setProductionNotes}
             />
-          </div>
-        </div>
-
-        <div className={styles.checklistCard}>
-          <h2 className={styles.cardTitle}>Checklist de Verificação</h2>
-          <div className={styles.checklistItems}>
-            <label className={styles.checklistItem}>
-              <input type="checkbox" className={styles.checkbox} />
-              <span>Tecido correto conforme especificação</span>
-            </label>
-            <label className={styles.checklistItem}>
-              <input type="checkbox" className={styles.checkbox} />
-              <span>Cores principais e secundárias conferidas</span>
-            </label>
-            <label className={styles.checklistItem}>
-              <input type="checkbox" className={styles.checkbox} />
-              <span>Nome bordado corretamente</span>
-            </label>
-            <label className={styles.checklistItem}>
-              <input type="checkbox" className={styles.checkbox} />
-              <span>Acabamento e costuras verificados</span>
-            </label>
-            <label className={styles.checklistItem}>
-              <input type="checkbox" className={styles.checkbox} />
-              <span>Embalagem adequada</span>
-            </label>
+             <div className={styles.checklistSection}>
+                <h2 className={styles.checklistTitle}>Checklist de Verificação</h2>
+                <div className={styles.checklistItems}>
+                  <label className={styles.checklistItem}>
+                    <input type="checkbox" className={styles.checkbox} defaultChecked={currentStatus === 'finalizado'} />
+                    <span>Tecido e cores conferidas</span>
+                  </label>
+                  <label className={styles.checklistItem}>
+                    <input type="checkbox" className={styles.checkbox} defaultChecked={currentStatus === 'finalizado'} />
+                    <span>Nome e estilo de bordado corretos</span>
+                  </label>
+                  <label className={styles.checklistItem}>
+                    <input type="checkbox" className={styles.checkbox} defaultChecked={currentStatus === 'finalizado'} />
+                    <span>Acabamento e costuras verificados</span>
+                  </label>
+                  <label className={styles.checklistItem}>
+                    <input type="checkbox" className={styles.checkbox} defaultChecked={currentStatus === 'finalizado'} />
+                    <span>Embalagem e etiquetas adequadas</span>
+                  </label>
+                </div>
+              </div>
           </div>
         </div>
       </main>
@@ -144,9 +188,9 @@ export default function AtelierProjetoPage() {
       <ConfirmModal
         isOpen={confirmModal.isOpen}
         onClose={() => setConfirmModal({ isOpen: false })}
-        onConfirm={confirmComplete}
+        onConfirm={confirmFinalize}
         title="Finalizar Projeto"
-        message="Confirma que o projeto foi produzido e está pronto para entrega?"
+        message="Confirma que o projeto foi produzido, verificado e está pronto para entrega ao cliente?"
         type="success"
         confirmText="Sim, Finalizar"
         cancelText="Cancelar"

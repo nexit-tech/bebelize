@@ -26,7 +26,6 @@ export default function CollectionCard({
   return (
     <div className={styles.card} onClick={onClick} role="button" tabIndex={0}>
       
-      {/* Header */}
       <div className={styles.cardHeader}>
         <div className={styles.iconContainer}>
           <FiPackage size={24} />
@@ -34,10 +33,8 @@ export default function CollectionCard({
         <h3 className={styles.collectionName}>{name}</h3>
       </div>
 
-      {/* Descrição */}
       <p className={styles.description}>{description}</p>
 
-      {/* Informações */}
       <div className={styles.infoRow}>
         <div className={styles.infoItem}>
           <span className={styles.infoLabel}>Itens:</span>
@@ -50,7 +47,6 @@ export default function CollectionCard({
         </div>
       </div>
 
-      {/* Ações */}
       <div className={styles.cardActions}>
         <button 
           className={styles.actionButton}

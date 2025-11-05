@@ -1,3 +1,30 @@
+/* Adicionando estilos para o card de informações do cliente */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.infoItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-light-tan-grey);
+  text-transform: uppercase;
+}
+
+.infoValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-browning);
+}
+
+/* Resto do CSS... (O conteúdo do arquivo é mantido com os novos estilos adicionados) */
 .pageContainer {
   display: flex;
   min-height: 100vh;

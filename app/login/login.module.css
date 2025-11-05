@@ -1,19 +1,31 @@
 .loginContainer {
-  display: flex;
   min-height: 100vh;
-  background-color: #FFFFFF;
-}
-
-.brandPanel {
-  flex: 1;
-  background-color: var(--color-browning);
-  color: #FFFFFF;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 24px;
+  background-color: var(--color-pearl);
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 440px;
+  background-color: #FFFFFF;
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: 0 2px 16px rgba(89, 78, 74, 0.08);
+}
+
+.logoContainer {
   text-align: center;
+  margin-bottom: 40px;
+}
+
+.logoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .logo {
@@ -21,48 +33,11 @@
   object-fit: contain;
 }
 
-.brandTitle {
-  font-size: 24px;
-  font-weight: 600;
-  color: #FFFFFF;
-  margin: 24px 0 8px 0;
-}
-
-.brandSubtitle {
-  font-size: 16px;
-  font-weight: 300;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
-}
-
-.formPanel {
-  flex: 1.5;
-  background-color: #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px;
-}
-
-.formWrapper {
-  width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-}
-
-.formTitle {
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--color-browning);
-  margin-bottom: 8px;
-}
-
-.formSubtitle {
-  font-size: 16px;
+.subtitle {
+  font-size: 14px;
   font-weight: 300;
   color: var(--color-light-tan-grey);
-  margin-bottom: 32px;
+  letter-spacing: 0.3px;
 }
 
 .form {
@@ -96,18 +71,31 @@
   margin: -8px 0;
 }
 
-@media (max-width: 768px) {
-  .loginContainer {
-    flex-direction: column;
+.footer {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-pearl);
+  text-align: center;
+}
+
+.footerText {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+  .loginCard {
+    padding: 32px 24px;
   }
 
-  .brandPanel {
-    flex: 0 0 auto;
-    padding: 60px 24px;
+  .logo {
+    width: 100px;
+    height: 100px;
   }
 
-  .formPanel {
-    flex: 1;
-    padding: 40px 24px;
+  .subtitle {
+    font-size: 13px;
   }
 }

@@ -69,29 +69,6 @@
   margin-bottom: 32px;
 }
 
-.filterSelect {
-  padding: 12px 16px;
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 400;
-  color: var(--color-browning);
-  background-color: #FFFFFF;
-  border: 1px solid var(--color-light-tan-grey);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 200px;
-}
-
-.filterSelect:hover {
-  border-color: var(--color-light-tan);
-}
-
-.filterSelect:focus-visible {
-  outline: 2px solid var(--color-light-tan);
-  outline-offset: 2px;
-}
-
 .usersGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -236,10 +213,6 @@
   .toolbar {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .filterSelect {
-    width: 100%;
   }
 
   .usersGrid {
