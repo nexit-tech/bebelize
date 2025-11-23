@@ -52,7 +52,7 @@ export default function LoginPage() {
           <p className={styles.subtitle}>Gestão de Enxovais Personalizados</p>
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} autoComplete="off">
           
           <div className={styles.inputWrapper}>
             <div className={styles.inputIcon}>
@@ -66,6 +66,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="off"
             />
           </div>
 
@@ -81,6 +82,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="new-password"
             />
           </div>
 

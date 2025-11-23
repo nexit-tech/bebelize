@@ -9,7 +9,8 @@ interface InputProps {
   label: string;
   id: string;
   required?: boolean;
-  inputClassName?: string; // NOVO: Propriedade para classes adicionais no Input
+  inputClassName?: string;
+  autoComplete?: string;
 }
 
 export default function Input({
@@ -20,7 +21,8 @@ export default function Input({
   label,
   id,
   required = false,
-  inputClassName = ''
+  inputClassName = '',
+  autoComplete = 'off'
 }: InputProps) {
   return (
     <div className={styles.inputContainer}>
@@ -35,6 +37,7 @@ export default function Input({
         onChange={onChange}
         className={`${styles.input} ${inputClassName}`}
         required={required}
+        autoComplete={autoComplete}
       />
     </div>
   );
