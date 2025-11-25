@@ -10,15 +10,14 @@ import Button from '@/components/Button/Button';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import UserModal from '@/components/UserModal/UserModal'; // NOVO: Importa o modal
+import UserModal from '@/components/UserModal/UserModal';
 import styles from './usuarios.module.css';
 
 export default function UsuariosPage() {
   const router = useRouter();
-  const { users, deleteUser, createUser } = useUsers(); // NOVO: Adiciona createUser
+  const { users, deleteUser, createUser, isLoading } = useUsers();
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Estado para o modal de criação
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
   const [confirmModal, setConfirmModal] = useState({
@@ -48,20 +47,21 @@ export default function UsuariosPage() {
     return labels[role];
   };
 
-  // ATUALIZADO: Abre o modal
   const handleCreateUser = () => {
     setIsUserModalOpen(true);
   };
 
-  // NOVO: Função para salvar o usuário vindo do modal
-  const handleSaveUser = (data: UserCreateInput) => {
-    createUser(data);
+  const handleSaveUser = async (data: UserCreateInput) => {
+    const newUser = await createUser(data);
     setIsUserModalOpen(false);
-    setSuccessModal({
-      isOpen: true,
-      title: 'Usuário Criado!',
-      message: 'O novo usuário foi adicionado com sucesso.'
-    });
+    
+    if (newUser) {
+      setSuccessModal({
+        isOpen: true,
+        title: 'Usuário Criado!',
+        message: 'O novo usuário foi adicionado com sucesso.'
+      });
+    }
   };
 
   const handleEditUser = (userId: string) => {
@@ -76,19 +76,33 @@ export default function UsuariosPage() {
     });
   };
 
-  const confirmDelete = () => {
-    deleteUser(confirmModal.userId);
+  const confirmDelete = async () => {
+    const success = await deleteUser(confirmModal.userId);
     setConfirmModal({ isOpen: false, userId: '', userName: '' });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Usuário Desativado!',
-      message: 'O usuário foi desativado com sucesso.'
-    });
+    
+    if (success) {
+      setSuccessModal({
+        isOpen: true,
+        title: 'Usuário Desativado!',
+        message: 'O usuário foi desativado com sucesso.'
+      });
+    }
   };
 
   const handleGoBack = () => {
     router.back();
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.pageContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageContainer}>

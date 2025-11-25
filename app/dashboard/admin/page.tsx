@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { FiDownload } from 'react-icons/fi';
 import { useProjects, useUsers } from '@/hooks';
 import { getStatusLabel } from '@/utils';
-import { ProjectStatus } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import AdminStats from '@/components/AdminStats/AdminStats';
 import FilterBar from '@/components/FilterBar/FilterBar';
@@ -17,12 +16,12 @@ import styles from './admin.module.css';
 
 export default function DashboardAdmin() {
   const router = useRouter();
-  const { allProjects, searchQuery, setSearchQuery, deleteProject } = useProjects();
+  const { allProjects, searchQuery, setSearchQuery, deleteProject, isLoading } = useProjects();
   const { users } = useUsers();
 
   const [filterStatus, setFilterStatus] = useState('todos');
   const [filterConsultant, setFilterConsultant] = useState('todos');
-  const [filterPriority, setFilterPriority] = useState('todos'); // NOVO: Estado para prioridade
+  const [filterPriority, setFilterPriority] = useState('todos');
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     projectId: '',
@@ -42,7 +41,7 @@ export default function DashboardAdmin() {
 
     const matchesStatus = filterStatus === 'todos' || project.status === filterStatus;
     const matchesConsultant = filterConsultant === 'todos' || project.consultantId === filterConsultant;
-    const matchesPriority = filterPriority === 'todos' || project.priority === filterPriority; // NOVO: Lógica de filtro
+    const matchesPriority = filterPriority === 'todos' || project.priority === filterPriority;
 
     return matchesSearch && matchesStatus && matchesConsultant && matchesPriority;
   });
@@ -79,15 +78,29 @@ export default function DashboardAdmin() {
     });
   };
 
-  const confirmDelete = () => {
-    deleteProject(confirmModal.projectId);
+  const confirmDelete = async () => {
+    const success = await deleteProject(confirmModal.projectId);
     setConfirmModal({ isOpen: false, projectId: '', projectName: '' });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Projeto Excluído!',
-      message: 'O projeto foi removido com sucesso do sistema.'
-    });
+    
+    if (success) {
+      setSuccessModal({
+        isOpen: true,
+        title: 'Projeto Excluído!',
+        message: 'O projeto foi removido com sucesso do sistema.'
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboardContainer}>

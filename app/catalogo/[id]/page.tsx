@@ -3,23 +3,25 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { FiPlus, FiArrowLeft } from 'react-icons/fi';
-import { Item, Collection } from '@/types';
-import { collectionsData, itemsData } from '@/data';
+import { useCollections, useItems } from '@/hooks';
+import { Item } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import ItemCard from '@/components/ItemCard/ItemCard';
 import ItemModal from '@/components/ItemModal/ItemModal';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import styles from '../catalogo.module.css'; // Reutilizando o CSS da página de catálogo
+import styles from '../catalogo.module.css';
 
 export default function CatalogoItensPage() {
   const router = useRouter();
   const params = useParams();
   const collectionId = params.id as string;
 
-  const [collection, setCollection] = useState<Collection | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
+  const { getCollectionById } = useCollections();
+  const { items, isLoading, createItem, updateItem, deleteItem } = useItems(collectionId);
+
+  const [collection, setCollection] = useState<any>(null);
   const [isItemModalOpen, setIsItemModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
 
@@ -37,15 +39,17 @@ export default function CatalogoItensPage() {
   });
 
   useEffect(() => {
-    const foundCollection = collectionsData.find(c => c.id === collectionId);
+    loadCollection();
+  }, [collectionId]);
+
+  const loadCollection = async () => {
+    const foundCollection = await getCollectionById(collectionId);
     if (foundCollection) {
       setCollection(foundCollection);
-      const collectionItems = itemsData.filter(i => i.collectionId === collectionId);
-      setItems(collectionItems);
     } else {
       router.push('/catalogo');
     }
-  }, [collectionId, router]);
+  };
 
   const handleCreateItem = () => {
     setEditingItem(null);
@@ -62,43 +66,58 @@ export default function CatalogoItensPage() {
       isOpen: true,
       title: 'Excluir Item',
       message: 'Tem certeza que deseja excluir este item permanentemente?',
-      onConfirm: () => {
-        setItems(items.filter(i => i.id !== itemId));
-        setSuccessModal({
-          isOpen: true,
-          title: 'Item Excluído!',
-          message: 'O item foi removido da coleção.'
-        });
+      onConfirm: async () => {
+        const success = await deleteItem(itemId);
+        if (success) {
+          setSuccessModal({
+            isOpen: true,
+            title: 'Item Excluído!',
+            message: 'O item foi removido da coleção.'
+          });
+        }
       }
     });
   };
 
-  const handleSaveItem = (data: { name: string; description: string; code: string }) => {
+  const handleSaveItem = async (data: { name: string; description: string; code: string }) => {
     if (editingItem) {
-      setItems(items.map(i => 
-        i.id === editingItem.id ? { ...i, ...data } : i
-      ));
-      setSuccessModal({
-        isOpen: true,
-        title: 'Item Atualizado!',
-        message: 'As informações do item foram atualizadas.'
-      });
+      const success = await updateItem(editingItem.id, data);
+      if (success) {
+        setSuccessModal({
+          isOpen: true,
+          title: 'Item Atualizado!',
+          message: 'As informações do item foram atualizadas.'
+        });
+      }
     } else {
-      const newItem: Item = {
-        id: `item-${Date.now()}`,
+      const newItem = await createItem({
         collectionId: collectionId,
-        ...data
-      };
-      setItems([...items, newItem]);
-      setSuccessModal({
-        isOpen: true,
-        title: 'Item Criado!',
-        message: 'O novo item foi adicionado à coleção.'
+        name: data.name,
+        description: data.description,
+        code: data.code
       });
+      if (newItem) {
+        setSuccessModal({
+          isOpen: true,
+          title: 'Item Criado!',
+          message: 'O novo item foi adicionado à coleção.'
+        });
+      }
     }
     setIsItemModalOpen(false);
     setEditingItem(null);
   };
+
+  if (isLoading || !collection) {
+    return (
+      <div className={styles.pageContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageContainer}>

@@ -20,7 +20,8 @@ export default function DashboardConsultora() {
     searchQuery,
     setSearchQuery,
     statusFilter,
-    setStatusFilter
+    setStatusFilter,
+    isLoading
   } = useProjects(currentUser?.id);
 
   const handleCreateProject = () => {
@@ -38,6 +39,17 @@ export default function DashboardConsultora() {
       setStatusFilter(value as ProjectStatus);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboardContainer}>

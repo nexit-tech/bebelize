@@ -13,7 +13,7 @@ import styles from './atelier.module.css';
 
 export default function DashboardAtelier() {
   const router = useRouter();
-  const { allProjects, updateProject } = useProjects();
+  const { allProjects, updateProject, isLoading } = useProjects();
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPriority, setFilterPriority] = useState('todos');
@@ -29,7 +29,6 @@ export default function DashboardAtelier() {
     message: ''
   });
 
-  // A Fila de Produção do Atelier foca em projetos que precisam de atenção (não cancelados/rascunho)
   const relevantProjects = allProjects.filter(p => 
     p.status !== 'cancelado' && p.status !== 'rascunho'
   );
@@ -52,9 +51,19 @@ export default function DashboardAtelier() {
   };
 
   const handleEditStatus = (projectId: string) => {
-    // Redireciona para a página de detalhes onde a mudança de status é o foco
     router.push(`/atelier/projeto/${projectId}`);
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.dashboardContainer}>
@@ -68,13 +77,11 @@ export default function DashboardAtelier() {
           </div>
         </header>
 
-        {/* Novo Header que exibe estatísticas relevantes para a Fila */}
         <ProductionHeader 
           totalProjects={relevantProjects.length}
           urgentProjects={urgentProjects}
         />
 
-        {/* Novo Componente de Filtro Unificado e Esteticamente Corrigido */}
         <FilterBar
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
@@ -86,7 +93,6 @@ export default function DashboardAtelier() {
 
         <div className={styles.projectsGrid}>
           {filteredProjects.map((project) => (
-            // O ProductionCard já exibe o status e as ações principais para o Atelier
             <ProductionCard
               key={project.id}
               id={project.id}

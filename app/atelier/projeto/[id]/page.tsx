@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { FiArrowLeft, FiDownload, FiCheckCircle } from 'react-icons/fi';
 import { useProjects } from '@/hooks';
 import { formatDate } from '@/utils';
+import { Project, ProjectStatus } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
@@ -14,19 +15,92 @@ import TechnicalSpecs from '@/components/TechnicalSpecs/TechnicalSpecs';
 import StatusSelector from '@/components/StatusSelector/StatusSelector';
 import ProductionNotes from '@/components/ProductionNotes/ProductionNotes';
 import ProjectDetailCard from '@/components/ProjectDetailCard/ProjectDetailCard';
-import { ProjectStatus } from '@/types';
 import styles from './atelier-projeto.module.css';
 
 export default function AtelierProjetoPage() {
   const router = useRouter();
   const params = useParams();
   const { getProjectById, updateProject } = useProjects();
-  const project = getProjectById(params.id as string);
-
-  const [currentStatus, setCurrentStatus] = useState<ProjectStatus>(project?.status || 'rascunho');
-  const [productionNotes, setProductionNotes] = useState(project?.productionNotes || '');
+  
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentStatus, setCurrentStatus] = useState<ProjectStatus>('rascunho');
+  const [productionNotes, setProductionNotes] = useState('');
   const [confirmModal, setConfirmModal] = useState({ isOpen: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+
+  useEffect(() => {
+    loadProject();
+  }, [params.id]);
+
+  const loadProject = async () => {
+    setIsLoading(true);
+    const data = await getProjectById(params.id as string);
+    if (data) {
+      setProject(data);
+      setCurrentStatus(data.status);
+      setProductionNotes(data.productionNotes || '');
+    }
+    setIsLoading(false);
+  };
+
+  const handleDownloadPDF = () => {
+    setSuccessModal({
+      isOpen: true,
+      title: 'Download Iniciado!',
+      message: 'A Planta de Produção está sendo baixada.'
+    });
+  };
+
+  const handleStatusChange = async (newStatus: ProjectStatus) => {
+    if (project) {
+      setCurrentStatus(newStatus);
+      const success = await updateProject(project.id, { status: newStatus });
+      
+      if (success) {
+        setSuccessModal({
+          isOpen: true,
+          title: 'Status Atualizado!',
+          message: `O status do projeto foi alterado para: ${newStatus}.`
+        });
+      }
+    }
+  };
+
+  const handleFinalizeProject = () => {
+    setConfirmModal({ isOpen: true });
+  };
+
+  const confirmFinalize = async () => {
+    if (project) {
+      const success = await updateProject(project.id, { 
+        status: 'finalizado',
+        productionNotes 
+      });
+      
+      setConfirmModal({ isOpen: false });
+      
+      if (success) {
+        setSuccessModal({
+          isOpen: true,
+          title: 'Projeto Finalizado!',
+          message: 'O projeto foi marcado como concluído e está pronto para entrega.'
+        });
+        setTimeout(() => router.push('/dashboard/atelier'), 2000);
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className={styles.pageContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -38,42 +112,6 @@ export default function AtelierProjetoPage() {
       </div>
     );
   }
-
-  const handleDownloadPDF = () => {
-    setSuccessModal({
-      isOpen: true,
-      title: 'Download Iniciado!',
-      message: 'A Planta de Produção está sendo baixada.'
-    });
-  };
-
-  const handleStatusChange = (newStatus: ProjectStatus) => {
-    setCurrentStatus(newStatus);
-    updateProject(project.id, { status: newStatus });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Status Atualizado!',
-      message: `O status do projeto foi alterado para: ${newStatus}.`
-    });
-  };
-
-  const handleFinalizeProject = () => {
-    setConfirmModal({ isOpen: true });
-  };
-
-  const confirmFinalize = () => {
-    updateProject(project.id, { 
-      status: 'finalizado',
-      productionNotes 
-    });
-    setConfirmModal({ isOpen: false });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Projeto Finalizado!',
-      message: 'O projeto foi marcado como concluído e está pronto para entrega.'
-    });
-    setTimeout(() => router.push('/dashboard/atelier'), 2000);
-  };
 
   const clientDetails = [
     { label: 'Cliente', value: project.clientName },
@@ -123,7 +161,6 @@ export default function AtelierProjetoPage() {
           </div>
         </header>
 
-        {/* Informações de Destaque */}
         <div className={styles.card}>
           <ProductionDetails
             projectName={project.name}
@@ -134,7 +171,6 @@ export default function AtelierProjetoPage() {
           />
         </div>
 
-        {/* Detalhes e Status Selector (2 Colunas) */}
         <div className={styles.columnsLayout}>
           <ProjectDetailCard title="Informações do Cliente" items={clientDetails} />
           
@@ -149,7 +185,6 @@ export default function AtelierProjetoPage() {
           </div>
         </div>
 
-        {/* Especificações Técnicas e Checklist (2 Colunas) */}
         <div className={styles.columnsLayout}>
           <div className={styles.card}>
             <TechnicalSpecs specifications={specs} />

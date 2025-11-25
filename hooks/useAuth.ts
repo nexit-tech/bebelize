@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react';
 import { User } from '@/types';
-import { usersData } from '@/data';
+import { authService } from '@/lib/supabase';
 
 export const useAuth = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      const user = usersData.find(u => u.id === userId);
-      setCurrentUser(user || null);
-    }
-    setIsLoading(false);
+    const loadUser = async () => {
+      const userId = localStorage.getItem('userId');
+      if (userId) {
+        const user = await authService.getUserById(userId);
+        setCurrentUser(user);
+      }
+      setIsLoading(false);
+    };
+
+    loadUser();
   }, []);
 
-  const login = (email: string, password: string): User | null => {
-    const user = usersData.find(
-      u => u.email === email && u.password === password && u.active
-    );
+  const login = async (email: string, password: string): Promise<User | null> => {
+    const user = await authService.login(email, password);
     
     if (user) {
       localStorage.setItem('userId', user.id);

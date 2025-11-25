@@ -1,56 +1,71 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User, UserCreateInput, UserRole } from '@/types';
-import { usersData } from '@/data';
+import { usersService } from '@/lib/supabase';
 
 export const useUsers = () => {
-  const [users, setUsers] = useState<User[]>(usersData);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    setIsLoading(true);
+    const data = await usersService.getAll();
+    setUsers(data);
+    setIsLoading(false);
+  };
 
   const getUserById = (id: string): User | undefined => {
     return users.find(u => u.id === id);
   };
 
-  const getUsersByRole = (role: UserRole): User[] => {
-    return users.filter(u => u.role === role && u.active);
+  const getUsersByRole = async (role: UserRole): Promise<User[]> => {
+    return await usersService.getByRole(role);
   };
 
-  const createUser = (input: UserCreateInput): User => {
-    const newUser: User = {
-      id: `user-${Date.now()}`,
-      ...input,
-      createdAt: new Date().toISOString(),
-      active: true
-    };
+  const createUser = async (input: UserCreateInput): Promise<User | null> => {
+    const newUser = await usersService.create(input);
     
-    setUsers(prev => [...prev, newUser]);
+    if (newUser) {
+      setUsers(prev => [...prev, newUser]);
+    }
+    
     return newUser;
   };
 
-  const updateUser = (id: string, updates: Partial<User>) => {
-    setUsers(prev =>
-      prev.map(u => (u.id === id ? { ...u, ...updates } : u))
-    );
+  const updateUser = async (id: string, updates: Partial<User>): Promise<boolean> => {
+    const success = await usersService.update(id, updates);
+    
+    if (success) {
+      setUsers(prev =>
+        prev.map(u => (u.id === id ? { ...u, ...updates } : u))
+      );
+    }
+    
+    return success;
   };
 
-  const deleteUser = (id: string) => {
-    setUsers(prev =>
-      prev.map(u => (u.id === id ? { ...u, active: false } : u))
-    );
-  };
-
-  const activateUser = (id: string) => {
-    setUsers(prev =>
-      prev.map(u => (u.id === id ? { ...u, active: true } : u))
-    );
+  const deleteUser = async (id: string): Promise<boolean> => {
+    const success = await usersService.softDelete(id);
+    
+    if (success) {
+      setUsers(prev => prev.filter(u => u.id !== id));
+    }
+    
+    return success;
   };
 
   return {
-    users: users.filter(u => u.active),
+    users,
     allUsers: users,
+    isLoading,
     getUserById,
     getUsersByRole,
     createUser,
     updateUser,
     deleteUser,
-    activateUser
+    activateUser: async () => true
   };
 };

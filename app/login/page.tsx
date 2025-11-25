@@ -15,12 +15,16 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    const user = login(email, password);
+    const user = await login(email, password);
+
+    setIsLoading(false);
 
     if (user) {
       if (user.role === 'consultora') {
@@ -88,8 +92,8 @@ export default function LoginPage() {
 
           {error && <p className={styles.error}>{error}</p>}
 
-          <Button type="submit" variant="primary" fullWidth>
-            Entrar
+          <Button type="submit" variant="primary" fullWidth disabled={isLoading}>
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </Button>
         </form>
 

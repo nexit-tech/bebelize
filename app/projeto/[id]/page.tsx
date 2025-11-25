@@ -1,25 +1,73 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { FiArrowLeft, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { useProjects } from '@/hooks';
 import { getStatusLabel, formatDate } from '@/utils';
+import { Project } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import StatusTag from '@/components/StatusTag/StatusTag';
 import Button from '@/components/Button/Button';
 import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
-import { useState } from 'react';
 import styles from './projeto.module.css';
 
 export default function ProjetoDetalhesPage() {
   const router = useRouter();
   const params = useParams();
   const { getProjectById, deleteProject } = useProjects();
-  const project = getProjectById(params.id as string);
-
+  
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
+
+  useEffect(() => {
+    loadProject();
+  }, [params.id]);
+
+  const loadProject = async () => {
+    setIsLoading(true);
+    const data = await getProjectById(params.id as string);
+    setProject(data || null);
+    setIsLoading(false);
+  };
+
+  const handleEdit = () => {
+    router.push(`/projeto/editar/${project?.id}`);
+  };
+
+  const handleDelete = () => {
+    setConfirmModal({ isOpen: true });
+  };
+
+  const confirmDelete = async () => {
+    if (project) {
+      const success = await deleteProject(project.id);
+      setConfirmModal({ isOpen: false });
+      
+      if (success) {
+        setSuccessModal({
+          isOpen: true,
+          title: 'Projeto Excluído!',
+          message: 'O projeto foi removido com sucesso.'
+        });
+        setTimeout(() => router.push('/dashboard/consultora'), 2000);
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className={styles.pageContainer}>
+        <Sidebar />
+        <main className={styles.mainContent}>
+          <p>Carregando...</p>
+        </main>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -31,25 +79,6 @@ export default function ProjetoDetalhesPage() {
       </div>
     );
   }
-
-  const handleEdit = () => {
-    router.push(`/projeto/editar/${project.id}`);
-  };
-
-  const handleDelete = () => {
-    setConfirmModal({ isOpen: true });
-  };
-
-  const confirmDelete = () => {
-    deleteProject(project.id);
-    setConfirmModal({ isOpen: false });
-    setSuccessModal({
-      isOpen: true,
-      title: 'Projeto Excluído!',
-      message: 'O projeto foi removido com sucesso.'
-    });
-    setTimeout(() => router.push('/dashboard/consultora'), 2000);
-  };
 
   return (
     <div className={styles.pageContainer}>
