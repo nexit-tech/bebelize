@@ -1,0 +1,83 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.cartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+}
+
+.itemCount {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.12);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 8px;
+}
+
+.list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--color-light-tan-grey);
+  border-radius: 3px;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  border: 2px dashed #E8E8E8;
+  border-radius: 12px;
+  padding: 40px;
+}
+
+.emptyIcon {
+  color: var(--color-light-tan-grey);
+  opacity: 0.4;
+}
+
+.emptyText {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+}
+
+.emptySubtext {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+}

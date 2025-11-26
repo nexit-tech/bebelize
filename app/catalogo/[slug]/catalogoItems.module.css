@@ -1,0 +1,95 @@
+.pageContainer {
+  display: flex;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.mainContent {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--color-white);
+  border: 1px solid var(--color-light-tan-grey);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.backButton:hover {
+  border-color: var(--color-light-tan);
+  background: rgba(166, 142, 128, 0.05);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid var(--color-browning);
+  outline-offset: 2px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.itemsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  border: 2px dashed #E8E8E8;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.emptySubtext {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}

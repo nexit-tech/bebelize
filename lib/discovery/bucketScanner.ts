@@ -23,7 +23,7 @@ export const bucketScanner = {
 
       const collectionFolders = rootFolders
         .filter(folder => 
-          folder.id && 
+          folder.id === null && 
           !IGNORED_FOLDERS.includes(folder.name.toLowerCase())
         );
 

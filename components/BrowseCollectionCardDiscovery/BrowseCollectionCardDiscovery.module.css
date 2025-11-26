@@ -1,0 +1,77 @@
+.card {
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  background-color: #FFFFFF;
+  border: 2px solid #E8E8E8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.card:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.03);
+  transform: translateX(4px);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 2px;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background-color: rgba(166, 142, 128, 0.1);
+  border-radius: 10px;
+  color: var(--color-light-tan);
+  flex-shrink: 0;
+}
+
+.collectionInfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.collectionName {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+}
+
+.collectionDescription {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.itemCount {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-light-tan);
+}
+
+.arrow {
+  color: var(--color-light-tan-grey);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.card:hover .arrow {
+  color: var(--color-light-tan);
+  transform: translateX(4px);
+}
