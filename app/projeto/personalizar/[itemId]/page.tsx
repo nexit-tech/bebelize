@@ -3,20 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { usePatterns } from '@/hooks/usePatterns';
+import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
 import { renderingService } from '@/lib/supabase/rendering.service';
 import LayerCustomizer from '@/components/LayerCustomizer/LayerCustomizer';
 import ProjectRenderer from '@/components/ProjectRenderer/ProjectRenderer';
-import { Layer, LayerCustomization, RenderRequest, RenderResponse } from '@/types/rendering.types';
+import { LayerCustomization, RenderRequest, RenderResponse } from '@/types/rendering.types';
+import type { DiscoveredItem } from '@/lib/discovery/types';
 import styles from './page.module.css';
-
-interface ItemData {
-  id: string;
-  name: string;
-  collection_id: string;
-  layers_metadata?: {
-    layers: Layer[];
-  };
-}
 
 export default function PersonalizarItemPage() {
   const params = useParams();
@@ -24,42 +17,27 @@ export default function PersonalizarItemPage() {
   const itemId = params.itemId as string;
 
   const { patterns, isLoading: patternsLoading } = usePatterns();
+  const { getItemById, isLoading: itemsLoading } = useItemsDiscovery();
   
-  const [item, setItem] = useState<ItemData | null>(null);
-  const [layers, setLayers] = useState<Layer[]>([]);
+  const [item, setItem] = useState<DiscoveredItem | null>(null);
   const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadItem();
-  }, [itemId]);
-
-  const loadItem = async () => {
-    try {
-      setIsLoading(true);
-      const itemData = await renderingService.getItemMetadata(itemId);
+    if (!itemsLoading) {
+      const foundItem = getItemById(itemId);
       
-      if (!itemData) {
+      if (!foundItem) {
         alert('Item não encontrado');
         router.push('/catalogo');
         return;
       }
 
-      setItem(itemData);
-
-      if (itemData.layers_metadata?.layers) {
-        setLayers(itemData.layers_metadata.layers);
-      }
-    } catch (error) {
-      console.error('Error loading item:', error);
-      alert('Erro ao carregar item');
-    } finally {
-      setIsLoading(false);
+      setItem(foundItem);
     }
-  };
+  }, [itemId, itemsLoading, getItemById, router]);
 
   const handleRender = async () => {
     if (customizations.length === 0) {
@@ -73,7 +51,7 @@ export default function PersonalizarItemPage() {
       setIsRendering(true);
       
       const request: RenderRequest = {
-        item_id: itemId,
+        item_id: item.id,
         collection_id: item.collection_id,
         customizations
       };
@@ -100,7 +78,7 @@ export default function PersonalizarItemPage() {
     }
   };
 
-  if (isLoading || patternsLoading) {
+  if (itemsLoading || patternsLoading) {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
@@ -134,7 +112,7 @@ export default function PersonalizarItemPage() {
         <div className={styles.leftPanel}>
           <h2 className={styles.sectionTitle}>Configurar Camadas</h2>
           <LayerCustomizer
-            layers={layers}
+            layers={item.layers}
             patterns={patterns}
             customizations={customizations}
             onCustomizationsChange={setCustomizations}

@@ -54,3 +54,12 @@ export interface CompositionResult {
   height: number;
   format: string;
 }
+
+export interface ItemWithLayers {
+  id: string;
+  collection_id: string;
+  name: string;
+  description: string | null;
+  code: string;
+  layers_metadata: ItemMetadata | null;
+}

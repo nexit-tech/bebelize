@@ -53,7 +53,7 @@ export const renderingService = {
   async getItemMetadata(itemId: string) {
     const { data, error } = await supabase
       .from('items')
-      .select('id, name, layers_metadata')
+      .select('id, name, collection_id, layers_metadata')
       .eq('id', itemId)
       .single();
 

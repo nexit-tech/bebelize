@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { composeImage } from '@/lib/rendering/imageComposer';
 import { renderingService } from '@/lib/supabase/rendering.service';
+import { itemCache } from '@/lib/discovery/itemCache';
 import type { RenderRequest, RenderResponse } from '@/types/rendering.types';
 
 export async function POST(request: NextRequest) {
@@ -17,16 +18,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const itemData = await renderingService.getItemMetadata(item_id);
+    const item = itemCache.findItem(item_id);
 
-    if (!itemData || !itemData.layers_metadata) {
+    if (!item || !item.layers || item.layers.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Item metadata not found' },
+        { success: false, error: 'Item or layers not found' },
         { status: 404 }
       );
     }
 
-    const layers = itemData.layers_metadata.layers;
+    const layers = item.layers.map(layer => ({
+      index: layer.index,
+      file: layer.file,
+      url: layer.url,
+      type: layer.type as 'fixed' | 'pattern',
+      zone: `layer-${layer.index}`,
+      description: `Camada ${layer.index}`
+    }));
 
     const result = await composeImage({
       layers,
