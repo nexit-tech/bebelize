@@ -27,14 +27,19 @@ export interface DiscoveredCollection {
   items: DiscoveredItem[];
 }
 
-export interface BucketStructure {
-  collection_slug: string;
-  items: DiscoveredItem[];
+export interface DiscoveredPattern {
+  id: string;
+  name: string;
+  slug: string;
+  file: string;
+  url: string;
+  thumbnail_url: string;
 }
 
 export interface ScanResult {
   success: boolean;
   collections: DiscoveredCollection[];
+  patterns: DiscoveredPattern[];
   total_items: number;
   total_layers: number;
   scanned_at: string;

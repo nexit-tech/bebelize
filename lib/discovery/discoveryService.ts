@@ -1,78 +1,73 @@
 import { bucketScanner } from './bucketScanner';
 import { itemCache } from './itemCache';
-import type { ScanResult, DiscoveredCollection, DiscoveredItem } from './types';
+import type { 
+  ScanResult, 
+  DiscoveredCollection, 
+  DiscoveredItem,
+  DiscoveredPattern 
+} from './types';
 
 export const discoveryService = {
-  async getCollections(forceRefresh = false): Promise<DiscoveredCollection[]> {
-    if (!forceRefresh) {
+  async initialize(forceRefresh = false): Promise<ScanResult> {
+    if (!forceRefresh && itemCache.isValid()) {
       const cached = itemCache.load();
-      if (cached?.success) {
-        return cached.collections;
-      }
+      if (cached) return cached;
     }
 
-    const scanResult = await bucketScanner.scanAllCollections();
-    
-    if (scanResult.success) {
-      itemCache.save(scanResult);
-    }
+    const result = await bucketScanner.scanAllCollections();
+    itemCache.save(result);
 
-    return scanResult.collections;
-  },
-
-  async getCollectionById(collectionId: string): Promise<DiscoveredCollection | null> {
-    const cached = itemCache.findCollection(collectionId);
-    if (cached) return cached;
-
-    const collections = await this.getCollections(true);
-    return collections.find(c => c.id === collectionId || c.slug === collectionId) || null;
-  },
-
-  async getItemsByCollection(collectionId: string): Promise<DiscoveredItem[]> {
-    const cached = itemCache.findItemsByCollection(collectionId);
-    if (cached.length > 0) return cached;
-
-    const collection = await this.getCollectionById(collectionId);
-    return collection?.items || [];
-  },
-
-  async getItemById(itemId: string): Promise<DiscoveredItem | null> {
-    const cached = itemCache.findItem(itemId);
-    if (cached) return cached;
-
-    await this.getCollections(true);
-    return itemCache.findItem(itemId);
-  },
-
-  async searchItems(query: string): Promise<DiscoveredItem[]> {
-    const collections = await this.getCollections();
-    const allItems = collections.flatMap(c => c.items);
-
-    const lowerQuery = query.toLowerCase();
-
-    return allItems.filter(item => 
-      item.name.toLowerCase().includes(lowerQuery) ||
-      item.slug.toLowerCase().includes(lowerQuery) ||
-      item.description?.toLowerCase().includes(lowerQuery)
-    );
-  },
-
-  async refreshCache(): Promise<ScanResult> {
-    itemCache.clear();
-    const scanResult = await bucketScanner.scanAllCollections();
-    
-    if (scanResult.success) {
-      itemCache.save(scanResult);
-    }
-
-    return scanResult;
+    return result;
   },
 
   getCachedData(): ScanResult | null {
     return itemCache.load();
   },
 
-  isCacheValid(): boolean {
-    return itemCache.isValid();
+  async getCollections(forceRefresh = false): Promise<DiscoveredCollection[]> {
+    const data = await this.initialize(forceRefresh);
+    return data.collections;
+  },
+
+  async getCollection(collectionId: string): Promise<DiscoveredCollection | null> {
+    await this.initialize();
+    return itemCache.findCollection(collectionId);
+  },
+
+  async getItem(itemId: string): Promise<DiscoveredItem | null> {
+    await this.initialize();
+    return itemCache.findItem(itemId);
+  },
+
+  async getItemsByCollection(collectionId: string): Promise<DiscoveredItem[]> {
+    await this.initialize();
+    return itemCache.findItemsByCollection(collectionId);
+  },
+
+  async getAllItems(): Promise<DiscoveredItem[]> {
+    await this.initialize();
+    return itemCache.getAllItems();
+  },
+
+  async getPatterns(): Promise<DiscoveredPattern[]> {
+    await this.initialize();
+    return itemCache.getAllPatterns();
+  },
+
+  async getPattern(patternId: string): Promise<DiscoveredPattern | null> {
+    await this.initialize();
+    return itemCache.findPatternById(patternId);
+  },
+
+  async refreshCache(): Promise<ScanResult> {
+    return this.initialize(true);
+  },
+
+  async refresh(): Promise<ScanResult> {
+    return this.initialize(true);
+  },
+
+  clearCache(): void {
+    itemCache.clear();
   }
 };

@@ -1,14 +1,18 @@
+'use client';
+
 import React from 'react';
 import { FiShoppingCart } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { LayerCustomization } from '@/types/rendering.types';
 import Input from '../Input/Input';
 import CartItemCardDiscovery from '../CartItemCardDiscovery/CartItemCardDiscovery';
 import styles from './ProjetoCarrinhoDiscovery.module.css';
 
-interface CartItem {
+export interface CartItem {
   cartItemId: string;
   item: DiscoveredItem;
-  customizations?: Record<string, string>;
+  customizations?: LayerCustomization[];
+  renderUrl?: string;
 }
 
 interface ProjetoCarrinhoDiscoveryProps {

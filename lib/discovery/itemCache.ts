@@ -1,4 +1,9 @@
-import type { ScanResult, DiscoveredItem, DiscoveredCollection } from './types';
+import type { 
+  ScanResult, 
+  DiscoveredItem, 
+  DiscoveredCollection,
+  DiscoveredPattern 
+} from './types';
 
 const CACHE_KEY = 'bebelize_items_cache';
 const CACHE_DURATION = 1000 * 60 * 30;
@@ -53,11 +58,9 @@ export const itemCache = {
     const cached = this.load();
     if (!cached) return null;
 
-    const collection = cached.collections.find(c => 
+    return cached.collections.find(c => 
       c.id === collectionId || c.slug === collectionId
-    );
-
-    return collection || null;
+    ) || null;
   },
 
   findItem(itemId: string): DiscoveredItem | null {
@@ -87,5 +90,15 @@ export const itemCache = {
     if (!cached) return [];
 
     return cached.collections.flatMap(c => c.items);
+  },
+
+  getAllPatterns(): DiscoveredPattern[] {
+    const cached = this.load();
+    return cached?.patterns || [];
+  },
+
+  findPatternById(patternId: string): DiscoveredPattern | null {
+    const patterns = this.getAllPatterns();
+    return patterns.find(p => p.id === patternId) || null;
   }
 };

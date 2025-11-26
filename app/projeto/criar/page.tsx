@@ -4,17 +4,20 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft, FiSave, FiFileText } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { LayerCustomization } from '@/types/rendering.types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import Button from '@/components/Button/Button';
 import SuccessModal from '@/components/SuccessModal/SuccessModal';
 import CatalogoBrowser from '@/components/CatalogoBrowser/CatalogoBrowser';
 import ProjetoCarrinhoDiscovery from '@/components/ProjetoCarrinhoDiscovery/ProjetoCarrinhoDiscovery';
+import ItemCustomizerModal from '@/components/ItemCustomizerModal/ItemCustomizerModal';
 import styles from './criar.module.css';
 
 interface CartItem {
   cartItemId: string;
   item: DiscoveredItem;
-  customizations?: Record<string, string>;
+  customizations?: LayerCustomization[];
+  renderUrl?: string;
 }
 
 export default function CriarProjeto() {
@@ -28,6 +31,14 @@ export default function CriarProjeto() {
     message: ''
   });
 
+  const [customizerModal, setCustomizerModal] = useState<{
+    isOpen: boolean;
+    item: DiscoveredItem | null;
+  }>({
+    isOpen: false,
+    item: null
+  });
+
   const handleSelectSimpleItem = (item: DiscoveredItem) => {
     const cartItem: CartItem = {
       cartItemId: `cart-${Date.now()}`,
@@ -37,7 +48,31 @@ export default function CriarProjeto() {
   };
 
   const handleCustomizeCompositeItem = (item: DiscoveredItem) => {
-    router.push(`/projeto/personalizar/${item.id}`);
+    setCustomizerModal({
+      isOpen: true,
+      item
+    });
+  };
+
+  const handleCloseCustomizerModal = () => {
+    setCustomizerModal({
+      isOpen: false,
+      item: null
+    });
+  };
+
+  const handleAddCustomizedItem = (
+    item: DiscoveredItem,
+    customizations: LayerCustomization[],
+    renderUrl: string
+  ) => {
+    const cartItem: CartItem = {
+      cartItemId: `cart-${Date.now()}`,
+      item,
+      customizations,
+      renderUrl
+    };
+    setCartItems(prev => [...prev, cartItem]);
   };
 
   const handleRemoveItem = (cartItemId: string) => {
@@ -101,6 +136,13 @@ export default function CriarProjeto() {
           </div>
         </div>
       </main>
+
+      <ItemCustomizerModal
+        isOpen={customizerModal.isOpen}
+        onClose={handleCloseCustomizerModal}
+        item={customizerModal.item}
+        onAddToProject={handleAddCustomizedItem}
+      />
 
       <SuccessModal
         isOpen={successModal.isOpen}
