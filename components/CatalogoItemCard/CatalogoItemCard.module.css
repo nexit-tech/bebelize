@@ -2,90 +2,86 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
-  background: var(--color-white);
-  border: 2px solid #E8E8E8;
-  border-radius: 12px;
+  padding: 10px;
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  gap: 10px;
 }
 
 .card:hover {
   border-color: var(--color-light-tan);
-  background: rgba(166, 142, 128, 0.03);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(166, 142, 128, 0.12);
 }
 
 .card:focus-visible {
-  outline: 2px solid var(--color-browning);
+  outline: 2px solid var(--color-light-tan);
   outline-offset: 2px;
 }
 
-.cardHeader {
+.previewContainer {
   width: 100%;
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 12px;
-}
-
-.badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.badgeComposite {
-  background: rgba(166, 142, 128, 0.15);
-  color: var(--color-browning);
-}
-
-.badgeSimple {
-  background: rgba(200, 200, 200, 0.3);
-  color: var(--color-text-secondary);
-}
-
-.iconContainer {
+  aspect-ratio: 1 / 1;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
-  background: rgba(166, 142, 128, 0.1);
-  border-radius: 12px;
-  color: var(--color-browning);
-  margin-bottom: 16px;
+  background-color: #FAFAFA;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.content {
+.previewImage {
   width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 4px;
 }
+
+.layersContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.layerImage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.iconPlaceholder {
+  color: var(--color-light-tan);
+  opacity: 0.4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
 
 .name {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 6px 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.description {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  margin: 0 0 10px 0;
+  color: var(--color-browning);
+  margin: 0;
+  text-align: center;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.layerInfo {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-light-tan);
+  width: 100%;
 }

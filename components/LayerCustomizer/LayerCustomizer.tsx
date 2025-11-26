@@ -1,6 +1,8 @@
+'use client';
+
 import { useState } from 'react';
+import { FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
 import { Layer, Pattern, LayerCustomization } from '@/types/rendering.types';
-import PatternSelector from '@/components/PatternSelector/PatternSelector';
 import styles from './LayerCustomizer.module.css';
 
 interface LayerCustomizerProps {
@@ -16,74 +18,88 @@ export default function LayerCustomizer({
   customizations,
   onCustomizationsChange
 }: LayerCustomizerProps) {
-  const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
+  // Começa com a primeira camada aberta
+  const [expandedLayer, setExpandedLayer] = useState<number | null>(layers[0]?.index || null);
 
-  const handleSelectPattern = (layerIndex: number, patternId: string) => {
-    const pattern = patterns.find(p => p.id === patternId);
-    if (!pattern) return;
-
-    const newCustomizations = customizations.filter(c => c.layer_index !== layerIndex);
+  const handleSelectPattern = (layerIndex: number, pattern: Pattern) => {
+    // Cria um novo array de customizações
+    const newCustomizations = [...customizations];
     
-    newCustomizations.push({
+    // Verifica se já existe customização para esta camada
+    const existingIndex = newCustomizations.findIndex(c => c.layer_index === layerIndex);
+
+    const newEntry: LayerCustomization = {
       layer_index: layerIndex,
       pattern_id: pattern.id,
       pattern_url: pattern.image_url,
       pattern_name: pattern.name
-    });
+    };
+
+    if (existingIndex >= 0) {
+      // Substitui
+      newCustomizations[existingIndex] = newEntry;
+    } else {
+      // Adiciona
+      newCustomizations.push(newEntry);
+    }
 
     onCustomizationsChange(newCustomizations);
   };
 
-  const toggleLayer = (layerIndex: number) => {
-    setExpandedLayer(expandedLayer === layerIndex ? null : layerIndex);
+  const toggleLayer = (index: number) => {
+    setExpandedLayer(expandedLayer === index ? null : index);
   };
 
-  const getSelectedPattern = (layerIndex: number): string | null => {
-    const customization = customizations.find(c => c.layer_index === layerIndex);
-    return customization?.pattern_id || null;
+  const getSelectedPatternName = (layerIndex: number) => {
+    const custom = customizations.find(c => c.layer_index === layerIndex);
+    return custom ? custom.pattern_name : 'Nenhuma textura';
   };
 
-  const getSelectedPatternName = (layerIndex: number): string => {
-    const customization = customizations.find(c => c.layer_index === layerIndex);
-    return customization?.pattern_name || 'Nenhuma textura selecionada';
+  const getSelectedPatternId = (layerIndex: number) => {
+    return customizations.find(c => c.layer_index === layerIndex)?.pattern_id;
   };
 
   return (
     <div className={styles.container}>
-      {layers.map((layer) => (
-        <div key={layer.index} className={styles.layerCard}>
-          <button
-            type="button"
-            className={styles.layerHeader}
-            onClick={() => toggleLayer(layer.index)}
-          >
-            <div className={styles.layerInfo}>
-              <span className={styles.layerNumber}>Camada {layer.index}</span>
-              <span className={styles.layerDescription}>
-                {layer.description || layer.zone || 'Sem descrição'}
-              </span>
-            </div>
-            <div className={styles.layerSelection}>
-              <span className={styles.selectedPatternName}>
-                {getSelectedPatternName(layer.index)}
-              </span>
-              <span className={styles.expandIcon}>
-                {expandedLayer === layer.index ? '▼' : '▶'}
-              </span>
-            </div>
-          </button>
+      {layers.sort((a, b) => a.index - b.index).map((layer) => {
+        const isExpanded = expandedLayer === layer.index;
+        const selectedId = getSelectedPatternId(layer.index);
 
-          {expandedLayer === layer.index && (
-            <div className={styles.layerContent}>
-              <PatternSelector
-                patterns={patterns}
-                selectedPatternId={getSelectedPattern(layer.index)}
-                onSelectPattern={(patternId) => handleSelectPattern(layer.index, patternId)}
-              />
-            </div>
-          )}
-        </div>
-      ))}
+        return (
+          <div key={layer.index} className={`${styles.layerGroup} ${isExpanded ? styles.active : ''}`}>
+            <button 
+              className={styles.accordionHeader}
+              onClick={() => toggleLayer(layer.index)}
+            >
+              <div className={styles.headerInfo}>
+                <span className={styles.layerTitle}>Camada {layer.index}</span>
+                <span className={styles.layerSelection}>{getSelectedPatternName(layer.index)}</span>
+              </div>
+              {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
+            </button>
+
+            {isExpanded && (
+              <div className={styles.patternGrid}>
+                {patterns.map((pattern) => (
+                  <button
+                    key={pattern.id}
+                    className={`${styles.patternOption} ${selectedId === pattern.id ? styles.selected : ''}`}
+                    onClick={() => handleSelectPattern(layer.index, pattern)}
+                    title={pattern.name}
+                  >
+                    <img src={pattern.image_url} alt={pattern.name} className={styles.patternThumb} />
+                    {selectedId === pattern.id && (
+                      <div className={styles.checkOverlay}>
+                        <FiCheck color="#FFF" size={16} />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

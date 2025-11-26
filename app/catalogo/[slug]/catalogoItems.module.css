@@ -1,34 +1,37 @@
 .pageContainer {
   display: flex;
   min-height: 100vh;
-  background: var(--color-background);
+  background-color: var(--color-pearl);
 }
 
 .mainContent {
   flex: 1;
+  margin-left: 260px;
   padding: 32px 40px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .header {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
 }
 
 .backButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: var(--color-white);
+  width: 40px;
+  height: 40px;
+  background: #FFFFFF;
   border: 1px solid var(--color-light-tan-grey);
-  border-radius: 10px;
-  color: var(--color-text-primary);
+  border-radius: 8px;
+  color: var(--color-browning);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
@@ -37,28 +40,24 @@
   background: rgba(166, 142, 128, 0.05);
 }
 
-.backButton:focus-visible {
-  outline: 2px solid var(--color-browning);
-  outline-offset: 2px;
-}
-
 .title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0 0 4px 0;
+  color: var(--color-browning);
+  margin: 0 0 2px 0;
 }
 
 .subtitle {
-  font-size: 15px;
-  color: var(--color-text-secondary);
+  font-size: 14px;
+  color: var(--color-light-tan-grey);
   margin: 0;
 }
 
 .itemsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
 }
 
 .loading {
@@ -66,8 +65,8 @@
   align-items: center;
   justify-content: center;
   height: 300px;
-  font-size: 16px;
-  color: var(--color-text-secondary);
+  font-size: 15px;
+  color: var(--color-light-tan-grey);
 }
 
 .emptyState {
@@ -75,21 +74,38 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 40px;
+  padding: 60px 24px;
   border: 2px dashed #E8E8E8;
   border-radius: 12px;
   text-align: center;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .emptyText {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
+  color: var(--color-browning);
+  margin: 0 0 4px 0;
 }
 
 .emptySubtext {
-  font-size: 14px;
-  color: var(--color-text-secondary);
+  font-size: 13px;
+  color: var(--color-light-tan-grey);
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    margin-left: 80px;
+    padding: 24px 16px;
+  }
+
+  .itemsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .title {
+    font-size: 20px;
+  }
 }

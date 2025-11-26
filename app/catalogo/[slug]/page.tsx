@@ -1,6 +1,5 @@
 'use client';
 
-import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useCollections } from '@/hooks/useCollections';
@@ -11,11 +10,11 @@ import CatalogoItemCard from '@/components/CatalogoItemCard/CatalogoItemCard';
 import styles from './catalogoItems.module.css';
 
 interface PageProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string };
 }
 
 export default function CatalogoItemsPage({ params }: PageProps) {
-  const { slug } = use(params);
+  const { slug } = params;
   const router = useRouter();
   const { collections } = useCollections();
   const { items, isLoading } = useItems(slug);

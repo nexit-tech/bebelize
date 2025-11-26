@@ -1,173 +1,146 @@
-import React, { useState, useEffect } from 'react';
-import { FiX, FiPackage } from 'react-icons/fi';
-import { Item } from '@/types';
-import Button from '../Button/Button';
-import Input from '../Input/Input';
-import FabricSelector from '../FabricSelector/FabricSelector';
-import ColorSwatch from '../ColorSwatch/ColorSwatch';
-import styles from './ItemCustomizerModal.module.css';
+'use client';
 
-interface Customization {
-  fabricId: string;
-  primaryColorId: string;
-  secondaryColorId: string;
-  embroideryName: string;
-  embroideryStyle: string;
-}
+import React, { useState, useEffect } from 'react';
+import { FiX } from 'react-icons/fi';
+import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { LayerCustomization, RenderRequest, RenderResponse } from '@/types/rendering.types';
+import { usePatterns } from '@/hooks/usePatterns';
+import Button from '../Button/Button';
+import LayerCustomizer from '../LayerCustomizer/LayerCustomizer';
+import ProjectRenderer from '../ProjectRenderer/ProjectRenderer';
+import styles from './ItemCustomizerModal.module.css';
 
 interface ItemCustomizerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  item: Item | null;
-  onSave: (customizedItem: Item & Customization) => void;
+  item: DiscoveredItem | null;
+  onAddToProject: (item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string) => void;
 }
-
-const MOCK_FABRICS = [
-  { id: 'algodao', name: 'Algodão', texture: '/textures/cotton.jpg' },
-  { id: 'linho', name: 'Linho', texture: '/textures/linen.jpg' },
-  { id: 'misto', name: 'Misto', texture: '/textures/mixed.jpg' },
-];
-
-const MOCK_COLORS = [
-  { id: 'bege', color: '#D4C5B9', label: 'Bege' },
-  { id: 'rosa', color: '#E8C4C4', label: 'Rosa' },
-  { id: 'azul', color: '#B0C4DE', label: 'Azul' },
-  { id: 'verde', color: '#C8D5B9', label: 'Verde' },
-  { id: 'branco', color: '#F8F8F8', label: 'Branco' },
-];
-
-const MOCK_EMBROIDERY_STYLES = [
-  { value: 'script', label: 'Script (Cursiva)' },
-  { value: 'block', label: 'Block (Maiúscula)' },
-  { value: 'elegant', label: 'Elegant (Serifada)' },
-];
 
 export default function ItemCustomizerModal({
   isOpen,
   onClose,
   item,
-  onSave,
+  onAddToProject
 }: ItemCustomizerModalProps) {
-  const [customization, setCustomization] = useState<Customization>({
-    fabricId: MOCK_FABRICS[0].id,
-    primaryColorId: MOCK_COLORS[0].id,
-    secondaryColorId: MOCK_COLORS[1].id,
-    embroideryName: '',
-    embroideryStyle: MOCK_EMBROIDERY_STYLES[0].value,
-  });
+  const { patterns } = usePatterns();
+  
+  const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isRendering, setIsRendering] = useState(false);
+  const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
 
+  // Resetar estado quando o modal abre com um novo item
   useEffect(() => {
-    if (isOpen && item) {
-      setCustomization({
-        fabricId: MOCK_FABRICS[0].id,
-        primaryColorId: MOCK_COLORS[0].id,
-        secondaryColorId: MOCK_COLORS[1].id,
-        embroideryName: '',
-        embroideryStyle: MOCK_EMBROIDERY_STYLES[0].value,
-      });
+    if (isOpen) {
+      setCustomizations([]);
+      setPreviewUrl(null);
+      setRenderTime(undefined);
     }
   }, [isOpen, item]);
 
-  const handleSave = () => {
-    if (item) {
-      onSave({ ...item, ...customization });
+  const handleCustomizationChange = (newCustomizations: LayerCustomization[]) => {
+    setCustomizations(newCustomizations);
+    // Opcional: Limpar preview anterior quando mudar algo, para forçar novo render
+    // setPreviewUrl(null); 
+  };
+
+  const handleRender = async () => {
+    if (!item || customizations.length === 0) return;
+
+    try {
+      setIsRendering(true);
+      
+      const request: RenderRequest = {
+        item_id: item.id,
+        collection_id: item.collection_id,
+        customizations
+      };
+
+      const response = await fetch('/api/render', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request)
+      });
+
+      const data: RenderResponse = await response.json();
+
+      if (data.success) {
+        setPreviewUrl(data.preview_url);
+        setRenderTime(data.render_time_ms);
+      } else {
+        alert('Erro ao gerar renderização: ' + (data.error || 'Erro desconhecido'));
+      }
+    } catch (error) {
+      console.error('Render error:', error);
+      alert('Falha na comunicação com o servidor de renderização');
+    } finally {
+      setIsRendering(false);
     }
-    onClose();
+  };
+
+  const handleConfirm = () => {
+    if (item && previewUrl) {
+      onAddToProject(item, customizations, previewUrl);
+      onClose();
+    }
   };
 
   if (!isOpen || !item) return null;
-  
+
   return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
         
+        {/* Header */}
         <div className={styles.header}>
-          <h2 className={styles.title}>Personalizar Item: {item.name}</h2>
-          <button className={styles.closeButton} onClick={onClose} aria-label="Fechar modal">
+          <div>
+            <h2 className={styles.title}>Personalizar: {item.name}</h2>
+            <span style={{ fontSize: '13px', color: '#A69A94' }}>
+              Configure as camadas à esquerda e gere o preview
+            </span>
+          </div>
+          <button className={styles.closeButton} onClick={onClose} title="Fechar">
             <FiX size={24} />
           </button>
         </div>
 
+        {/* Body: Grid de 2 Colunas */}
         <div className={styles.body}>
           
-          <div className={styles.customizationPanel}>
-            
-            <FabricSelector
-              fabrics={MOCK_FABRICS}
-              selectedFabric={customization.fabricId}
-              onSelect={(id) => setCustomization(prev => ({ ...prev, fabricId: id }))}
+          {/* Esquerda: Controles */}
+          <div className={styles.layersPanel}>
+            <h3 className={styles.panelTitle}>Configurar Camadas</h3>
+            <LayerCustomizer
+              layers={item.layers || []}
+              patterns={patterns}
+              customizations={customizations}
+              onCustomizationsChange={handleCustomizationChange}
             />
-
-            <section>
-              <h3 className={styles.sectionTitle}>Cores</h3>
-              <div className={styles.colorGrid}>
-                {MOCK_COLORS.map((color) => (
-                  <ColorSwatch
-                    key={color.id}
-                    color={color.color}
-                    label={color.label}
-                    selected={customization.primaryColorId === color.id}
-                    onClick={() => setCustomization(prev => ({ ...prev, primaryColorId: color.id }))}
-                  />
-                ))}
-              </div>
-            </section>
-            
-            <section>
-              <h3 className={styles.sectionTitle}>Bordado</h3>
-              <div className={styles.embroideryGroup}>
-                <Input
-                  type="text"
-                  id="embroideryName"
-                  label="Nome para Bordar"
-                  placeholder="Ex: Maria Alice"
-                  value={customization.embroideryName}
-                  onChange={(e) => setCustomization(prev => ({ ...prev, embroideryName: e.target.value }))}
-                />
-                
-                <div className={styles.selectContainer}>
-                  <label htmlFor="embroideryStyle" className={styles.selectLabel}>
-                    Estilo do Bordado
-                  </label>
-                  <select
-                    id="embroideryStyle"
-                    className={styles.select}
-                    value={customization.embroideryStyle}
-                    onChange={(e) => setCustomization(prev => ({ ...prev, embroideryStyle: e.target.value }))}
-                  >
-                    {MOCK_EMBROIDERY_STYLES.map((style) => (
-                      <option key={style.value} value={style.value}>
-                        {style.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </section>
           </div>
 
-          <div className={styles.visualContainer}>
-            <h3 className={styles.sectionTitle}>Visualização</h3>
-            <div className={styles.visualDisplay}>
-                <FiPackage size={48} color={MOCK_COLORS.find(c => c.id === customization.primaryColorId)?.color || '#ccc'} />
-                <h3 className={styles.visualTitle}>{item.name}</h3>
-                <p className={styles.visualSubtitle}>{item.description}</p>
-                {customization.embroideryName && (
-                  <span className={styles.embroideryPreview}>
-                    {customization.embroideryName}
-                  </span>
-                )}
-            </div>
+          {/* Direita: Preview */}
+          <div className={styles.previewPanel}>
+            <ProjectRenderer
+              previewUrl={previewUrl}
+              isRendering={isRendering}
+              onRender={handleRender}
+              renderTime={renderTime}
+            />
           </div>
-
         </div>
 
-        <div className={styles.actions}>
+        {/* Footer: Ações */}
+        <div className={styles.footer}>
           <Button variant="secondary" onClick={onClose}>
             Cancelar
           </Button>
-          <Button variant="primary" onClick={handleSave}>
-            Adicionar ao Pedido
+          <Button 
+            variant="primary" 
+            onClick={handleConfirm}
+            disabled={!previewUrl || isRendering}
+          >
+            Adicionar ao Projeto
           </Button>
         </div>
 

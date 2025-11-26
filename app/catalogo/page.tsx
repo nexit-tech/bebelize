@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiPlus } from 'react-icons/fi';
+import { FiRefreshCw } from 'react-icons/fi';
 import { useCollections } from '@/hooks/useCollections';
 import type { DiscoveredCollection } from '@/lib/discovery/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
@@ -29,8 +29,8 @@ export default function CatalogoPage() {
     await refresh(true);
     setSuccessModal({
       isOpen: true,
-      title: 'Catálogo Atualizado!',
-      message: 'As coleções foram sincronizadas com o storage.'
+      title: 'Sincronização Concluída',
+      message: 'O catálogo foi atualizado com os itens mais recentes do storage.'
     });
   };
 
@@ -43,7 +43,7 @@ export default function CatalogoPage() {
       <div className={styles.pageContainer}>
         <Sidebar />
         <main className={styles.mainContent}>
-          <div className={styles.loading}>Carregando coleções...</div>
+          <div className={styles.loading}>Carregando catálogo...</div>
         </main>
       </div>
     );
@@ -54,14 +54,37 @@ export default function CatalogoPage() {
       <Sidebar />
 
       <main className={styles.mainContent}>
-        <Header onRefresh={handleRefresh} />
+        <header className={styles.header}>
+          <div>
+            <h1 className={styles.title}>Catálogo de Coleções</h1>
+            <p className={styles.subtitle}>
+              Visualize as coleções e itens disponíveis no storage
+            </p>
+          </div>
+          <Button variant="secondary" onClick={handleRefresh}>
+            <FiRefreshCw size={18} />
+            Sincronizar
+          </Button>
+        </header>
 
-        <CollectionsGrid
-          collections={collections}
-          onCollectionClick={handleCollectionClick}
-        />
+        <div className={styles.collectionsGrid}>
+          {collections.map((collection) => (
+            <CatalogoCollectionCard
+              key={collection.id}
+              collection={collection}
+              onClick={() => handleCollectionClick(collection)}
+            />
+          ))}
+        </div>
 
-        {collections.length === 0 && <EmptyState />}
+        {collections.length === 0 && (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyText}>Nenhuma coleção encontrada</p>
+            <p className={styles.emptySubtext}>
+              Verifique se existem pastas no bucket do storage
+            </p>
+          </div>
+        )}
       </main>
 
       <SuccessModal
@@ -70,57 +93,6 @@ export default function CatalogoPage() {
         title={successModal.title}
         message={successModal.message}
       />
-    </div>
-  );
-}
-
-interface HeaderProps {
-  onRefresh: () => void;
-}
-
-function Header({ onRefresh }: HeaderProps) {
-  return (
-    <header className={styles.header}>
-      <div>
-        <h1 className={styles.title}>Catálogo de Coleções</h1>
-        <p className={styles.subtitle}>
-          Visualize as coleções e itens disponíveis no storage
-        </p>
-      </div>
-      <Button variant="secondary" onClick={onRefresh}>
-        <FiPlus size={20} />
-        Sincronizar
-      </Button>
-    </header>
-  );
-}
-
-interface CollectionsGridProps {
-  collections: DiscoveredCollection[];
-  onCollectionClick: (collection: DiscoveredCollection) => void;
-}
-
-function CollectionsGrid({ collections, onCollectionClick }: CollectionsGridProps) {
-  return (
-    <div className={styles.collectionsGrid}>
-      {collections.map((collection) => (
-        <CatalogoCollectionCard
-          key={collection.id}
-          collection={collection}
-          onClick={() => onCollectionClick(collection)}
-        />
-      ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className={styles.emptyState}>
-      <p className={styles.emptyText}>Nenhuma coleção encontrada</p>
-      <p className={styles.emptySubtext}>
-        Verifique se existem pastas no bucket do storage
-      </p>
     </div>
   );
 }
