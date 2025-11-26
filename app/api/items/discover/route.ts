@@ -1,46 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { bucketScanner } from '@/lib/discovery/bucketScanner';
-import type { ScanResult } from '@/lib/discovery/types';
-
-const KNOWN_COLLECTIONS = [
-  'aviador',
-  'campo-chique',
-  'cavalinho-rose',
-  'cavalinho',
-  'garden',
-  'lavanda',
-  'renda-real',
-  'realeza-azul',
-  'safari-baby',
-  'xadrez-malva'
-];
+import { discoveryService } from '@/lib/discovery/discoveryService';
 
 export async function GET(request: NextRequest) {
-  const startTime = Date.now();
-
   try {
-    const collections = await bucketScanner.scanAllCollections(KNOWN_COLLECTIONS);
+    const { searchParams } = new URL(request.url);
+    const forceRefresh = searchParams.get('refresh') === 'true';
 
-    const totalItems = collections.reduce((sum, col) => sum + col.items.length, 0);
+    const collections = await discoveryService.getCollections(forceRefresh);
+
+    const totalItems = collections.reduce((sum, col) => sum + col.item_count, 0);
     const totalLayers = collections.reduce(
-      (sum, col) => sum + col.items.reduce((itemSum, item) => itemSum + item.layers.length, 0),
+      (sum, col) => sum + col.items.reduce(
+        (itemSum, item) => itemSum + item.layers.length,
+        0
+      ),
       0
     );
 
-    const result: ScanResult = {
-      success: true,
-      collections,
-      total_items: totalItems,
-      total_layers: totalLayers,
-      scanned_at: new Date().toISOString()
-    };
-
-    return NextResponse.json(result, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
+    return NextResponse.json(
+      {
+        success: true,
+        collections,
+        total_items: totalItems,
+        total_layers: totalLayers,
+        scanned_at: new Date().toISOString()
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600'
+        }
       }
-    });
-
+    );
   } catch (error) {
     console.error('Discovery error:', error);
 
@@ -61,25 +51,24 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { collection_slug } = body;
+    const { collection_id } = body;
 
-    if (!collection_slug) {
+    if (!collection_id) {
       return NextResponse.json(
-        { success: false, error: 'collection_slug is required' },
+        { success: false, error: 'collection_id is required' },
         { status: 400 }
       );
     }
 
-    const items = await bucketScanner.scanCollection(collection_slug);
+    const items = await discoveryService.getItemsByCollection(collection_id);
 
     return NextResponse.json({
       success: true,
-      collection_slug,
+      collection_id,
       items,
       total_items: items.length,
       scanned_at: new Date().toISOString()
     });
-
   } catch (error) {
     console.error('Collection scan error:', error);
 

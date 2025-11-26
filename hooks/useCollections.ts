@@ -1,68 +1,66 @@
 import { useState, useEffect } from 'react';
-import { Collection, CollectionCreateInput } from '@/types';
-import { collectionsService } from '@/lib/supabase';
+import { discoveryService } from '@/lib/discovery/discoveryService';
+import type { DiscoveredCollection } from '@/lib/discovery/types';
 
 export const useCollections = () => {
-  const [collections, setCollections] = useState<Collection[]>([]);
+  const [collections, setCollections] = useState<DiscoveredCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadCollections();
   }, []);
 
   const loadCollections = async () => {
-    setIsLoading(true);
-    const data = await collectionsService.getAll();
-    setCollections(data);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await discoveryService.getCollections();
+      setCollections(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar coleções');
+      console.error('Error loading collections:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const getCollectionById = async (id: string): Promise<Collection | null> => {
-    const cached = collections.find(c => c.id === id);
+  const getCollectionById = async (id: string): Promise<DiscoveredCollection | null> => {
+    const cached = collections.find(c => c.id === id || c.slug === id);
     if (cached) return cached;
     
-    return await collectionsService.getById(id);
+    try {
+      return await discoveryService.getCollectionById(id);
+    } catch (err) {
+      console.error('Error fetching collection:', err);
+      return null;
+    }
   };
 
-  const createCollection = async (input: CollectionCreateInput): Promise<Collection | null> => {
-    const newCollection = await collectionsService.create(input);
-    
-    if (newCollection) {
-      setCollections(prev => [...prev, newCollection]);
+  const refresh = async (forceRefresh = false) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      if (forceRefresh) {
+        await discoveryService.refreshCache();
+      }
+      
+      const data = await discoveryService.getCollections(forceRefresh);
+      setCollections(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar coleções');
+      console.error('Error refreshing collections:', err);
+    } finally {
+      setIsLoading(false);
     }
-    
-    return newCollection;
-  };
-
-  const updateCollection = async (id: string, updates: Partial<Collection>): Promise<boolean> => {
-    const success = await collectionsService.update(id, updates);
-    
-    if (success) {
-      setCollections(prev =>
-        prev.map(c => (c.id === id ? { ...c, ...updates } : c))
-      );
-    }
-    
-    return success;
-  };
-
-  const deleteCollection = async (id: string): Promise<boolean> => {
-    const success = await collectionsService.delete(id);
-    
-    if (success) {
-      setCollections(prev => prev.filter(c => c.id !== id));
-    }
-    
-    return success;
   };
 
   return {
     collections,
     isLoading,
+    error,
     getCollectionById,
-    createCollection,
-    updateCollection,
-    deleteCollection,
-    refresh: loadCollections
+    refresh
   };
 };

@@ -1,4 +1,4 @@
-import type { DiscoveredItem, ScanResult } from './types';
+import type { ScanResult, DiscoveredItem, DiscoveredCollection } from './types';
 
 const CACHE_KEY = 'bebelize_items_cache';
 const CACHE_DURATION = 1000 * 60 * 30;
@@ -49,6 +49,17 @@ export const itemCache = {
     return cached !== null;
   },
 
+  findCollection(collectionId: string): DiscoveredCollection | null {
+    const cached = this.load();
+    if (!cached) return null;
+
+    const collection = cached.collections.find(c => 
+      c.id === collectionId || c.slug === collectionId
+    );
+
+    return collection || null;
+  },
+
   findItem(itemId: string): DiscoveredItem | null {
     const cached = this.load();
     if (!cached) return null;
@@ -61,11 +72,20 @@ export const itemCache = {
     return null;
   },
 
-  findItemsByCollection(collectionSlug: string): DiscoveredItem[] {
+  findItemsByCollection(collectionId: string): DiscoveredItem[] {
+    const collection = this.findCollection(collectionId);
+    return collection?.items || [];
+  },
+
+  getAllCollections(): DiscoveredCollection[] {
+    const cached = this.load();
+    return cached?.collections || [];
+  },
+
+  getAllItems(): DiscoveredItem[] {
     const cached = this.load();
     if (!cached) return [];
 
-    const collection = cached.collections.find(c => c.collection_slug === collectionSlug);
-    return collection?.items || [];
+    return cached.collections.flatMap(c => c.items);
   }
 };

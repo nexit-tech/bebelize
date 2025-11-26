@@ -1,140 +1,99 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase/client';
+import { discoveryService } from '@/lib/discovery/discoveryService';
+import type { DiscoveredItem } from '@/lib/discovery/types';
 
-interface Item {
-  id: string;
-  collection_id: string;
-  name: string;
-  description: string | null;
-  code: string;
-  final_image_url: string | null;
-  layers_metadata: any;
-  created_at: string;
-  updated_at: string;
-}
-
-export function useItems(collectionId?: string) {
-  const [items, setItems] = useState<Item[]>([]);
+export const useItems = (collectionId?: string) => {
+  const [items, setItems] = useState<DiscoveredItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadItems();
+    if (collectionId) {
+      loadItems(collectionId);
+    } else {
+      loadAllItems();
+    }
   }, [collectionId]);
 
-  const loadItems = async () => {
+  const loadItems = async (colId: string) => {
     try {
       setIsLoading(true);
-      
-      let query = supabase
-        .from('items')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (collectionId) {
-        query = query.eq('collection_id', collectionId);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      setItems(data || []);
-    } catch (error) {
-      console.error('Error loading items:', error);
+      setError(null);
+      const data = await discoveryService.getItemsByCollection(colId);
+      setItems(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar items');
+      console.error('Error loading items:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getItemById = async (id: string) => {
-    const cached = items.find(item => item.id === id);
+  const loadAllItems = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const collections = await discoveryService.getCollections();
+      const allItems = collections.flatMap(c => c.items);
+      setItems(allItems);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao carregar items');
+      console.error('Error loading all items:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getItemById = async (id: string): Promise<DiscoveredItem | null> => {
+    const cached = items.find(i => i.id === id);
     if (cached) return cached;
 
     try {
-      const { data, error } = await supabase
-        .from('items')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setItems(prev => [...prev, data]);
-      }
-      return data;
-    } catch (error) {
-      console.error('Error fetching item:', error);
+      return await discoveryService.getItemById(id);
+    } catch (err) {
+      console.error('Error fetching item:', err);
       return null;
     }
   };
 
-  const createItem = async (item: Partial<Item>) => {
+  const searchItems = async (query: string) => {
     try {
-      const { data, error } = await supabase
-        .from('items')
-        .insert(item)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setItems(prev => [...prev, data]);
-      }
-      return data;
-    } catch (error) {
-      console.error('Error creating item:', error);
-      throw error;
+      setIsLoading(true);
+      setError(null);
+      const results = await discoveryService.searchItems(query);
+      setItems(results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro na busca');
+      console.error('Error searching items:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const updateItem = async (id: string, updates: Partial<Item>) => {
-    try {
-      const { data, error } = await supabase
-        .from('items')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      if (data) {
-        setItems(prev =>
-          prev.map(item => (item.id === id ? data : item))
-        );
-      }
-      return data;
-    } catch (error) {
-      console.error('Error updating item:', error);
-      throw error;
+  const refresh = async () => {
+    if (collectionId) {
+      await loadItems(collectionId);
+    } else {
+      await loadAllItems();
     }
   };
 
-  const deleteItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('items')
-        .delete()
-        .eq('id', id);
+  const getSimpleItems = () => {
+    return items.filter(item => item.item_type === 'simple');
+  };
 
-      if (error) throw error;
-
-      setItems(prev => prev.filter(item => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting item:', error);
-      throw error;
-    }
+  const getCompositeItems = () => {
+    return items.filter(item => item.item_type === 'composite');
   };
 
   return {
     items,
     isLoading,
+    error,
     getItemById,
-    createItem,
-    updateItem,
-    deleteItem,
-    refresh: loadItems
+    searchItems,
+    refresh,
+    getSimpleItems,
+    getCompositeItems
   };
-}
+};
