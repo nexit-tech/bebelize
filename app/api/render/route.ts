@@ -1,77 +1,72 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { composeImage } from '@/lib/rendering/imageComposer';
 import { renderingService } from '@/lib/supabase/rendering.service';
-import { itemCache } from '@/lib/discovery/itemCache';
-import type { RenderRequest, RenderResponse } from '@/types/rendering.types';
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    const body: RenderRequest = await request.json();
-    const { item_id, collection_id, customizations } = body;
+    const body = await request.json();
+    const { item_id, customizations, layers } = body;
 
-    if (!item_id || !customizations || customizations.length === 0) {
+    if (!item_id || !layers) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields' },
+        { success: false, error: 'Dados incompletos (item_id ou layers faltando)' },
         { status: 400 }
       );
     }
 
-    const item = itemCache.findItem(item_id);
+    console.log(`[Render] Iniciando render para Item: ${item_id}`);
+    console.log(`[Render] Camadas recebidas: ${layers.length}`);
+    console.log(`[Render] Customizações: ${customizations?.length || 0}`);
 
-    if (!item || !item.layers || item.layers.length === 0) {
+    const layersToRender = layers.map((layer: any) => ({
+      index: layer.index,
+      url: layer.url,
+      type: 'pattern',
+      zone: `layer-${layer.index}`
+    }));
+
+    let result;
+    try {
+      result = await composeImage({
+        layers: layersToRender,
+        customizations: customizations || [],
+        width: 1000, 
+        height: 1000
+      });
+    } catch (composeError: any) {
+      console.error('[Render] Erro FATAL no Sharp/ImageComposer:', composeError);
       return NextResponse.json(
-        { success: false, error: 'Item or layers not found' },
-        { status: 404 }
+        { success: false, error: `Falha ao processar imagem: ${composeError.message}` },
+        { status: 500 }
       );
     }
 
-    const layers = item.layers.map(layer => ({
-      index: layer.index,
-      file: layer.file,
-      url: layer.url,
-      type: layer.type as 'fixed' | 'pattern',
-      zone: `layer-${layer.index}`,
-      description: `Camada ${layer.index}`
-    }));
-
-    const result = await composeImage({
-      layers,
-      customizations,
-      width: 2000,
-      height: 2000
-    });
-
     const timestamp = Date.now();
     const previewPath = `projects/renders/${item_id}-preview-${timestamp}.png`;
-    const technicalPath = `projects/renders/${item_id}-technical-${timestamp}.png`;
+    
+    let previewUrl;
+    try {
+      previewUrl = await renderingService.uploadImage(result.buffer, previewPath);
+    } catch (uploadError: any) {
+      console.error('[Render] Erro ao fazer upload para Supabase:', uploadError);
+      return NextResponse.json(
+        { success: false, error: 'Erro ao salvar a imagem gerada no storage' },
+        { status: 500 }
+      );
+    }
 
-    const previewUrl = await renderingService.uploadImage(result.buffer, previewPath);
-    const technicalUrl = await renderingService.uploadImage(result.buffer, technicalPath);
-
-    const renderTime = Date.now() - startTime;
-
-    const response: RenderResponse = {
+    return NextResponse.json({
       success: true,
       preview_url: previewUrl,
-      technical_plant_url: technicalUrl,
-      render_time_ms: renderTime
-    };
+      render_time_ms: Date.now() - startTime
+    });
 
-    return NextResponse.json(response);
-
-  } catch (error) {
-    console.error('Render error:', error);
-    
+  } catch (error: any) {
+    console.error('[Render] Erro desconhecido:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error',
-        preview_url: '',
-        technical_plant_url: '',
-        render_time_ms: Date.now() - startTime
-      },
+      { success: false, error: error.message || 'Erro interno do servidor' },
       { status: 500 }
     );
   }

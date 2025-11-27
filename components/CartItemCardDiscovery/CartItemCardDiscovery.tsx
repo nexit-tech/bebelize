@@ -1,12 +1,14 @@
 import React from 'react';
 import { FiTrash2, FiLayers, FiImage } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { LayerCustomization } from '@/types/rendering.types';
 import styles from './CartItemCardDiscovery.module.css';
 
 interface CartItem {
   cartItemId: string;
   item: DiscoveredItem;
-  customizations?: Record<string, string>;
+  customizations?: LayerCustomization[];
+  renderUrl?: string;
 }
 
 interface CartItemCardDiscoveryProps {
@@ -18,8 +20,9 @@ export default function CartItemCardDiscovery({
   cartItem,
   onRemove
 }: CartItemCardDiscoveryProps) {
-  const { item } = cartItem;
+  const { item, customizations } = cartItem;
   const isComposite = item.item_type === 'composite';
+  const customizationCount = customizations?.length || 0;
 
   return (
     <div className={styles.card}>
@@ -33,9 +36,16 @@ export default function CartItemCardDiscovery({
 
       <div className={styles.itemInfo}>
         <h5 className={styles.itemName}>{item.name}</h5>
-        <span className={styles.itemType}>
-          {isComposite ? 'Personalizável' : 'Item Simples'}
-        </span>
+        <div className={styles.itemDetails}>
+          <span className={styles.itemType}>
+            {isComposite ? 'Personalizável' : 'Item Simples'}
+          </span>
+          {customizationCount > 0 && (
+            <span style={{ fontSize: '11px', color: '#A68E80', marginLeft: '8px' }}>
+              • {customizationCount} {customizationCount === 1 ? 'item alterado' : 'itens alterados'}
+            </span>
+          )}
+        </div>
       </div>
 
       <button

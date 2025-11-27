@@ -1,13 +1,12 @@
-'use client';
-
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
-import { Layer, Pattern, LayerCustomization } from '@/types/rendering.types';
+import { Layer, LayerCustomization } from '@/types/rendering.types';
+import { DiscoveredPattern } from '@/lib/discovery/patternScanner';
 import styles from './LayerCustomizer.module.css';
 
 interface LayerCustomizerProps {
   layers: Layer[];
-  patterns: Pattern[];
+  patterns: DiscoveredPattern[];
   customizations: LayerCustomization[];
   onCustomizationsChange: (customizations: LayerCustomization[]) => void;
 }
@@ -18,62 +17,50 @@ export default function LayerCustomizer({
   customizations,
   onCustomizationsChange
 }: LayerCustomizerProps) {
-  // Começa com a primeira camada aberta
   const [expandedLayer, setExpandedLayer] = useState<number | null>(layers[0]?.index || null);
 
-  const handleSelectPattern = (layerIndex: number, pattern: Pattern) => {
-    // Cria um novo array de customizações
+  const handleSelectPattern = (layerIndex: number, pattern: DiscoveredPattern) => {
     const newCustomizations = [...customizations];
-    
-    // Verifica se já existe customização para esta camada
     const existingIndex = newCustomizations.findIndex(c => c.layer_index === layerIndex);
 
     const newEntry: LayerCustomization = {
       layer_index: layerIndex,
       pattern_id: pattern.id,
-      pattern_url: pattern.image_url,
+      pattern_url: pattern.url,
       pattern_name: pattern.name
     };
 
     if (existingIndex >= 0) {
-      // Substitui
       newCustomizations[existingIndex] = newEntry;
     } else {
-      // Adiciona
       newCustomizations.push(newEntry);
     }
 
     onCustomizationsChange(newCustomizations);
   };
 
-  const toggleLayer = (index: number) => {
-    setExpandedLayer(expandedLayer === index ? null : index);
-  };
-
-  const getSelectedPatternName = (layerIndex: number) => {
-    const custom = customizations.find(c => c.layer_index === layerIndex);
-    return custom ? custom.pattern_name : 'Nenhuma textura';
-  };
-
   const getSelectedPatternId = (layerIndex: number) => {
     return customizations.find(c => c.layer_index === layerIndex)?.pattern_id;
   };
 
+  const sortedLayers = [...layers].sort((a, b) => a.index - b.index);
+
   return (
     <div className={styles.container}>
-      {layers.sort((a, b) => a.index - b.index).map((layer) => {
+      {sortedLayers.map((layer) => {
         const isExpanded = expandedLayer === layer.index;
         const selectedId = getSelectedPatternId(layer.index);
+        const selectedName = customizations.find(c => c.layer_index === layer.index)?.pattern_name;
 
         return (
           <div key={layer.index} className={`${styles.layerGroup} ${isExpanded ? styles.active : ''}`}>
             <button 
               className={styles.accordionHeader}
-              onClick={() => toggleLayer(layer.index)}
+              onClick={() => setExpandedLayer(isExpanded ? null : layer.index)}
             >
               <div className={styles.headerInfo}>
                 <span className={styles.layerTitle}>Camada {layer.index}</span>
-                <span className={styles.layerSelection}>{getSelectedPatternName(layer.index)}</span>
+                <span className={styles.layerSelection}>{selectedName || 'Nenhuma textura'}</span>
               </div>
               {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
             </button>
@@ -87,10 +74,10 @@ export default function LayerCustomizer({
                     onClick={() => handleSelectPattern(layer.index, pattern)}
                     title={pattern.name}
                   >
-                    <img src={pattern.image_url} alt={pattern.name} className={styles.patternThumb} />
+                    <img src={pattern.thumbnail_url} alt={pattern.name} className={styles.patternThumb} />
                     {selectedId === pattern.id && (
                       <div className={styles.checkOverlay}>
-                        <FiCheck color="#FFF" size={16} />
+                        <FiCheck color="#FFF" size={14} />
                       </div>
                     )}
                   </button>

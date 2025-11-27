@@ -6,10 +6,12 @@ import type {
   DiscoveredPattern,
   ScanResult 
 } from './types';
+import { patternScanner } from './patternScanner';
 
 const BUCKET_NAME = 'bebelize-images';
 const IGNORED_FOLDERS = ['projects'];
-const TEXTURES_FOLDER = 'texturas';
+// CORREÇÃO: Atualizado para ignorar a pasta correta
+const TEXTURES_FOLDER = 'Texturas';
 
 export const bucketScanner = {
   async scanAllCollections(): Promise<ScanResult> {
@@ -23,7 +25,7 @@ export const bucketScanner = {
       const collectionFolders = rootFolders.filter(folder => 
         folder.id === null && 
         !IGNORED_FOLDERS.includes(folder.name.toLowerCase()) &&
-        folder.name.toLowerCase() !== TEXTURES_FOLDER
+        folder.name !== TEXTURES_FOLDER // Verifica o nome exato
       );
 
       const collections: DiscoveredCollection[] = [];
@@ -35,7 +37,8 @@ export const bucketScanner = {
         }
       }
 
-      const patterns = await this.scanPatterns();
+      // Usa o patternScanner atualizado para buscar as texturas
+      const patterns = await patternScanner.scanPatterns();
 
       const totalItems = collections.reduce((sum, col) => sum + col.item_count, 0);
       const totalLayers = collections.reduce(
@@ -68,45 +71,8 @@ export const bucketScanner = {
     }
   },
 
-  async scanPatterns(): Promise<DiscoveredPattern[]> {
-    try {
-      const { data: files, error } = await supabase.storage
-        .from(BUCKET_NAME)
-        .list(TEXTURES_FOLDER, { limit: 200, offset: 0 });
-
-      if (error || !files) return [];
-
-      const patterns: DiscoveredPattern[] = files
-        .filter(file => file.name && this.isImageFile(file.name))
-        .map(file => {
-          const filePath = `${TEXTURES_FOLDER}/${file.name}`;
-          const { data } = supabase.storage
-            .from(BUCKET_NAME)
-            .getPublicUrl(filePath);
-
-          const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-
-          return {
-            id: `pattern-${nameWithoutExt}`,
-            name: this.formatPatternName(nameWithoutExt),
-            slug: nameWithoutExt,
-            file: file.name,
-            url: data.publicUrl,
-            thumbnail_url: data.publicUrl
-          };
-        })
-        .sort((a, b) => {
-          const numA = parseInt(a.slug) || 0;
-          const numB = parseInt(b.slug) || 0;
-          return numA - numB;
-        });
-
-      return patterns;
-    } catch (error) {
-      console.error('Error scanning patterns:', error);
-      return [];
-    }
-  },
+  // ... (Mantenha o resto dos métodos scanCollection, scanCompositeItem, etc. iguais ao original)
+  // Vou incluir os métodos auxiliares essenciais abaixo para garantir que o arquivo fique completo se copiar tudo.
 
   async scanCollection(collectionSlug: string): Promise<DiscoveredCollection | null> {
     try {
@@ -238,13 +204,5 @@ export const bucketScanner = {
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
-  },
-
-  formatPatternName(slug: string): string {
-    const num = parseInt(slug);
-    if (!isNaN(num)) {
-      return `Textura ${num}`;
-    }
-    return this.formatName(slug);
   }
 };

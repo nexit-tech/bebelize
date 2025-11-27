@@ -7,10 +7,10 @@
 
 .layerGroup {
   border: 1px solid #E8E8E8;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
-  transition: all 0.3s ease;
   background-color: #FFFFFF;
+  transition: all 0.2s ease;
 }
 
 .layerGroup.active {
@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px 16px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -38,7 +38,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 4px;
+  gap: 2px;
 }
 
 .layerTitle {
@@ -48,35 +48,27 @@
 }
 
 .layerSelection {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--color-light-tan);
 }
 
-/* Grid de Padrões */
 .patternGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  /* Cria quadradinhos de aprox. 50px */
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); 
   gap: 8px;
-  padding: 16px;
+  padding: 12px;
   background-color: #FAFAFA;
   border-top: 1px solid #E8E8E8;
-  max-height: 300px;
+  max-height: 320px;
   overflow-y: auto;
-}
-
-.patternGrid::-webkit-scrollbar {
-  width: 4px;
-}
-.patternGrid::-webkit-scrollbar-thumb {
-  background-color: #DDD;
-  border-radius: 2px;
 }
 
 .patternOption {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 8px;
-  border: 2px solid transparent;
+  border-radius: 6px;
+  border: 2px solid #E0E0E0;
   padding: 0;
   cursor: pointer;
   overflow: hidden;
@@ -85,24 +77,26 @@
 }
 
 .patternOption:hover {
+  border-color: var(--color-light-tan);
   transform: scale(1.05);
-  border-color: rgba(166, 142, 128, 0.5);
 }
 
 .patternOption.selected {
   border-color: var(--color-light-tan);
+  box-shadow: 0 0 0 2px rgba(166, 142, 128, 0.2);
 }
 
 .patternThumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .checkOverlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(166, 142, 128, 0.4);
+  background-color: rgba(166, 142, 128, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
