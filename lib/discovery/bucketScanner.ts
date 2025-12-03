@@ -1,3 +1,4 @@
+// lib/discovery/bucketScanner.ts
 import { supabase } from '@/lib/supabase/client';
 import type { 
   DiscoveredItem, 
@@ -10,8 +11,8 @@ import { patternScanner } from './patternScanner';
 
 const BUCKET_NAME = 'bebelize-images';
 const IGNORED_FOLDERS = ['projects'];
-// CORREÇÃO: Atualizado para ignorar a pasta correta
 const TEXTURES_FOLDER = 'Texturas';
+const SPECIAL_FILES = ['base.png', 'montado.png'];
 
 export const bucketScanner = {
   async scanAllCollections(): Promise<ScanResult> {
@@ -25,7 +26,7 @@ export const bucketScanner = {
       const collectionFolders = rootFolders.filter(folder => 
         folder.id === null && 
         !IGNORED_FOLDERS.includes(folder.name.toLowerCase()) &&
-        folder.name !== TEXTURES_FOLDER // Verifica o nome exato
+        folder.name !== TEXTURES_FOLDER
       );
 
       const collections: DiscoveredCollection[] = [];
@@ -37,7 +38,6 @@ export const bucketScanner = {
         }
       }
 
-      // Usa o patternScanner atualizado para buscar as texturas
       const patterns = await patternScanner.scanPatterns();
 
       const totalItems = collections.reduce((sum, col) => sum + col.item_count, 0);
@@ -48,6 +48,8 @@ export const bucketScanner = {
         ),
         0
       );
+
+      console.log(`✅ Scan completo: ${collections.length} coleções, ${totalItems} itens, ${totalLayers} camadas`);
 
       return {
         success: true,
@@ -70,9 +72,6 @@ export const bucketScanner = {
       };
     }
   },
-
-  // ... (Mantenha o resto dos métodos scanCollection, scanCompositeItem, etc. iguais ao original)
-  // Vou incluir os métodos auxiliares essenciais abaixo para garantir que o arquivo fique completo se copiar tudo.
 
   async scanCollection(collectionSlug: string): Promise<DiscoveredCollection | null> {
     try {
@@ -125,10 +124,17 @@ export const bucketScanner = {
 
       if (error || !files) return null;
 
-      const layers = this.extractLayers(files, itemPath);
-      if (layers.length === 0) return null;
+      const { paintableLayers, baseLayer } = this.extractLayers(files, itemPath);
+      
+      if (paintableLayers.length === 0 && !baseLayer) return null;
+
+      const allLayers = baseLayer 
+        ? [...paintableLayers, baseLayer]
+        : paintableLayers;
 
       const itemId = `${collectionSlug}-${itemSlug}`;
+
+      console.log(`📦 Item: ${itemSlug} | Pintáveis: ${paintableLayers.length} | Base: ${baseLayer ? 'Sim' : 'Não'}`);
 
       return {
         id: itemId,
@@ -138,13 +144,65 @@ export const bucketScanner = {
         collection_slug: collectionSlug,
         folder_path: itemPath,
         item_type: 'composite',
-        layers,
-        description: `${this.formatName(itemSlug)} - ${layers.length} camadas`
+        layers: allLayers,
+        description: `${this.formatName(itemSlug)} - ${paintableLayers.length} camadas pintáveis`
       };
     } catch (error) {
       console.error(`Error scanning composite item ${itemSlug}:`, error);
       return null;
     }
+  },
+
+  extractLayers(files: any[], basePath: string): { 
+    paintableLayers: DiscoveredLayer[], 
+    baseLayer: DiscoveredLayer | null 
+  } {
+    const imageFiles = files.filter(f => f.name && this.isImageFile(f.name));
+
+    let baseLayer: DiscoveredLayer | null = null;
+    const paintableLayers: DiscoveredLayer[] = [];
+
+    let layerIndex = 1;
+
+    for (const file of imageFiles) {
+      const fileName = file.name.toLowerCase();
+
+      if (fileName === 'montado.png') {
+        continue;
+      }
+
+      const { data } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(`${basePath}/${file.name}`);
+
+      if (fileName === 'base.png') {
+        baseLayer = {
+          index: 9999,
+          file: file.name,
+          url: data.publicUrl,
+          type: 'pattern'
+        };
+      } else {
+        paintableLayers.push({
+          index: layerIndex++,
+          file: file.name,
+          url: data.publicUrl,
+          type: 'pattern'
+        });
+      }
+    }
+
+    paintableLayers.sort((a, b) => {
+      const nameA = a.file.toLowerCase();
+      const nameB = b.file.toLowerCase();
+      return nameA.localeCompare(nameB, 'pt-BR');
+    });
+
+    paintableLayers.forEach((layer, idx) => {
+      layer.index = idx + 1;
+    });
+
+    return { paintableLayers, baseLayer };
   },
 
   createSimpleItem(collectionSlug: string, fileName: string): DiscoveredItem {
@@ -170,30 +228,6 @@ export const bucketScanner = {
     };
   },
 
-  extractLayers(files: any[], basePath: string): DiscoveredLayer[] {
-    const pngFiles = files.filter(f => f.name && f.name.endsWith('.png'));
-
-    return pngFiles
-      .map(file => {
-        const match = file.name.match(/^(\d+)\.png$/);
-        if (!match) return null;
-
-        const index = parseInt(match[1], 10);
-        const { data } = supabase.storage
-          .from(BUCKET_NAME)
-          .getPublicUrl(`${basePath}/${file.name}`);
-
-        return {
-          index,
-          file: file.name,
-          url: data.publicUrl,
-          type: 'pattern' as const
-        };
-      })
-      .filter((layer): layer is DiscoveredLayer => layer !== null)
-      .sort((a, b) => a.index - b.index);
-  },
-
   isImageFile(fileName: string): boolean {
     const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
     return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
@@ -202,7 +236,7 @@ export const bucketScanner = {
   formatName(slug: string): string {
     return slug
       .split('-')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
 };
