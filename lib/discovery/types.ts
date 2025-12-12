@@ -1,8 +1,16 @@
 export interface DiscoveredLayer {
   index: number;
   file: string;
+  name: string;
   url: string;
-  type: 'pattern';
+  type: 'pattern' | 'fixed';
+}
+
+export interface DiscoveredVariant {
+  id: string;
+  name: string;
+  layers: DiscoveredLayer[];
+  previewUrl?: string;
 }
 
 export interface DiscoveredItem {
@@ -14,6 +22,7 @@ export interface DiscoveredItem {
   folder_path: string;
   item_type: 'simple' | 'composite';
   image_url?: string;
+  variants: DiscoveredVariant[];
   layers: DiscoveredLayer[];
   description?: string;
 }

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
-import { Layer, LayerCustomization } from '@/types/rendering.types';
-import { DiscoveredPattern } from '@/lib/discovery/patternScanner';
+import { LayerCustomization } from '@/types/rendering.types';
+import type { DiscoveredLayer, DiscoveredPattern } from '@/lib/discovery/types';
 import styles from './LayerCustomizer.module.css';
 
 interface LayerCustomizerProps {
-  layers: Layer[];
+  layers: DiscoveredLayer[];
   patterns: DiscoveredPattern[];
   customizations: LayerCustomization[];
   onCustomizationsChange: (customizations: LayerCustomization[]) => void;
@@ -59,7 +59,7 @@ export default function LayerCustomizer({
               onClick={() => setExpandedLayer(isExpanded ? null : layer.index)}
             >
               <div className={styles.headerInfo}>
-                <span className={styles.layerTitle}>Camada {layer.index}</span>
+                <span className={styles.layerTitle}>{layer.name}</span>
                 <span className={styles.layerSelection}>{selectedName || 'Nenhuma textura'}</span>
               </div>
               {isExpanded ? <FiChevronDown /> : <FiChevronRight />}

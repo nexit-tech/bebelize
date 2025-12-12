@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FiX, FiChevronDown } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
-import type { LayerCustomization, RenderRequest, RenderResponse } from '@/types/rendering.types';
+import type { LayerCustomization, RenderResponse } from '@/types/rendering.types';
 import { useDiscoveredPatterns } from '@/hooks/useDiscoveredPatterns';
 import Button from '../Button/Button';
 import LayerCustomizer from '../LayerCustomizer/LayerCustomizer';
@@ -29,14 +29,50 @@ export default function ItemCustomizerModal({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && item) {
       setCustomizations([]);
-      setPreviewUrl(null);
       setRenderTime(undefined);
+
+      let initialVariantId = null;
+      if (item.variants && item.variants.length > 0) {
+        initialVariantId = item.variants[0].id;
+      }
+      setSelectedVariantId(initialVariantId);
+
+      const variant = item.variants?.find(v => v.id === initialVariantId);
+      const initialImage = variant?.previewUrl || item.image_url || null;
+      
+      setPreviewUrl(initialImage);
     }
   }, [isOpen, item]);
+
+  const allLayersForRender = useMemo(() => {
+    if (!item) return [];
+    if (selectedVariantId && item.variants) {
+      const variant = item.variants.find(v => v.id === selectedVariantId);
+      if (variant) return variant.layers;
+    }
+    return item.layers || [];
+  }, [item, selectedVariantId]);
+
+  const visualLayers = useMemo(() => {
+    return allLayersForRender.filter(layer => layer.type !== 'fixed' && layer.index !== 9999);
+  }, [allLayersForRender]);
+
+  const handleVariantChange = (variantId: string) => {
+    setSelectedVariantId(variantId);
+    setCustomizations([]);
+
+    if (item && item.variants) {
+      const variant = item.variants.find(v => v.id === variantId);
+      if (variant) {
+        setPreviewUrl(variant.previewUrl || item.image_url || null);
+      }
+    }
+  };
 
   const handleRender = async () => {
     if (!item) return;
@@ -48,7 +84,7 @@ export default function ItemCustomizerModal({
         item_id: item.id,
         collection_id: item.collection_id,
         customizations,
-        layers: item.layers
+        layers: allLayersForRender
       };
 
       const response = await fetch('/api/render', {
@@ -83,9 +119,9 @@ export default function ItemCustomizerModal({
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <div className={styles.header}>
-          <div>
+          <div className={styles.headerInfo}>
             <h2 className={styles.title}>Personalizar: {item.name}</h2>
-            <span style={{ fontSize: '13px', color: '#A69A94' }}>
+            <span className={styles.subtitle}>
               Selecione as texturas para cada camada
             </span>
           </div>
@@ -96,12 +132,33 @@ export default function ItemCustomizerModal({
 
         <div className={styles.body}>
           <div className={styles.layersPanel}>
+            
+            {item.variants && item.variants.length > 1 && (
+              <div className={styles.variantSelector}>
+                <label className={styles.variantLabel}>Escolha o Modelo:</label>
+                <div className={styles.selectWrapper}>
+                  <select 
+                    className={styles.variantSelect}
+                    value={selectedVariantId || ''}
+                    onChange={(e) => handleVariantChange(e.target.value)}
+                  >
+                    {item.variants.map(variant => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.name}
+                      </option>
+                    ))}
+                  </select>
+                  <FiChevronDown className={styles.selectIcon} />
+                </div>
+              </div>
+            )}
+
             <h3 className={styles.panelTitle}>Configurar Camadas</h3>
             {loadingPatterns ? (
               <p style={{ fontSize: '13px', color: '#999' }}>Carregando texturas...</p>
             ) : (
               <LayerCustomizer
-                layers={item.layers || []}
+                layers={visualLayers}
                 patterns={patterns}
                 customizations={customizations}
                 onCustomizationsChange={setCustomizations}

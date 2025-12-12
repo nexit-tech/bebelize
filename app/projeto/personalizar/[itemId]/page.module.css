@@ -51,6 +51,66 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.variantSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #E0E0E0;
+}
+
+.variantLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.variantSelect {
+  width: 100%;
+  appearance: none;
+  background-color: #FAFAFA;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 15px;
+  color: #333;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.variantSelect:hover {
+  border-color: #A68E80;
+}
+
+.variantSelect:focus {
+  outline: 2px solid #A68E80;
+  outline-offset: 1px;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 14px;
+  color: #666;
+  pointer-events: none;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
 .rightPanel {
   background-color: #fff;
   padding: 24px;
@@ -59,13 +119,6 @@
   position: sticky;
   top: 24px;
   height: fit-content;
-}
-
-.sectionTitle {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 20px 0;
 }
 
 .loading {

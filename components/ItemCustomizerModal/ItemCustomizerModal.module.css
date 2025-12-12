@@ -1,31 +1,29 @@
-/* Container Fixo (Overlay) */
 .modalOverlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(89, 78, 74, 0.6); /* Browning com opacidade */
+  background-color: rgba(89, 78, 74, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3000;
-  backdrop-filter: blur(8px); /* Blur mais forte para elegância */
+  backdrop-filter: blur(8px);
   padding: 20px;
 }
 
-/* Conteúdo do Modal */
 .modalContent {
   background-color: #FFFFFF;
   width: 100%;
   max-width: 1100px;
   height: 90vh;
-  border-radius: 24px; /* Cantos mais arredondados */
+  border-radius: 24px;
   box-shadow: 0 24px 48px rgba(89, 78, 74, 0.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Animação mais suave */
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
@@ -33,7 +31,6 @@
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
-/* Header */
 .header {
   display: flex;
   align-items: center;
@@ -44,13 +41,25 @@
   flex-shrink: 0;
 }
 
+.headerInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .title {
   font-family: 'Montserrat', sans-serif;
   font-size: 22px;
   font-weight: 600;
   color: var(--color-browning);
-  margin: 0 0 4px 0;
+  margin: 0;
   letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  color: var(--color-light-tan-grey);
 }
 
 .closeButton {
@@ -71,7 +80,6 @@
   color: var(--color-browning);
 }
 
-/* Corpo Principal */
 .body {
   display: grid;
   grid-template-columns: 350px 1fr;
@@ -79,7 +87,6 @@
   overflow: hidden;
 }
 
-/* Coluna Esquerda */
 .layersPanel {
   background-color: #FFFFFF;
   border-right: 1px solid var(--color-pearl);
@@ -90,7 +97,6 @@
   gap: 24px;
 }
 
-/* Scrollbar elegante */
 .layersPanel::-webkit-scrollbar {
   width: 6px;
 }
@@ -105,6 +111,60 @@
   background-color: var(--color-light-tan-grey);
 }
 
+.variantSelector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-pearl);
+  margin-bottom: 8px;
+}
+
+.variantLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-light-tan);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.variantSelect {
+  width: 100%;
+  appearance: none;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-light-tan-grey);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: var(--color-browning);
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.variantSelect:hover {
+  border-color: var(--color-light-tan);
+}
+
+.variantSelect:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: 1px;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 14px;
+  color: var(--color-light-tan);
+  pointer-events: none;
+}
+
 .panelTitle {
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
@@ -115,20 +175,18 @@
   margin: 0;
 }
 
-/* Coluna Direita */
 .previewPanel {
   padding: 40px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: #FAFAFA; /* Fundo levemente off-white */
-  background-image: radial-gradient(var(--color-pearl) 1px, transparent 1px); /* Padrão de bolinhas sutil */
+  background-color: #FAFAFA;
+  background-image: radial-gradient(var(--color-pearl) 1px, transparent 1px);
   background-size: 20px 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-/* Footer */
 .footer {
   padding: 24px 32px;
   background-color: #FFFFFF;
@@ -139,11 +197,10 @@
   flex-shrink: 0;
 }
 
-/* Responsividade */
 @media (max-width: 900px) {
   .body {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: auto 1fr;
     overflow-y: auto;
   }
   
@@ -155,6 +212,7 @@
   .layersPanel {
     border-right: none;
     border-bottom: 1px solid var(--color-pearl);
-    max-height: 400px;
+    max-height: none;
+    overflow: visible;
   }
 }

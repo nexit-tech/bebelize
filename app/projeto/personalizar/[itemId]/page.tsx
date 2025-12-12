@@ -1,29 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { FiChevronDown } from 'react-icons/fi';
 import { usePatterns } from '@/hooks/usePatterns';
 import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
-import { renderingService } from '@/lib/supabase/rendering.service';
 import LayerCustomizer from '@/components/LayerCustomizer/LayerCustomizer';
 import ProjectRenderer from '@/components/ProjectRenderer/ProjectRenderer';
-import { LayerCustomization, RenderRequest, RenderResponse } from '@/types/rendering.types';
-import type { DiscoveredItem } from '@/lib/discovery/types';
+import { LayerCustomization, RenderResponse } from '@/types/rendering.types';
+import type { DiscoveredItem, DiscoveredPattern } from '@/lib/discovery/types';
 import styles from './page.module.css';
 
 export default function PersonalizarItemPage() {
   const params = useParams();
   const router = useRouter();
   const itemId = params.itemId as string;
-
   const { patterns, isLoading: patternsLoading } = usePatterns();
   const { getItemById, isLoading: itemsLoading } = useItemsDiscovery();
-  
   const [item, setItem] = useState<DiscoveredItem | null>(null);
   const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!itemsLoading) {
@@ -36,24 +35,66 @@ export default function PersonalizarItemPage() {
       }
 
       setItem(foundItem);
+
+      let initialVariantId = null;
+      if (foundItem.variants && foundItem.variants.length > 0) {
+        initialVariantId = foundItem.variants[0].id;
+      }
+      setSelectedVariantId(initialVariantId);
+
+      const variant = foundItem.variants?.find(v => v.id === initialVariantId);
+      const initialImage = variant?.previewUrl || foundItem.image_url || null;
+      setPreviewUrl(initialImage);
     }
   }, [itemId, itemsLoading, getItemById, router]);
 
-  const handleRender = async () => {
-    if (customizations.length === 0) {
-      alert('Selecione ao menos uma textura para renderizar');
-      return;
-    }
+  const adaptedPatterns: DiscoveredPattern[] = useMemo(() => {
+    return patterns.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      file: '',
+      url: p.image_url,
+      thumbnail_url: p.thumbnail_url || p.image_url
+    }));
+  }, [patterns]);
 
+  const allLayersForRender = useMemo(() => {
+    if (!item) return [];
+    if (selectedVariantId && item.variants) {
+      const variant = item.variants.find(v => v.id === selectedVariantId);
+      if (variant) return variant.layers;
+    }
+    return item.layers || [];
+  }, [item, selectedVariantId]);
+
+  const visualLayers = useMemo(() => {
+    return allLayersForRender.filter(layer => layer.type !== 'fixed' && layer.index !== 9999);
+  }, [allLayersForRender]);
+
+  const handleVariantChange = (variantId: string) => {
+    setSelectedVariantId(variantId);
+    setCustomizations([]);
+    
+    if (item && item.variants) {
+      const variant = item.variants.find(v => v.id === variantId);
+      if (variant) {
+        setPreviewUrl(variant.previewUrl || item.image_url || null);
+      }
+    }
+  };
+
+  const handleRender = async () => {
     if (!item) return;
 
     try {
       setIsRendering(true);
       
-      const request: RenderRequest = {
+      const request: any = {
         item_id: item.id,
         collection_id: item.collection_id,
-        customizations
+        customizations,
+        layers: allLayersForRender
       };
 
       const response = await fetch('/api/render', {
@@ -110,10 +151,31 @@ export default function PersonalizarItemPage() {
 
       <div className={styles.content}>
         <div className={styles.leftPanel}>
+          
+          {item.variants && item.variants.length > 1 && (
+            <div className={styles.variantSection}>
+              <label className={styles.variantLabel}>Escolha o Modelo:</label>
+              <div className={styles.selectWrapper}>
+                <select 
+                  className={styles.variantSelect}
+                  value={selectedVariantId || ''}
+                  onChange={(e) => handleVariantChange(e.target.value)}
+                >
+                  {item.variants.map(variant => (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.name}
+                    </option>
+                  ))}
+                </select>
+                <FiChevronDown className={styles.selectIcon} />
+              </div>
+            </div>
+          )}
+
           <h2 className={styles.sectionTitle}>Configurar Camadas</h2>
           <LayerCustomizer
-            layers={item.layers}
-            patterns={patterns}
+            layers={visualLayers}
+            patterns={adaptedPatterns}
             customizations={customizations}
             onCustomizationsChange={setCustomizations}
           />

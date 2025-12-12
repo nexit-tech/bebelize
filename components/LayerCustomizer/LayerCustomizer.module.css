@@ -1,16 +1,16 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
 .layerGroup {
   border: 1px solid #E8E8E8;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background-color: #FFFFFF;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .layerGroup.active {
@@ -23,11 +23,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px;
+  padding: 16px 20px;
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--color-light-tan-grey);
+  transition: background-color 0.2s;
 }
 
 .accordionHeader:hover {
@@ -38,36 +39,37 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 4px;
 }
 
 .layerTitle {
+  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 600;
   color: var(--color-browning);
+  letter-spacing: 0.3px;
 }
 
 .layerSelection {
-  font-size: 11px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
   color: var(--color-light-tan);
 }
 
 .patternGrid {
   display: grid;
-  /* Cria quadradinhos de aprox. 50px */
-  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); 
-  gap: 8px;
-  padding: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  gap: 10px;
+  padding: 20px;
   background-color: #FAFAFA;
   border-top: 1px solid #E8E8E8;
-  max-height: 320px;
-  overflow-y: auto;
 }
 
 .patternOption {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 2px solid #E0E0E0;
   padding: 0;
   cursor: pointer;
@@ -78,7 +80,8 @@
 
 .patternOption:hover {
   border-color: var(--color-light-tan);
-  transform: scale(1.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(166, 142, 128, 0.1);
 }
 
 .patternOption.selected {
@@ -101,4 +104,10 @@
   align-items: center;
   justify-content: center;
   backdrop-filter: blur(1px);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

@@ -1,10 +1,9 @@
-// lib/discovery/bucketScanner.ts
 import { supabase } from '@/lib/supabase/client';
 import type { 
   DiscoveredItem, 
   DiscoveredLayer, 
   DiscoveredCollection,
-  DiscoveredPattern,
+  DiscoveredVariant,
   ScanResult 
 } from './types';
 import { patternScanner } from './patternScanner';
@@ -12,7 +11,6 @@ import { patternScanner } from './patternScanner';
 const BUCKET_NAME = 'bebelize-images';
 const IGNORED_FOLDERS = ['projects'];
 const TEXTURES_FOLDER = 'Texturas';
-const SPECIAL_FILES = ['base.png', 'montado.png'];
 
 export const bucketScanner = {
   async scanAllCollections(): Promise<ScanResult> {
@@ -48,8 +46,6 @@ export const bucketScanner = {
         ),
         0
       );
-
-      console.log(`✅ Scan completo: ${collections.length} coleções, ${totalItems} itens, ${totalLayers} camadas`);
 
       return {
         success: true,
@@ -118,23 +114,54 @@ export const bucketScanner = {
     try {
       const itemPath = `${collectionSlug}/${itemSlug}`;
       
-      const { data: files, error } = await supabase.storage
+      const { data: contents, error } = await supabase.storage
         .from(BUCKET_NAME)
         .list(itemPath, { limit: 100, offset: 0 });
 
-      if (error || !files) return null;
+      if (error || !contents) return null;
 
-      const { paintableLayers, baseLayer } = this.extractLayers(files, itemPath);
+      const variants: DiscoveredVariant[] = [];
+
+      const rootFiles = contents.filter(c => c.id !== null);
+      const subFolders = contents.filter(c => c.id === null);
+      const { paintableLayers: rootLayers, baseLayer: rootBase, previewUrl: rootPreview } = this.extractLayers(rootFiles, itemPath);
       
-      if (paintableLayers.length === 0 && !baseLayer) return null;
+      if (rootLayers.length > 0 || rootBase) {
+        const allRootLayers = rootBase ? [...rootLayers, rootBase] : rootLayers;
+        variants.push({
+          id: 'default',
+          name: 'Padrão',
+          layers: allRootLayers,
+          previewUrl: rootPreview
+        });
+      }
 
-      const allLayers = baseLayer 
-        ? [...paintableLayers, baseLayer]
-        : paintableLayers;
+      for (const folder of subFolders) {
+        const variantPath = `${itemPath}/${folder.name}`;
+        const { data: variantFiles } = await supabase.storage
+          .from(BUCKET_NAME)
+          .list(variantPath, { limit: 100 });
+
+        if (variantFiles) {
+          const { paintableLayers, baseLayer, previewUrl } = this.extractLayers(variantFiles, variantPath);
+          
+          if (paintableLayers.length > 0 || baseLayer) {
+            const allVariantLayers = baseLayer ? [...paintableLayers, baseLayer] : paintableLayers;
+            variants.push({
+              id: folder.name,
+              name: this.formatName(folder.name),
+              layers: allVariantLayers,
+              previewUrl: previewUrl
+            });
+          }
+        }
+      }
+
+      if (variants.length === 0) return null;
+
+      const mainVariant = variants.find(v => v.id === 'default') || variants[0];
 
       const itemId = `${collectionSlug}-${itemSlug}`;
-
-      console.log(`📦 Item: ${itemSlug} | Pintáveis: ${paintableLayers.length} | Base: ${baseLayer ? 'Sim' : 'Não'}`);
 
       return {
         id: itemId,
@@ -144,8 +171,10 @@ export const bucketScanner = {
         collection_slug: collectionSlug,
         folder_path: itemPath,
         item_type: 'composite',
-        layers: allLayers,
-        description: `${this.formatName(itemSlug)} - ${paintableLayers.length} camadas pintáveis`
+        variants: variants,
+        layers: mainVariant.layers,
+        image_url: mainVariant.previewUrl,
+        description: `${this.formatName(itemSlug)} - ${variants.length} variações`
       };
     } catch (error) {
       console.error(`Error scanning composite item ${itemSlug}:`, error);
@@ -155,54 +184,53 @@ export const bucketScanner = {
 
   extractLayers(files: any[], basePath: string): { 
     paintableLayers: DiscoveredLayer[], 
-    baseLayer: DiscoveredLayer | null 
+    baseLayer: DiscoveredLayer | null,
+    previewUrl?: string
   } {
     const imageFiles = files.filter(f => f.name && this.isImageFile(f.name));
 
     let baseLayer: DiscoveredLayer | null = null;
+    let previewUrl: string | undefined = undefined;
     const paintableLayers: DiscoveredLayer[] = [];
 
     let layerIndex = 1;
 
     for (const file of imageFiles) {
       const fileName = file.name.toLowerCase();
-
-      if (fileName === 'montado.png') {
-        continue;
-      }
-
       const { data } = supabase.storage
         .from(BUCKET_NAME)
         .getPublicUrl(`${basePath}/${file.name}`);
+
+      if (fileName === 'montado.png') {
+        previewUrl = data.publicUrl;
+        continue;
+      }
 
       if (fileName === 'base.png') {
         baseLayer = {
           index: 9999,
           file: file.name,
+          name: 'Base',
           url: data.publicUrl,
-          type: 'pattern'
+          type: 'fixed'
         };
       } else {
         paintableLayers.push({
           index: layerIndex++,
           file: file.name,
+          name: this.formatLayerName(file.name),
           url: data.publicUrl,
           type: 'pattern'
         });
       }
     }
 
-    paintableLayers.sort((a, b) => {
-      const nameA = a.file.toLowerCase();
-      const nameB = b.file.toLowerCase();
-      return nameA.localeCompare(nameB, 'pt-BR');
-    });
-
+    paintableLayers.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
     paintableLayers.forEach((layer, idx) => {
       layer.index = idx + 1;
     });
 
-    return { paintableLayers, baseLayer };
+    return { paintableLayers, baseLayer, previewUrl };
   },
 
   createSimpleItem(collectionSlug: string, fileName: string): DiscoveredItem {
@@ -223,6 +251,7 @@ export const bucketScanner = {
       folder_path: filePath,
       item_type: 'simple',
       image_url: data.publicUrl,
+      variants: [],
       layers: [],
       description: this.formatName(itemSlug)
     };
@@ -238,5 +267,11 @@ export const bucketScanner = {
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
+  },
+
+  formatLayerName(fileName: string): string {
+    const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '');
+    const cleanName = nameWithoutExt.replace(/^\d+[\.\-\_\s]*/, '');
+    return cleanName.charAt(0).toUpperCase() + cleanName.slice(1).toLowerCase();
   }
 };
