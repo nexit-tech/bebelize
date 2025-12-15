@@ -1,83 +1,148 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
-.cartHeader {
+.header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.titleRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 
 .title {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--color-browning);
   margin: 0;
 }
 
-.itemCount {
-  font-size: 13px;
-  font-weight: 500;
+.icon {
   color: var(--color-light-tan);
-  background-color: rgba(166, 142, 128, 0.12);
-  padding: 4px 12px;
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--color-light-tan-grey);
+  margin: 0;
+}
+
+.scrollableContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.scrollableContent::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollableContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb {
+  background-color: #E8E8E8;
+  border-radius: 4px;
+}
+
+.scrollableContent::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-light-tan-grey);
+}
+
+.formSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px;
+}
+
+.itemsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-browning);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.itemCount {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.1);
+  padding: 2px 8px;
   border-radius: 12px;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-  flex: 1;
-  padding-right: 8px;
-}
-
-.list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.list::-webkit-scrollbar-thumb {
-  background: var(--color-light-tan-grey);
-  border-radius: 3px;
+  gap: 8px;
 }
 
 .emptyState {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   text-align: center;
-  border: 2px dashed #E8E8E8;
-  border-radius: 12px;
-  padding: 40px;
-}
-
-.emptyIcon {
+  border: 1px dashed #E8E8E8;
+  border-radius: 8px;
+  padding: 24px 16px;
   color: var(--color-light-tan-grey);
-  opacity: 0.4;
+  background-color: #FAFAFA;
 }
 
 .emptyText {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-browning);
+  font-size: 13px;
+  font-weight: 500;
   margin: 0;
 }
 
-.emptySubtext {
-  font-size: 14px;
-  font-weight: 300;
-  color: var(--color-light-tan-grey);
-  margin: 0;
+.notesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
 }

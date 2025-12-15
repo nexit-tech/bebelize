@@ -1,0 +1,170 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  position: relative;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-browning);
+  letter-spacing: 0.3px;
+  margin-left: 2px;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.calendarIcon {
+  position: absolute;
+  right: 12px;
+  color: var(--color-light-tan);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dateInput {
+  width: 100%;
+  padding: 10px 12px;
+  padding-right: 40px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--color-browning);
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-light-tan-grey);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  height: 40px;
+  cursor: pointer;
+}
+
+.dateInput:hover {
+  border-color: var(--color-light-tan);
+}
+
+.dateInput:focus {
+  outline: 2px solid var(--color-light-tan);
+  outline-offset: -1px;
+  border-color: var(--color-light-tan);
+}
+
+.calendarPopup {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-light-tan);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(89, 78, 74, 0.15);
+  padding: 16px;
+  z-index: 100;
+  width: 280px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.navButton {
+  background: transparent;
+  border: none;
+  color: var(--color-light-tan);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navButton:hover {
+  background-color: rgba(166, 142, 128, 0.1);
+}
+
+.currentMonth {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-browning);
+  text-transform: capitalize;
+}
+
+.weekDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 8px;
+}
+
+.weekDay {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-light-tan-grey);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.dayButton {
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  font-size: 13px;
+  color: var(--color-browning);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dayButton:hover:not(:disabled) {
+  background-color: rgba(166, 142, 128, 0.1);
+}
+
+.dayButton.selected {
+  background-color: var(--color-light-tan);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.dayButton.today {
+  border: 1px solid var(--color-light-tan);
+  color: var(--color-light-tan);
+}
+
+.dayButton.selected.today {
+  border: none;
+  color: #FFFFFF;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99;
+}
