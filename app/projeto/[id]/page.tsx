@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { FiArrowLeft, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import { FiArrowLeft, FiEdit2, FiTrash2, FiFileText } from 'react-icons/fi';
 import { useProjects } from '@/hooks';
-import { getStatusLabel, formatDate } from '@/utils';
-import { Project } from '@/types';
+import { getStatusLabel } from '@/utils';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import StatusTag from '@/components/StatusTag/StatusTag';
 import Button from '@/components/Button/Button';
@@ -18,7 +17,7 @@ export default function ProjetoDetalhesPage() {
   const params = useParams();
   const { getProjectById, deleteProject } = useProjects();
   
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [confirmModal, setConfirmModal] = useState({ isOpen: false });
   const [successModal, setSuccessModal] = useState({ isOpen: false, title: '', message: '' });
@@ -35,7 +34,8 @@ export default function ProjetoDetalhesPage() {
   };
 
   const handleEdit = () => {
-    router.push(`/projeto/editar/${project?.id}`);
+    // router.push(`/projeto/editar/${project?.id}`);
+    alert("Edição completa será habilitada em breve.");
   };
 
   const handleDelete = () => {
@@ -111,6 +111,7 @@ export default function ProjetoDetalhesPage() {
         </div>
 
         <div className={styles.detailsGrid}>
+          {/* Card: Cliente */}
           <div className={styles.detailCard}>
             <h3 className={styles.cardTitle}>Informações do Cliente</h3>
             <div className={styles.detailItem}>
@@ -131,10 +132,11 @@ export default function ProjetoDetalhesPage() {
             )}
           </div>
 
+          {/* Card: Detalhes do Pedido */}
           <div className={styles.detailCard}>
             <h3 className={styles.cardTitle}>Detalhes do Projeto</h3>
             <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Coleção:</span>
+              <span className={styles.detailLabel}>Coleção Base:</span>
               <span className={styles.detailValue}>{project.collectionName}</span>
             </div>
             <div className={styles.detailItem}>
@@ -143,56 +145,49 @@ export default function ProjetoDetalhesPage() {
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>Criado em:</span>
-              <span className={styles.detailValue}>{formatDate(project.createdAt)}</span>
+              <span className={styles.detailValue}>{project.createdAtFormatted}</span>
             </div>
-            {project.deliveryDate && (
+            {project.deliveryDateFormatted && (
               <div className={styles.detailItem}>
                 <span className={styles.detailLabel}>Previsão Entrega:</span>
-                <span className={styles.detailValue}>{formatDate(project.deliveryDate)}</span>
+                <span className={styles.detailValue}>{project.deliveryDateFormatted}</span>
               </div>
             )}
           </div>
 
-          <div className={styles.detailCard}>
-            <h3 className={styles.cardTitle}>Personalização</h3>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Tecido:</span>
-              <span className={styles.detailValue}>{project.customization.fabricName}</span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Cor Principal:</span>
-              <div className={styles.colorPreview}>
-                <div 
-                  className={styles.colorCircle} 
-                  style={{ backgroundColor: project.customization.primaryColor }}
-                />
-                <span className={styles.detailValue}>{project.customization.primaryColor}</span>
-              </div>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Cor Secundária:</span>
-              <div className={styles.colorPreview}>
-                <div 
-                  className={styles.colorCircle} 
-                  style={{ backgroundColor: project.customization.secondaryColor }}
-                />
-                <span className={styles.detailValue}>{project.customization.secondaryColor}</span>
-              </div>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Bordado:</span>
-              <span className={styles.detailValue}>{project.customization.embroideryName}</span>
-            </div>
-            <div className={styles.detailItem}>
-              <span className={styles.detailLabel}>Estilo:</span>
-              <span className={styles.detailValue}>{project.customization.embroideryStyleName}</span>
+          {/* Card: Itens e Personalização (DADOS REAIS) */}
+          <div className={styles.detailCard} style={{ gridColumn: '1 / -1' }}>
+            <h3 className={styles.cardTitle}>Itens e Personalizações</h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {project.customizationDescription && project.customizationDescription.length > 0 ? (
+                project.customizationDescription.map((desc: string, index: number) => (
+                  <div key={index} style={{ 
+                    padding: '12px', 
+                    backgroundColor: '#FAFAFA', 
+                    borderRadius: '8px',
+                    borderLeft: '4px solid #A68E80',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    color: '#594E4A'
+                  }}>
+                    {desc}
+                  </div>
+                ))
+              ) : (
+                <p className={styles.notesText}>Nenhuma personalização registrada.</p>
+              )}
             </div>
           </div>
         </div>
 
+        {/* Card: Notas de Produção */}
         {project.productionNotes && (
           <div className={styles.notesCard}>
-            <h3 className={styles.cardTitle}>Notas de Produção</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <FiFileText size={20} color="#A68E80" />
+              <h3 className={styles.cardTitle} style={{ margin: 0 }}>Notas de Produção</h3>
+            </div>
             <p className={styles.notesText}>{project.productionNotes}</p>
           </div>
         )}

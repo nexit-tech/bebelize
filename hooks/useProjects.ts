@@ -26,11 +26,15 @@ interface ProjectWithDetails extends Project {
     name: string;
     email: string;
   };
-  collection?: {
-    id: string;
-    name: string;
-    theme: string | null;
-  };
+  collectionName?: string;
+  consultantName?: string;
+  clientName?: string;
+  clientPhone?: string;
+  clientEmail?: string;
+  createdAtFormatted?: string;
+  deliveryDateFormatted?: string;
+  // Novo campo para descrição textual
+  customizationDescription?: string[]; 
 }
 
 export function useProjects(consultantId?: string) {
@@ -43,6 +47,36 @@ export function useProjects(consultantId?: string) {
     loadProjects();
   }, [consultantId]);
 
+  // Função auxiliar para formatar nome da coleção
+  const formatCollectionName = (slug: string) => {
+    if (!slug) return 'Coleção Geral';
+    return slug
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Função auxiliar para gerar descrição legível das personalizações
+  const generateCustomizationDescription = (data: any): string[] => {
+    if (!data || !data.cart_items || data.cart_items.length === 0) {
+      return ['Nenhum item personalizado neste projeto.'];
+    }
+
+    return data.cart_items.map((cartItem: any) => {
+      const itemName = cartItem.item?.name || 'Item desconhecido';
+      
+      if (!cartItem.customizations || cartItem.customizations.length === 0) {
+        return `• ${itemName}: Padrão da coleção (sem alterações).`;
+      }
+
+      const changes = cartItem.customizations.map((c: any) => 
+        `Camada ${c.layer_index} com ${c.pattern_name}`
+      ).join(', ');
+
+      return `• ${itemName}: ${changes}.`;
+    });
+  };
+
   const loadProjects = async () => {
     try {
       setIsLoading(true);
@@ -51,8 +85,7 @@ export function useProjects(consultantId?: string) {
         .from('projects')
         .select(`
           *,
-          consultant:users!projects_consultant_id_fkey(id, name, email),
-          collection:collections(id, name, theme)
+          consultant:users!projects_consultant_id_fkey(id, name, email)
         `)
         .order('created_at', { ascending: false });
 
@@ -62,12 +95,18 @@ export function useProjects(consultantId?: string) {
 
       const { data, error } = await query;
 
-      if (error) {
-        console.error('Error loading projects:', error);
-        throw error;
-      }
+      if (error) throw error;
 
-      setAllProjects(data || []);
+      const formattedData = (data || []).map((p: any) => ({
+        ...p,
+        clientName: p.client_name, 
+        consultantName: p.consultant?.name || 'Desconhecido',
+        collectionName: formatCollectionName(p.collection_id),
+        createdAtFormatted: new Date(p.created_at).toLocaleDateString('pt-BR'),
+        customizationDescription: generateCustomizationDescription(p.customizations_data)
+      }));
+
+      setAllProjects(formattedData);
     } catch (error) {
       console.error('Error in loadProjects:', error);
       setAllProjects([]);
@@ -81,33 +120,38 @@ export function useProjects(consultantId?: string) {
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.client_name.toLowerCase().includes(searchQuery.toLowerCase());
     
-    const matchesStatus = !statusFilter || project.status === statusFilter;
+    const matchesStatus = !statusFilter || statusFilter === 'todos' || project.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
   const getProjectById = async (id: string) => {
-    const cached = allProjects.find(p => p.id === id);
-    if (cached) return cached;
-
     try {
       const { data, error } = await supabase
         .from('projects')
         .select(`
           *,
-          consultant:users!projects_consultant_id_fkey(id, name, email),
-          collection:collections(id, name, theme)
+          consultant:users!projects_consultant_id_fkey(id, name, email)
         `)
         .eq('id', id)
         .single();
 
       if (error) throw error;
+      if (!data) return null;
 
-      if (data) {
-        setAllProjects(prev => [...prev, data]);
-      }
-
-      return data;
+      return {
+        ...data,
+        clientName: data.client_name,
+        clientPhone: data.client_phone,
+        clientEmail: data.client_email,
+        consultantName: data.consultant?.name || 'Desconhecido',
+        collectionName: formatCollectionName(data.collection_id),
+        productionNotes: data.production_notes,
+        createdAtFormatted: new Date(data.created_at).toLocaleDateString('pt-BR'),
+        deliveryDateFormatted: data.delivery_date ? new Date(data.delivery_date).toLocaleDateString('pt-BR') : null,
+        // Aqui geramos a descrição textual real baseada no JSON
+        customizationDescription: generateCustomizationDescription(data.customizations_data)
+      };
     } catch (error) {
       console.error('Error fetching project:', error);
       return null;
@@ -116,32 +160,21 @@ export function useProjects(consultantId?: string) {
 
   const createProject = async (projectData: any) => {
     try {
-      const { project, customization } = projectData;
+      const { project } = projectData;
+      const payload = {
+        ...project,
+        collection_id: String(project.collection_id || 'geral')
+      };
 
-      const { data: newProject, error: projectError } = await supabase
+      const { data, error } = await supabase
         .from('projects')
-        .insert(project)
+        .insert(payload)
         .select()
         .single();
 
-      if (projectError) throw projectError;
-
-      if (customization && newProject) {
-        const { error: customizationError } = await supabase
-          .from('project_customizations')
-          .insert({
-            project_id: newProject.id,
-            ...customization
-          });
-
-        if (customizationError) {
-          await supabase.from('projects').delete().eq('id', newProject.id);
-          throw customizationError;
-        }
-      }
-
+      if (error) throw error;
       await loadProjects();
-      return newProject;
+      return data;
     } catch (error) {
       console.error('Error creating project:', error);
       throw error;
@@ -150,26 +183,12 @@ export function useProjects(consultantId?: string) {
 
   const updateProject = async (id: string, updates: any) => {
     try {
-      const { project, customization } = updates;
-
-      if (project) {
-        const { error: projectError } = await supabase
+        const { error } = await supabase
           .from('projects')
-          .update(project)
+          .update(updates)
           .eq('id', id);
 
-        if (projectError) throw projectError;
-      }
-
-      if (customization) {
-        const { error: customizationError } = await supabase
-          .from('project_customizations')
-          .update(customization)
-          .eq('project_id', id);
-
-        if (customizationError) throw customizationError;
-      }
-
+        if (error) throw error;
       await loadProjects();
       return true;
     } catch (error) {
@@ -186,11 +205,11 @@ export function useProjects(consultantId?: string) {
         .eq('id', id);
 
       if (error) throw error;
-
       setAllProjects(prev => prev.filter(p => p.id !== id));
+      return true;
     } catch (error) {
       console.error('Error deleting project:', error);
-      throw error;
+      return false;
     }
   };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { FiFilter, FiUsers } from 'react-icons/fi';
-import { usersData } from '@/data';
 import SearchBar from '../SearchBar/SearchBar';
 import styles from './FilterBar.module.css';
 
@@ -14,6 +13,7 @@ interface FilterBarProps {
   filterConsultant?: string;
   onFilterConsultantChange?: (consultant: string) => void;
   showConsultantFilter?: boolean;
+  consultants?: { id: string; name: string }[];
 }
 
 export default function FilterBar({
@@ -26,9 +26,8 @@ export default function FilterBar({
   filterConsultant,
   onFilterConsultantChange,
   showConsultantFilter = false,
+  consultants = []
 }: FilterBarProps) {
-
-  const consultants = usersData.filter(u => u.role === 'consultora' && u.active);
 
   return (
     <div className={styles.filterBarContainer}>

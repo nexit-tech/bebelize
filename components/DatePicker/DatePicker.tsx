@@ -38,7 +38,6 @@ export default function DatePicker({
   useEffect(() => {
     if (value) {
       const [year, month, day] = value.split('-').map(Number);
-
       setViewDate(new Date(year, month - 1, day));
     }
   }, [value]);
@@ -54,7 +53,8 @@ export default function DatePicker({
     setViewDate(newDate);
   };
 
-  const handleDaySelect = (day: number) => {
+  const handleDaySelect = (day: number, e: React.MouseEvent) => {
+    e.stopPropagation();
     const year = viewDate.getFullYear();
     const month = String(viewDate.getMonth() + 1).padStart(2, '0');
     const dayStr = String(day).padStart(2, '0');
@@ -92,7 +92,7 @@ export default function DatePicker({
         <button
           key={day}
           type="button"
-          onClick={() => handleDaySelect(day)}
+          onClick={(e) => handleDaySelect(day, e)}
           className={`${styles.dayButton} ${isSelected ? styles.selected : ''} ${isToday ? styles.today : ''}`}
         >
           {day}
@@ -129,11 +129,19 @@ export default function DatePicker({
       {isOpen && (
         <div className={styles.calendarPopup}>
           <div className={styles.header}>
-            <button type="button" className={styles.navButton} onClick={() => changeMonth(-1)}>
+            <button 
+              type="button" 
+              className={styles.navButton} 
+              onClick={(e) => { e.preventDefault(); changeMonth(-1); }}
+            >
               <FiChevronLeft size={18} />
             </button>
             <span className={styles.currentMonth}>{monthName}</span>
-            <button type="button" className={styles.navButton} onClick={() => changeMonth(1)}>
+            <button 
+              type="button" 
+              className={styles.navButton} 
+              onClick={(e) => { e.preventDefault(); changeMonth(1); }}
+            >
               <FiChevronRight size={18} />
             </button>
           </div>

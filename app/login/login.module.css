@@ -1,19 +1,29 @@
+/* app/login/login.module.css */
+
 .loginContainer {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background-color: var(--color-pearl);
+  background: linear-gradient(135deg, #FDFBF9 0%, #F2EBE6 100%);
 }
 
 .loginCard {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   background-color: #FFFFFF;
-  border-radius: 16px;
+  border-radius: 24px;
   padding: 48px 40px;
-  box-shadow: 0 4px 24px rgba(89, 78, 74, 0.08);
+  box-shadow: 0 20px 40px rgba(89, 78, 74, 0.08), 
+              0 1px 3px rgba(89, 78, 74, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  animation: slideUp 0.5s ease-out;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .logoContainer {
@@ -26,25 +36,27 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
+  filter: drop-shadow(0 4px 6px rgba(166, 142, 128, 0.2));
 }
 
 .logo {
-  border-radius: 12px;
+  border-radius: 50%;
   object-fit: contain;
 }
 
 .subtitle {
-  font-size: 16px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
   font-weight: 500;
   color: var(--color-browning);
   letter-spacing: 0.5px;
-  line-height: 1.5;
+  opacity: 0.8;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
 }
 
 .inputWrapper {
@@ -55,25 +67,39 @@
 .inputIcon {
   position: absolute;
   left: 16px;
-  top: 44px;
+  bottom: 11px; 
   color: var(--color-light-tan);
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
+  transition: color 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.inputWrapper:focus-within .inputIcon {
+  color: var(--color-browning);
 }
 
 .inputWrapper input {
-  padding-left: 48px;
+  padding-left: 48px !important;
 }
 
 .error {
-  color: var(--color-danger);
-  font-size: 14px;
+  color: #D9534F;
+  font-size: 13px;
   font-weight: 500;
   text-align: center;
-  margin: -8px 0;
-  padding: 8px;
-  background-color: rgba(217, 166, 160, 0.1);
-  border-radius: 6px;
+  padding: 10px;
+  background-color: #FDF2F2;
+  border: 1px solid #F8D7DA;
+  border-radius: 8px;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 .footer {
@@ -93,14 +119,17 @@
 @media (max-width: 480px) {
   .loginCard {
     padding: 32px 24px;
+    box-shadow: none;
+    background-color: transparent;
+    border: none;
+  }
+  
+  .loginContainer {
+    background: #FFFFFF;
   }
 
   .logo {
     width: 100px;
     height: 100px;
-  }
-
-  .subtitle {
-    font-size: 14px;
   }
 }

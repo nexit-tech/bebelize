@@ -94,7 +94,7 @@ export default function ProjetoCarrinhoDiscovery({
             id="deliveryDate"
             label="Entrega Prevista"
             value={deliveryDate}
-            onChange={(e) => onDeliveryDateChange(e.target.value)}
+            onChange={(date) => onDeliveryDateChange(date)}
             required
           />
         </div>

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { FiDownload } from 'react-icons/fi';
 import { useProjects, useUsers } from '@/hooks';
 import { getStatusLabel } from '@/utils';
+import { ProjectStatus } from '@/types';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import AdminStats from '@/components/AdminStats/AdminStats';
 import FilterBar from '@/components/FilterBar/FilterBar';
@@ -33,14 +34,17 @@ export default function DashboardAdmin() {
     message: ''
   });
 
+  // Filtra apenas usuários que são consultoras para passar ao FilterBar
+  const consultants = users.filter(u => u.role === 'consultora');
+
   const filteredProjects = allProjects.filter(project => {
     const matchesSearch = 
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.consultantName.toLowerCase().includes(searchQuery.toLowerCase());
+      project.client_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (project.consultant?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesStatus = filterStatus === 'todos' || project.status === filterStatus;
-    const matchesConsultant = filterConsultant === 'todos' || project.consultantId === filterConsultant;
+    const matchesConsultant = filterConsultant === 'todos' || project.consultant_id === filterConsultant;
     const matchesPriority = filterPriority === 'todos' || project.priority === filterPriority;
 
     return matchesSearch && matchesStatus && matchesConsultant && matchesPriority;
@@ -142,6 +146,7 @@ export default function DashboardAdmin() {
           filterPriority={filterPriority} 
           onFilterPriorityChange={setFilterPriority} 
           showConsultantFilter={true}
+          consultants={consultants} 
         />
 
         <div className={styles.projectsGrid}>
@@ -150,11 +155,11 @@ export default function DashboardAdmin() {
               key={project.id}
               id={project.id}
               projectName={project.name}
-              clientName={project.clientName}
-              consultantName={project.consultantName}
-              createdAt={project.createdAt}
-              status={project.status}
-              statusLabel={getStatusLabel(project.status)}
+              clientName={project.client_name}
+              consultantName={project.consultant?.name || 'N/A'}
+              createdAt={project.created_at}
+              status={project.status as ProjectStatus}
+              statusLabel={getStatusLabel(project.status as ProjectStatus)}
               onView={() => handleViewProject(project.id)}
               onEdit={() => handleEditProject(project.id)}
               onDelete={() => handleDeleteProject(project.id, project.name)}

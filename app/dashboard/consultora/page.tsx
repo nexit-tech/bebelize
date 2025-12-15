@@ -15,6 +15,8 @@ import styles from './dashboard.module.css';
 export default function DashboardConsultora() {
   const router = useRouter();
   const { currentUser } = useAuth();
+  
+  // Passamos o ID do usuário para filtrar apenas os projetos dele
   const {
     projects,
     searchQuery,
@@ -33,23 +35,8 @@ export default function DashboardConsultora() {
   };
 
   const handleStatusChange = (value: string) => {
-    if (value === 'todos') {
-      setStatusFilter('todos');
-    } else {
-      setStatusFilter(value as ProjectStatus);
-    }
+    setStatusFilter(value);
   };
-
-  if (isLoading) {
-    return (
-      <div className={styles.dashboardContainer}>
-        <Sidebar />
-        <main className={styles.mainContent}>
-          <p>Carregando...</p>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.dashboardContainer}>
@@ -84,7 +71,7 @@ export default function DashboardConsultora() {
                 value={statusFilter}
                 onChange={(e) => handleStatusChange(e.target.value)}
               >
-                <option value="todos">Todos os Status</option>
+                <option value="">Todos os Status</option>
                 <option value="rascunho">Rascunho</option>
                 <option value="negociacao">Em Negociação</option>
                 <option value="aprovado">Aprovado</option>
@@ -96,28 +83,34 @@ export default function DashboardConsultora() {
           </div>
         </header>
 
-        <div className={styles.projectsGrid}>
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              id={project.id}
-              name={project.name}
-              clientName={project.clientName}
-              createdAt={project.createdAt}
-              status={project.status}
-              statusLabel={getStatusLabel(project.status)}
-              onClick={() => handleProjectClick(project.id)}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+           <p>Carregando projetos...</p>
+        ) : (
+          <>
+            <div className={styles.projectsGrid}>
+              {projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  id={project.id}
+                  name={project.name}
+                  clientName={project.client_name}
+                  createdAt={project.created_at}
+                  status={project.status as ProjectStatus}
+                  statusLabel={getStatusLabel(project.status as ProjectStatus)}
+                  onClick={() => handleProjectClick(project.id)}
+                />
+              ))}
+            </div>
 
-        {projects.length === 0 && (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyText}>Nenhum projeto encontrado</p>
-            <p className={styles.emptySubtext}>
-              Crie seu primeiro projeto para começar
-            </p>
-          </div>
+            {projects.length === 0 && (
+              <div className={styles.emptyState}>
+                <p className={styles.emptyText}>Nenhum projeto encontrado</p>
+                <p className={styles.emptySubtext}>
+                  Crie seu primeiro projeto para começar
+                </p>
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
