@@ -36,7 +36,7 @@ export default function PersonalizarItemPage() {
 
       setItem(foundItem);
 
-      let initialVariantId = null;
+      let initialVariantId: string | null = null;
       if (foundItem.variants && foundItem.variants.length > 0) {
         initialVariantId = foundItem.variants[0].id;
       }
