@@ -14,13 +14,25 @@ interface ItemCustomizerModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: DiscoveredItem | null;
-  onAddToProject: (item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string) => void;
+  // Props para Edição
+  initialCustomizations?: LayerCustomization[];
+  initialPreviewUrl?: string | null;
+  initialVariantId?: string | null;
+  onAddToProject: (
+    item: DiscoveredItem, 
+    customizations: LayerCustomization[], 
+    renderUrl: string, 
+    variantId?: string
+  ) => void;
 }
 
 export default function ItemCustomizerModal({
   isOpen,
   onClose,
   item,
+  initialCustomizations,
+  initialPreviewUrl,
+  initialVariantId,
   onAddToProject
 }: ItemCustomizerModalProps) {
   const { patterns, isLoading: loadingPatterns } = useDiscoveredPatterns();
@@ -31,23 +43,26 @@ export default function ItemCustomizerModal({
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
+  // Sincroniza o estado inicial (Edição ou Criação)
   useEffect(() => {
     if (isOpen && item) {
-      setCustomizations([]);
-      setRenderTime(undefined);
-
-      let initialVariantId = null;
-      if (item.variants && item.variants.length > 0) {
-        initialVariantId = item.variants[0].id;
+      if (initialCustomizations) {
+        // Modo Edição: Carrega o que já existe
+        setCustomizations(initialCustomizations);
+        setPreviewUrl(initialPreviewUrl || item.image_url || null);
+        setSelectedVariantId(initialVariantId || (item.variants?.[0]?.id || null));
+      } else {
+        // Modo Criação: Reset padrão
+        setCustomizations([]);
+        const firstVariantId = item.variants?.[0]?.id || null;
+        setSelectedVariantId(firstVariantId);
+        
+        const variant = item.variants?.find(v => v.id === firstVariantId);
+        setPreviewUrl(variant?.previewUrl || item.image_url || null);
       }
-      setSelectedVariantId(initialVariantId);
-
-      const variant = item.variants?.find(v => v.id === initialVariantId);
-      const initialImage = variant?.previewUrl || item.image_url || null;
-      
-      setPreviewUrl(initialImage);
+      setRenderTime(undefined);
     }
-  }, [isOpen, item]);
+  }, [isOpen, item, initialCustomizations, initialPreviewUrl, initialVariantId]);
 
   const allLayersForRender = useMemo(() => {
     if (!item) return [];
@@ -64,7 +79,7 @@ export default function ItemCustomizerModal({
 
   const handleVariantChange = (variantId: string) => {
     setSelectedVariantId(variantId);
-    setCustomizations([]);
+    setCustomizations([]); // Ao trocar o modelo, as camadas mudam, então limpamos
 
     if (item && item.variants) {
       const variant = item.variants.find(v => v.id === variantId);
@@ -82,6 +97,7 @@ export default function ItemCustomizerModal({
       
       const requestBody = {
         item_id: item.id,
+        variant_id: selectedVariantId,
         collection_id: item.collection_id,
         customizations,
         layers: allLayersForRender
@@ -93,9 +109,7 @@ export default function ItemCustomizerModal({
         body: JSON.stringify(requestBody)
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro na API: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
 
       const data: RenderResponse = await response.json();
 
@@ -120,9 +134,11 @@ export default function ItemCustomizerModal({
       <div className={styles.modalContent}>
         <div className={styles.header}>
           <div className={styles.headerInfo}>
-            <h2 className={styles.title}>Personalizar: {item.name}</h2>
+            <h2 className={styles.title}>
+              {initialCustomizations ? 'Editar Item' : 'Personalizar'}: {item.name}
+            </h2>
             <span className={styles.subtitle}>
-              Selecione as texturas para cada camada
+              Ajuste as texturas e visualize o resultado
             </span>
           </div>
           <button className={styles.closeButton} onClick={onClose}>
@@ -132,10 +148,9 @@ export default function ItemCustomizerModal({
 
         <div className={styles.body}>
           <div className={styles.layersPanel}>
-            
             {item.variants && item.variants.length > 1 && (
               <div className={styles.variantSelector}>
-                <label className={styles.variantLabel}>Escolha o Modelo:</label>
+                <label className={styles.variantLabel}>Modelo Base:</label>
                 <div className={styles.selectWrapper}>
                   <select 
                     className={styles.variantSelect}
@@ -182,10 +197,10 @@ export default function ItemCustomizerModal({
           </Button>
           <Button 
             variant="primary" 
-            onClick={() => item && previewUrl && onAddToProject(item, customizations, previewUrl)}
+            onClick={() => onAddToProject(item, customizations, previewUrl!, selectedVariantId || undefined)}
             disabled={!previewUrl || isRendering}
           >
-            Adicionar ao Projeto
+            {initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto'}
           </Button>
         </div>
       </div>

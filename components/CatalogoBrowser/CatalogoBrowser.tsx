@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { FiCheck, FiLayers } from 'react-icons/fi';
+import { FiCheck, FiLayers, FiFolder, FiArrowLeft, FiSearch } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
 import type { LayerCustomization } from '@/types/rendering.types';
 import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
@@ -17,6 +17,8 @@ interface CatalogoBrowserProps {
   onAddBulkItems?: (items: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => void;
 }
 
+type ViewMode = 'collections' | 'items';
+
 export default function CatalogoBrowser({ 
   onSelectSimpleItem, 
   onCustomizeCompositeItem,
@@ -24,22 +26,54 @@ export default function CatalogoBrowser({
 }: CatalogoBrowserProps) {
   const { items, isLoading } = useItemsDiscovery();
   
+  const [viewMode, setViewMode] = useState<ViewMode>('collections');
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
-  const filteredItems = useMemo(() => {
-    if (!searchTerm) return items;
-    const term = searchTerm.toLowerCase();
-    return items.filter(item => 
-      item.name.toLowerCase().includes(term)
-    );
-  }, [items, searchTerm]);
+  // 1. Agrupar Coleções
+  const collections = useMemo(() => {
+    const map = new Map<string, { count: number, preview: string | null }>();
+    
+    items.forEach(item => {
+      const colId = item.collection_id || 'outros';
+      const current = map.get(colId) || { count: 0, preview: null };
+      
+      map.set(colId, {
+        count: current.count + 1,
+        // Pega a primeira imagem válida como capa da coleção
+        preview: current.preview || item.image_url || null
+      });
+    });
+
+    return Array.from(map.entries()).map(([id, data]) => ({
+      id,
+      name: formatCollectionName(id),
+      count: data.count,
+      preview: data.preview
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, [items]);
+
+  // 2. Filtrar Itens da Coleção Ativa
+  const activeItems = useMemo(() => {
+    if (!activeCollectionId) return [];
+    
+    let result = items.filter(i => (i.collection_id || 'outros') === activeCollectionId);
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(i => i.name.toLowerCase().includes(term));
+    }
+
+    return result;
+  }, [items, activeCollectionId, searchTerm]);
+
+  // --- Handlers de Seleção ---
 
   const toggleSelection = (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation();
-    
     const newSelection = new Set(selectedIds);
     if (newSelection.has(itemId)) {
       newSelection.delete(itemId);
@@ -50,7 +84,7 @@ export default function CatalogoBrowser({
   };
 
   const handleSelectAll = () => {
-    const allIds = new Set(filteredItems.map(i => i.id));
+    const allIds = new Set(activeItems.map(i => i.id));
     setSelectedIds(allIds);
   };
 
@@ -58,18 +92,24 @@ export default function CatalogoBrowser({
     setSelectedIds(new Set());
   };
 
-  const handleBulkCustomizeClick = () => {
-    setIsBulkModalOpen(true);
+  // --- Navegação ---
+
+  const enterCollection = (colId: string) => {
+    setActiveCollectionId(colId);
+    setViewMode('items');
+    setSearchTerm('');
   };
 
-  const handleBulkConfirm = (results: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => {
-    if (onAddBulkItems) {
-      onAddBulkItems(results);
-    }
-    handleClearSelection();
+  const backToCollections = () => {
+    setViewMode('collections');
+    setActiveCollectionId(null);
+    setSearchTerm('');
   };
+
+  // --- Ações ---
 
   const handleCardClick = (item: DiscoveredItem) => {
+    // Se estiver em modo de seleção, o clique alterna a seleção
     if (selectedIds.size > 0) {
       const newSelection = new Set(selectedIds);
       if (newSelection.has(item.id)) {
@@ -81,8 +121,8 @@ export default function CatalogoBrowser({
       return;
     }
 
+    // Caso contrário, abre a customização
     const hasLayers = item.layers && item.layers.length > 0 && item.layers.some(l => l.type !== 'fixed');
-    
     if (hasLayers) {
       onCustomizeCompositeItem(item);
     } else {
@@ -90,87 +130,127 @@ export default function CatalogoBrowser({
     }
   };
 
+  const handleBulkConfirm = (results: any[]) => {
+    if (onAddBulkItems) onAddBulkItems(results);
+    handleClearSelection();
+    setIsBulkModalOpen(false);
+  };
+
   if (isLoading) {
-    return <div className={styles.loading}>Carregando catálogo...</div>;
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+        <p>Carregando catálogo...</p>
+      </div>
+    );
   }
 
   const selectedItemsList = items.filter(i => selectedIds.has(i.id));
-  const hasSelection = selectedIds.size > 0;
 
   return (
     <div className={styles.container}>
-      <SearchBar 
-        placeholder="Buscar itens..." 
-        value={searchTerm}
-        onChange={setSearchTerm}
-      />
-
-      {hasSelection && (
-        <div className={styles.selectionToolbar}>
-          <div className={styles.selectionInfo}>
-            <div className={styles.selectionCount}>
-              {selectedIds.size}
-            </div>
-            <span className={styles.selectionLabel}>itens selecionados</span>
-            <div className={styles.divider} />
-            <button className={styles.textButton} onClick={handleSelectAll}>
-              Selecionar Tudo
-            </button>
-            <button className={styles.textButton} onClick={handleClearSelection}>
-              Limpar
-            </button>
+      
+      {/* --- View: Lista de Coleções --- */}
+      {viewMode === 'collections' && (
+        <div className={styles.collectionsView}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>Minhas Coleções</h2>
+            <p className={styles.subtitle}>Selecione uma coleção para visualizar os itens</p>
           </div>
 
-          <div className={styles.selectionActions}>
-             <Button 
-               variant="primary" 
-               onClick={handleBulkCustomizeClick}
-             >
-               <FiLayers size={16} />
-               Personalizar ({selectedIds.size})
-             </Button>
+          <div className={styles.collectionsGrid}>
+            {collections.map(col => (
+              <div key={col.id} className={styles.collectionCard} onClick={() => enterCollection(col.id)}>
+                <div className={styles.collectionPreview}>
+                  {col.preview ? (
+                    <img src={col.preview} alt={col.name} />
+                  ) : (
+                    <FiFolder size={48} className={styles.folderIcon} />
+                  )}
+                  <div className={styles.itemCountBadge}>{col.count} itens</div>
+                </div>
+                <div className={styles.collectionInfo}>
+                  <h3 className={styles.collectionName}>{col.name}</h3>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      <div className={styles.scrollArea}>
-        <div className={styles.categorySection}>
-          <h3 className={styles.categoryTitle}>
-            Todos os Itens
-            <span className={styles.itemCount}>{filteredItems.length} itens</span>
-          </h3>
-          
-          <div className={styles.grid}>
-            {filteredItems.map(item => {
-              const isSelected = selectedIds.has(item.id);
-              
-              return (
-                <div 
-                  key={item.id} 
-                  className={`${styles.cardWrapper} ${isSelected ? styles.selected : ''}`}
-                  onClick={() => handleCardClick(item)}
-                >
-                  <div 
-                    className={styles.checkboxOverlay}
-                    onClick={(e) => toggleSelection(e, item.id)}
-                  >
-                    {isSelected && <FiCheck size={14} color="#FFF" />}
-                  </div>
+      {/* --- View: Itens da Coleção --- */}
+      {viewMode === 'items' && (
+        <div className={styles.itemsView}>
+          <div className={styles.itemsHeader}>
+            <button className={styles.backButton} onClick={backToCollections}>
+              <FiArrowLeft size={20} />
+              <span>Voltar</span>
+            </button>
+            <div className={styles.headerContent}>
+              <h2 className={styles.collectionTitle}>
+                {formatCollectionName(activeCollectionId || '')}
+              </h2>
+              <div className={styles.searchWrapper}>
+                <SearchBar 
+                  placeholder="Buscar itens nesta coleção..." 
+                  value={searchTerm} 
+                  onChange={setSearchTerm} 
+                />
+              </div>
+            </div>
+          </div>
 
-                  <BrowseItemCardDiscovery 
-                    item={item} 
-                    onAction={() => handleCardClick(item)}
-                  />
-                </div>
-              );
-            })}
+          {/* Barra de Seleção (Bulk Actions) */}
+          {selectedIds.size > 0 && (
+            <div className={styles.selectionToolbar}>
+              <div className={styles.selectionInfo}>
+                <span className={styles.countBadge}>{selectedIds.size}</span>
+                <span className={styles.selectionText}>itens selecionados</span>
+                <div className={styles.divider} />
+                <button className={styles.linkBtn} onClick={handleSelectAll}>Todos</button>
+                <button className={styles.linkBtn} onClick={handleClearSelection}>Limpar</button>
+              </div>
+              <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
+                <FiLayers size={16} /> Personalizar Seleção
+              </Button>
+            </div>
+          )}
+
+          <div className={styles.itemsGridScroll}>
+            {activeItems.length > 0 ? (
+              <div className={styles.itemsGrid}>
+                {activeItems.map(item => {
+                  const isSelected = selectedIds.has(item.id);
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={`${styles.itemCardWrapper} ${isSelected ? styles.selected : ''}`}
+                      onClick={() => handleCardClick(item)}
+                    >
+                      {/* Checkbox Overlay - Topo Direito */}
+                      <div 
+                        className={`${styles.checkbox} ${isSelected ? styles.checked : ''}`}
+                        onClick={(e) => toggleSelection(e, item.id)}
+                      >
+                        {isSelected && <FiCheck size={14} color="#FFF" />}
+                      </div>
+
+                      <BrowseItemCardDiscovery 
+                        item={item} 
+                        onAction={() => handleCardClick(item)}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>Nenhum item encontrado.</p>
+              </div>
+            )}
           </div>
         </div>
-
-        {filteredItems.length === 0 && (
-          <p className={styles.emptyState}>Nenhum item encontrado.</p>
-        )}
-      </div>
+      )}
 
       <BulkCustomizerModal
         isOpen={isBulkModalOpen}
@@ -180,4 +260,24 @@ export default function CatalogoBrowser({
       />
     </div>
   );
+}
+
+// Helper de Formatação
+function formatCollectionName(rawName: string): string {
+  if (!rawName) return 'Geral';
+  if (rawName === 'outros') return 'Outros';
+
+  // 1. Remove prefixo "colecao-" ou "colecao_" se existir (case insensitive)
+  let cleaned = rawName.replace(/^colecao[-_]/i, '');
+  
+  // 2. Substitui hífens e underscores restantes por espaços
+  cleaned = cleaned.replace(/[-_]/g, ' ');
+
+  // 3. Capitaliza cada palavra
+  cleaned = cleaned.split(' ')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ');
+
+  // 4. Adiciona o prefixo bonito "Coleção"
+  return `Coleção ${cleaned}`;
 }
