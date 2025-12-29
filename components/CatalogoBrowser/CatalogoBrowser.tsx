@@ -1,143 +1,183 @@
-import React, { useState } from 'react';
-import { FiArrowLeft } from 'react-icons/fi';
-import { useCollections } from '@/hooks/useCollections';
-import { useItems } from '@/hooks/useItems';
-import type { DiscoveredCollection, DiscoveredItem } from '@/lib/discovery/types';
-import BrowseCollectionCardDiscovery from '../BrowseCollectionCardDiscovery/BrowseCollectionCardDiscovery';
+'use client';
+
+import React, { useState, useMemo } from 'react';
+import { FiCheck, FiLayers } from 'react-icons/fi';
+import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { LayerCustomization } from '@/types/rendering.types';
+import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
+import SearchBar from '../SearchBar/SearchBar';
 import BrowseItemCardDiscovery from '../BrowseItemCardDiscovery/BrowseItemCardDiscovery';
+import Button from '../Button/Button';
+import BulkCustomizerModal from '../BulkCustomizerModal/BulkCustomizerModal';
 import styles from './CatalogoBrowser.module.css';
 
 interface CatalogoBrowserProps {
   onSelectSimpleItem: (item: DiscoveredItem) => void;
   onCustomizeCompositeItem: (item: DiscoveredItem) => void;
+  onAddBulkItems?: (items: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => void;
 }
 
-type View = 'collections' | 'items';
-
-export default function CatalogoBrowser({
-  onSelectSimpleItem,
-  onCustomizeCompositeItem
+export default function CatalogoBrowser({ 
+  onSelectSimpleItem, 
+  onCustomizeCompositeItem,
+  onAddBulkItems
 }: CatalogoBrowserProps) {
-  const [view, setView] = useState<View>('collections');
-  const [selectedCollection, setSelectedCollection] = useState<DiscoveredCollection | null>(null);
+  const { items, isLoading } = useItemsDiscovery();
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
-  const { collections, isLoading: collectionsLoading } = useCollections();
-  const { items, isLoading: itemsLoading } = useItems(selectedCollection?.slug);
+  const filteredItems = useMemo(() => {
+    if (!searchTerm) return items;
+    const term = searchTerm.toLowerCase();
+    return items.filter(item => 
+      item.name.toLowerCase().includes(term)
+    );
+  }, [items, searchTerm]);
 
-  const handleCollectionClick = (collection: DiscoveredCollection) => {
-    setSelectedCollection(collection);
-    setView('items');
-  };
-
-  const handleBackToCollections = () => {
-    setSelectedCollection(null);
-    setView('collections');
-  };
-
-  const handleItemAction = (item: DiscoveredItem) => {
-    if (item.item_type === 'simple') {
-      onSelectSimpleItem(item);
+  const toggleSelection = (e: React.MouseEvent, itemId: string) => {
+    e.stopPropagation();
+    
+    const newSelection = new Set(selectedIds);
+    if (newSelection.has(itemId)) {
+      newSelection.delete(itemId);
     } else {
+      newSelection.add(itemId);
+    }
+    setSelectedIds(newSelection);
+  };
+
+  const handleSelectAll = () => {
+    const allIds = new Set(filteredItems.map(i => i.id));
+    setSelectedIds(allIds);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const handleBulkCustomizeClick = () => {
+    setIsBulkModalOpen(true);
+  };
+
+  const handleBulkConfirm = (results: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => {
+    if (onAddBulkItems) {
+      onAddBulkItems(results);
+    }
+    handleClearSelection();
+  };
+
+  const handleCardClick = (item: DiscoveredItem) => {
+    if (selectedIds.size > 0) {
+      const newSelection = new Set(selectedIds);
+      if (newSelection.has(item.id)) {
+        newSelection.delete(item.id);
+      } else {
+        newSelection.add(item.id);
+      }
+      setSelectedIds(newSelection);
+      return;
+    }
+
+    const hasLayers = item.layers && item.layers.length > 0 && item.layers.some(l => l.type !== 'fixed');
+    
+    if (hasLayers) {
       onCustomizeCompositeItem(item);
+    } else {
+      onSelectSimpleItem(item);
     }
   };
 
-  const isLoading = collectionsLoading || (view === 'items' && itemsLoading);
-
   if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loading}>Carregando...</div>
-      </div>
-    );
+    return <div className={styles.loading}>Carregando catálogo...</div>;
   }
+
+  const selectedItemsList = items.filter(i => selectedIds.has(i.id));
+  const hasSelection = selectedIds.size > 0;
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        {view === 'collections' ? (
-          <h2 className={styles.title}>Selecione uma Coleção</h2>
-        ) : (
-          <>
-            <button
-              className={styles.backButton}
-              onClick={handleBackToCollections}
-              aria-label="Voltar para coleções"
-            >
-              <FiArrowLeft size={20} />
+      <SearchBar 
+        placeholder="Buscar itens..." 
+        value={searchTerm}
+        onChange={setSearchTerm}
+      />
+
+      {hasSelection && (
+        <div className={styles.selectionToolbar}>
+          <div className={styles.selectionInfo}>
+            <div className={styles.selectionCount}>
+              {selectedIds.size}
+            </div>
+            <span className={styles.selectionLabel}>itens selecionados</span>
+            <div className={styles.divider} />
+            <button className={styles.textButton} onClick={handleSelectAll}>
+              Selecionar Tudo
             </button>
-            <h2 className={styles.title}>{selectedCollection?.name}</h2>
-          </>
+            <button className={styles.textButton} onClick={handleClearSelection}>
+              Limpar
+            </button>
+          </div>
+
+          <div className={styles.selectionActions}>
+             <Button 
+               variant="primary" 
+               onClick={handleBulkCustomizeClick}
+             >
+               <FiLayers size={16} />
+               Personalizar ({selectedIds.size})
+             </Button>
+          </div>
+        </div>
+      )}
+
+      <div className={styles.scrollArea}>
+        <div className={styles.categorySection}>
+          <h3 className={styles.categoryTitle}>
+            Todos os Itens
+            <span className={styles.itemCount}>{filteredItems.length} itens</span>
+          </h3>
+          
+          <div className={styles.grid}>
+            {filteredItems.map(item => {
+              const isSelected = selectedIds.has(item.id);
+              
+              return (
+                <div 
+                  key={item.id} 
+                  className={`${styles.cardWrapper} ${isSelected ? styles.selected : ''}`}
+                  onClick={() => handleCardClick(item)}
+                >
+                  <div 
+                    className={styles.checkboxOverlay}
+                    onClick={(e) => toggleSelection(e, item.id)}
+                  >
+                    {isSelected && <FiCheck size={14} color="#FFF" />}
+                  </div>
+
+                  <BrowseItemCardDiscovery 
+                    item={item} 
+                    onAction={() => handleCardClick(item)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {filteredItems.length === 0 && (
+          <p className={styles.emptyState}>Nenhum item encontrado.</p>
         )}
-      </header>
-
-      {view === 'collections' && (
-        <CollectionsList
-          collections={collections}
-          onCollectionClick={handleCollectionClick}
-        />
-      )}
-
-      {view === 'items' && (
-        <ItemsList
-          items={items}
-          onItemAction={handleItemAction}
-        />
-      )}
-    </div>
-  );
-}
-
-interface CollectionsListProps {
-  collections: DiscoveredCollection[];
-  onCollectionClick: (collection: DiscoveredCollection) => void;
-}
-
-function CollectionsList({ collections, onCollectionClick }: CollectionsListProps) {
-  if (collections.length === 0) {
-    return (
-      <div className={styles.emptyState}>
-        <p className={styles.emptyText}>Nenhuma coleção encontrada</p>
       </div>
-    );
-  }
 
-  return (
-    <div className={styles.grid}>
-      {collections.map(collection => (
-        <BrowseCollectionCardDiscovery
-          key={collection.id}
-          collection={collection}
-          onClick={() => onCollectionClick(collection)}
-        />
-      ))}
-    </div>
-  );
-}
-
-interface ItemsListProps {
-  items: DiscoveredItem[];
-  onItemAction: (item: DiscoveredItem) => void;
-}
-
-function ItemsList({ items, onItemAction }: ItemsListProps) {
-  if (items.length === 0) {
-    return (
-      <div className={styles.emptyState}>
-        <p className={styles.emptyText}>Nenhum item nesta coleção</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`${styles.grid} ${styles.itemsGrid}`}>
-      {items.map(item => (
-        <BrowseItemCardDiscovery
-          key={item.id}
-          item={item}
-          onAction={() => onItemAction(item)}
-        />
-      ))}
+      <BulkCustomizerModal
+        isOpen={isBulkModalOpen}
+        onClose={() => setIsBulkModalOpen(false)}
+        items={selectedItemsList}
+        onConfirm={handleBulkConfirm}
+      />
     </div>
   );
 }

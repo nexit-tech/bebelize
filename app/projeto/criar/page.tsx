@@ -20,18 +20,15 @@ export default function CriarProjeto() {
   const { currentUser } = useAuth();
   const { createProject } = useProjects();
 
-  // Estados do Projeto e Cliente
   const [projectName, setProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [deliveryDate, setDeliveryDate] = useState('');
   const [productionNotes, setProductionNotes] = useState('');
   
-  // Estados do Carrinho
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   
-  // Modais
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
     title: '',
@@ -46,11 +43,11 @@ export default function CriarProjeto() {
     item: null
   });
 
-  // --- Handlers de Carrinho e Modal ---
+  // --- Handlers de Adição ---
 
   const handleSelectSimpleItem = (item: DiscoveredItem) => {
     const cartItem: CartItem = {
-      cartItemId: `cart-${Date.now()}`,
+      cartItemId: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       item
     };
     setCartItems(prev => [...prev, cartItem]);
@@ -63,51 +60,45 @@ export default function CriarProjeto() {
     });
   };
 
-  const handleCloseCustomizerModal = () => {
-    setCustomizerModal({
-      isOpen: false,
-      item: null
-    });
-  };
-
+  // Handler para adição individual (via modal simples)
   const handleAddCustomizedItem = (
     item: DiscoveredItem,
     customizations: LayerCustomization[],
     renderUrl: string
   ) => {
     const cartItem: CartItem = {
-      cartItemId: `cart-${Date.now()}`,
+      cartItemId: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       item,
       customizations,
       renderUrl
     };
     setCartItems(prev => [...prev, cartItem]);
-    handleCloseCustomizerModal();
+    setCustomizerModal({ isOpen: false, item: null });
+  };
+
+  // --- NOVO: Handler para Adição em Massa ---
+  const handleAddBulkItems = (items: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => {
+    const newCartItems = items.map(entry => ({
+      cartItemId: `cart-${Date.now()}-${entry.item.id}-${Math.random().toString(36).substr(2, 5)}`,
+      item: entry.item,
+      customizations: entry.customizations,
+      renderUrl: entry.renderUrl
+    }));
+    
+    setCartItems(prev => [...prev, ...newCartItems]);
   };
 
   const handleRemoveItem = (cartItemId: string) => {
     setCartItems(prev => prev.filter(i => i.cartItemId !== cartItemId));
   };
 
-  // --- Handler de Salvamento ---
+  // --- Salvamento do Projeto ---
 
   const handleSaveProject = async () => {
-    if (!projectName.trim()) {
-      alert('Por favor, dê um nome ao projeto.');
-      return;
-    }
-    if (!clientName.trim()) {
-      alert('Por favor, informe o nome do cliente.');
-      return;
-    }
-    if (cartItems.length === 0) {
-      alert('Adicione pelo menos um item à produção.');
-      return;
-    }
-    if (!currentUser?.id) {
-      alert('Erro de autenticação. Tente recarregar a página.');
-      return;
-    }
+    if (!projectName.trim()) return alert('Por favor, dê um nome ao projeto.');
+    if (!clientName.trim()) return alert('Por favor, informe o nome do cliente.');
+    if (cartItems.length === 0) return alert('Adicione pelo menos um item à produção.');
+    if (!currentUser?.id) return alert('Erro de autenticação.');
 
     try {
       setIsSaving(true);
@@ -139,27 +130,17 @@ export default function CriarProjeto() {
 
     } catch (error) {
       console.error('Erro ao salvar:', error);
-      alert('Ocorreu um erro ao salvar o projeto. Verifique o console.');
+      alert('Ocorreu um erro ao salvar o projeto.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleGeneratePDF = () => {
-    alert('A geração de PDF da ficha técnica será implementada em breve!');
-  };
-
-  const handleGoBack = () => {
-    router.back();
-  };
-
+  const handleGoBack = () => router.back();
+  
   const handleCloseModal = () => {
     setSuccessModal({ isOpen: false, title: '', message: '' });
-    if (currentUser?.role === 'atelier') {
-      router.push('/dashboard/atelier');
-    } else {
-      router.push('/dashboard/consultora');
-    }
+    router.push(currentUser?.role === 'atelier' ? '/dashboard/atelier' : '/dashboard/consultora');
   };
 
   return (
@@ -169,24 +150,23 @@ export default function CriarProjeto() {
       <main className={styles.mainContent}>
         <Header
           onGoBack={handleGoBack}
-          onGeneratePDF={handleGeneratePDF}
           onSaveProject={handleSaveProject}
           isSaving={isSaving}
         />
 
         <div className={styles.columnsLayout}>
-          {/* Coluna da Esquerda: Catálogo */}
+          {/* Coluna da Esquerda: Catálogo e Seleção */}
           <div className={styles.columnLeft}>
-            {/* Removemos o style inline para usar a classe CSS responsiva */}
             <div className={styles.card}>
               <CatalogoBrowser
                 onSelectSimpleItem={handleSelectSimpleItem}
                 onCustomizeCompositeItem={handleCustomizeCompositeItem}
+                onAddBulkItems={handleAddBulkItems} // Passando a nova função
               />
             </div>
           </div>
 
-          {/* Coluna da Direita: Ficha Técnica (Antigo Carrinho) */}
+          {/* Coluna da Direita: Lista de Produção */}
           <div className={styles.columnRight}>
             <div className={styles.card}>
               <ProjetoCarrinhoDiscovery
@@ -208,10 +188,10 @@ export default function CriarProjeto() {
         </div>
       </main>
 
-      {/* Modais */}
+      {/* Modal Individual (mantido para compatibilidade) */}
       <ItemCustomizerModal
         isOpen={customizerModal.isOpen}
-        onClose={handleCloseCustomizerModal}
+        onClose={() => setCustomizerModal({ isOpen: false, item: null })}
         item={customizerModal.item}
         onAddToProject={handleAddCustomizedItem}
       />
@@ -226,23 +206,11 @@ export default function CriarProjeto() {
   );
 }
 
-// Subcomponente de Header
-interface HeaderProps {
-  onGoBack: () => void;
-  onGeneratePDF: () => void;
-  onSaveProject: () => void;
-  isSaving: boolean;
-}
-
-function Header({ onGoBack, onGeneratePDF, onSaveProject, isSaving }: HeaderProps) {
+function Header({ onGoBack, onSaveProject, isSaving }: any) {
   return (
     <header className={styles.header}>
       <div className={styles.headerLeft}>
-        <button
-          className={styles.backButton}
-          onClick={onGoBack}
-          aria-label="Voltar"
-        >
+        <button className={styles.backButton} onClick={onGoBack}>
           <FiArrowLeft size={20} />
         </button>
         <div>
@@ -250,19 +218,12 @@ function Header({ onGoBack, onGeneratePDF, onSaveProject, isSaving }: HeaderProp
           <p className={styles.subtitle}>Monte a ficha técnica e envie para o atelier</p>
         </div>
       </div>
-
       <div className={styles.headerActions}>
-        <Button variant="secondary" onClick={onGeneratePDF}>
-          <FiFileText size={18} />
-          Imprimir Ficha
+        <Button variant="secondary" onClick={() => alert('Em breve')}>
+          <FiFileText size={18} /> Imprimir Ficha
         </Button>
-        <Button 
-          variant="primary" 
-          onClick={onSaveProject}
-          disabled={isSaving}
-        >
-          <FiSave size={18} />
-          {isSaving ? 'Enviando...' : 'Enviar para Produção'}
+        <Button variant="primary" onClick={onSaveProject} disabled={isSaving}>
+          <FiSave size={18} /> {isSaving ? 'Enviando...' : 'Enviar para Produção'}
         </Button>
       </div>
     </header>
