@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
 import { LayerCustomization } from '@/types/rendering.types';
@@ -17,7 +19,10 @@ export default function LayerCustomizer({
   customizations,
   onCustomizationsChange
 }: LayerCustomizerProps) {
-  const [expandedLayer, setExpandedLayer] = useState<number | null>(layers[0]?.index || null);
+  // Inicializa como null para que nenhuma opção comece aberta
+  const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
+
+  const sortedLayers = [...layers].sort((a, b) => a.index - b.index);
 
   const handleSelectPattern = (layerIndex: number, pattern: DiscoveredPattern) => {
     const newCustomizations = [...customizations];
@@ -37,13 +42,21 @@ export default function LayerCustomizer({
     }
 
     onCustomizationsChange(newCustomizations);
+
+    // Lógica de avanço automático suave
+    const currentSortedIndex = sortedLayers.findIndex(l => l.index === layerIndex);
+    const nextLayer = sortedLayers[currentSortedIndex + 1];
+
+    if (nextLayer) {
+      setExpandedLayer(nextLayer.index);
+    } else {
+      setExpandedLayer(null); // Fecha tudo se for o último
+    }
   };
 
   const getSelectedPatternId = (layerIndex: number) => {
     return customizations.find(c => c.layer_index === layerIndex)?.pattern_id;
   };
-
-  const sortedLayers = [...layers].sort((a, b) => a.index - b.index);
 
   return (
     <div className={styles.container}>
@@ -60,12 +73,13 @@ export default function LayerCustomizer({
             >
               <div className={styles.headerInfo}>
                 <span className={styles.layerTitle}>{layer.name}</span>
-                <span className={styles.layerSelection}>{selectedName || 'Nenhuma textura'}</span>
+                <span className={styles.layerSelection}>{selectedName || 'Selecione uma opção'}</span>
               </div>
               {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
             </button>
 
-            {isExpanded && (
+            {/* Estrutura alterada para permitir animação CSS (sem renderização condicional) */}
+            <div className={`${styles.accordionContent} ${isExpanded ? styles.expanded : ''}`}>
               <div className={styles.patternGrid}>
                 {patterns.map((pattern) => (
                   <button
@@ -74,7 +88,11 @@ export default function LayerCustomizer({
                     onClick={() => handleSelectPattern(layer.index, pattern)}
                     title={pattern.name}
                   >
-                    <img src={pattern.thumbnail_url} alt={pattern.name} className={styles.patternThumb} />
+                    <img 
+                      src={pattern.thumbnail_url || pattern.url} 
+                      alt={pattern.name} 
+                      className={styles.patternThumb} 
+                    />
                     {selectedId === pattern.id && (
                       <div className={styles.checkOverlay}>
                         <FiCheck color="#FFF" size={14} />
@@ -83,7 +101,7 @@ export default function LayerCustomizer({
                   </button>
                 ))}
               </div>
-            )}
+            </div>
           </div>
         );
       })}

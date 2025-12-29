@@ -112,19 +112,16 @@ export default function CriarProjeto() {
     try {
       setIsSaving(true);
 
-      // Payload para criar o projeto no Supabase
       const projectPayload: any = {
         name: projectName,
         client_name: clientName,
         client_phone: clientPhone,
         consultant_id: currentUser.id,
-        // Usa a coleção do primeiro item como referência principal, ou uma genérica
         collection_id: cartItems[0].item.collection_id, 
-        status: 'producao', // Define status direto para produção
+        status: 'producao',
         priority: 'normal',
         delivery_date: deliveryDate || null,
         production_notes: productionNotes || null,
-        // Salva os itens do carrinho em formato JSON para flexibilidade
         customizations_data: {
           cart_items: cartItems,
           total_items: cartItems.length,
@@ -158,7 +155,6 @@ export default function CriarProjeto() {
 
   const handleCloseModal = () => {
     setSuccessModal({ isOpen: false, title: '', message: '' });
-    // Redireciona para o dashboard apropriado
     if (currentUser?.role === 'atelier') {
       router.push('/dashboard/atelier');
     } else {
@@ -181,7 +177,8 @@ export default function CriarProjeto() {
         <div className={styles.columnsLayout}>
           {/* Coluna da Esquerda: Catálogo */}
           <div className={styles.columnLeft}>
-            <div className={styles.card} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '80vh' }}>
+            {/* Removemos o style inline para usar a classe CSS responsiva */}
+            <div className={styles.card}>
               <CatalogoBrowser
                 onSelectSimpleItem={handleSelectSimpleItem}
                 onCustomizeCompositeItem={handleCustomizeCompositeItem}
@@ -191,7 +188,7 @@ export default function CriarProjeto() {
 
           {/* Coluna da Direita: Ficha Técnica (Antigo Carrinho) */}
           <div className={styles.columnRight}>
-            <div className={styles.card} style={{ height: '80vh' }}>
+            <div className={styles.card}>
               <ProjetoCarrinhoDiscovery
                 projectName={projectName}
                 onProjectNameChange={setProjectName}

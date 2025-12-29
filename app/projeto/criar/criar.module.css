@@ -11,6 +11,7 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
+  transition: margin-left 0.3s ease;
 }
 
 .header {
@@ -46,11 +47,6 @@
   background-color: rgba(166, 142, 128, 0.05);
 }
 
-.backButton:focus-visible {
-  outline: 2px solid var(--color-light-tan);
-  outline-offset: 2px;
-}
-
 .title {
   font-size: 28px;
   font-weight: 600;
@@ -76,12 +72,14 @@
   grid-template-columns: 1fr 1fr;
   gap: 32px;
   flex: 1;
+  min-height: 0;
 }
 
 .columnLeft,
 .columnRight {
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .card {
@@ -89,8 +87,11 @@
   border: 1px solid #E8E8E8;
   border-radius: 12px;
   padding: 32px;
-  height: 100%;
   box-shadow: 0 2px 8px rgba(89, 78, 74, 0.04);
+  height: 80vh; 
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 @media (max-width: 1024px) {
@@ -99,24 +100,26 @@
   }
 
   .columnsLayout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; 
     gap: 24px;
+    height: auto; 
+  }
+
+  .card {
+    height: 600px; 
   }
 
   .headerActions {
     width: 100%;
-    justify-content: stretch;
-  }
-
-  .headerActions button {
-    flex: 1;
+    justify-content: flex-end;
   }
 }
 
 @media (max-width: 768px) {
   .mainContent {
-    margin-left: 80px;
+    margin-left: 0;
     padding: 24px 16px;
+    padding-top: 80px;
   }
 
   .header {
@@ -132,7 +135,17 @@
     font-size: 22px;
   }
 
+  .headerActions {
+    flex-direction: column;
+  }
+
+  .headerActions button {
+    width: 100%;
+  }
+
   .card {
-    padding: 24px 20px;
+    height: auto;
+    min-height: 500px;
+    padding: 20px;
   }
 }

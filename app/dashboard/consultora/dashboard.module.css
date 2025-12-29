@@ -8,6 +8,7 @@
   flex: 1;
   margin-left: 260px;
   padding: 40px;
+  transition: margin-left 0.3s ease;
 }
 
 .header {
@@ -120,8 +121,9 @@
 
 @media (max-width: 768px) {
   .mainContent {
-    margin-left: 80px;
+    margin-left: 0;
     padding: 24px 16px;
+    padding-top: 80px; /* Espaço para o botão de toggle no topo */
   }
 
   .title {

@@ -97,19 +97,10 @@
   gap: 24px;
 }
 
-.layersPanel::-webkit-scrollbar {
-  width: 6px;
-}
-.layersPanel::-webkit-scrollbar-track {
-  background: transparent;
-}
-.layersPanel::-webkit-scrollbar-thumb {
-  background-color: var(--color-pearl);
-  border-radius: 3px;
-}
-.layersPanel::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-light-tan-grey);
-}
+.layersPanel::-webkit-scrollbar { width: 6px; }
+.layersPanel::-webkit-scrollbar-track { background: transparent; }
+.layersPanel::-webkit-scrollbar-thumb { background-color: var(--color-pearl); border-radius: 3px; }
+.layersPanel::-webkit-scrollbar-thumb:hover { background-color: var(--color-light-tan-grey); }
 
 .variantSelector {
   display: flex;
@@ -121,12 +112,10 @@
 }
 
 .variantLabel {
-  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: var(--color-light-tan);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .selectWrapper {
@@ -144,18 +133,7 @@
   padding: 12px 16px;
   font-size: 14px;
   color: var(--color-browning);
-  font-family: 'Montserrat', sans-serif;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.variantSelect:hover {
-  border-color: var(--color-light-tan);
-}
-
-.variantSelect:focus {
-  outline: 2px solid var(--color-light-tan);
-  outline-offset: 1px;
 }
 
 .selectIcon {
@@ -166,11 +144,9 @@
 }
 
 .panelTitle {
-  font-family: 'Montserrat', sans-serif;
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
   color: var(--color-light-tan-grey);
   margin: 0;
 }
@@ -198,21 +174,54 @@
 }
 
 @media (max-width: 900px) {
-  .body {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-    overflow-y: auto;
+  .modalOverlay {
+    padding: 0;
+    align-items: flex-end;
   }
-  
+
   .modalContent {
-    height: auto;
+    height: 95vh;
     max-height: 95vh;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .header {
+    padding: 20px 24px;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: hidden;
+  }
+
+  .previewPanel {
+    flex: 0 0 35vh;
+    padding: 20px;
+    border-bottom: 1px solid var(--color-pearl);
+    background-color: #F8F8F8;
+    order: 2;
   }
 
   .layersPanel {
+    flex: 1;
     border-right: none;
-    border-bottom: 1px solid var(--color-pearl);
-    max-height: none;
-    overflow: visible;
+    padding: 24px;
+    overflow-y: auto;
+    order: 1;
+  }
+
+  .footer {
+    padding: 16px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title { font-size: 18px; }
+  .subtitle { font-size: 12px; }
+  
+  .previewPanel {
+    flex: 0 0 30vh;
   }
 }

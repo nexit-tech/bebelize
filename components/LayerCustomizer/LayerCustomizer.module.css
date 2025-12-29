@@ -57,6 +57,19 @@
   color: var(--color-light-tan);
 }
 
+/* Container para animação suave */
+.accordionContent {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.accordionContent.expanded {
+  max-height: 600px; /* Altura suficiente para acomodar o grid */
+  opacity: 1;
+}
+
 .patternGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
