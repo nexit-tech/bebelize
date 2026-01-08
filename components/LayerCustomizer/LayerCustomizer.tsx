@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FiChevronDown, FiChevronRight, FiCheck } from 'react-icons/fi';
+import { FiChevronDown, FiChevronRight, FiCheck, FiLayers } from 'react-icons/fi';
 import { LayerCustomization } from '@/types/rendering.types';
 import type { DiscoveredLayer, DiscoveredPattern } from '@/lib/discovery/types';
 import styles from './LayerCustomizer.module.css';
@@ -19,8 +19,9 @@ export default function LayerCustomizer({
   customizations,
   onCustomizationsChange
 }: LayerCustomizerProps) {
-  // Inicializa como null para que nenhuma opção comece aberta
-  const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
+  const [expandedLayer, setExpandedLayer] = useState<number | null>(
+    layers.length > 0 ? layers[0].index : null
+  );
 
   const sortedLayers = [...layers].sort((a, b) => a.index - b.index);
 
@@ -43,63 +44,89 @@ export default function LayerCustomizer({
 
     onCustomizationsChange(newCustomizations);
 
-    // Lógica de avanço automático suave
+    // Auto-advance logic
+    /* Comentado para não forçar o fechamento imediato, 
+       permitindo que o usuário veja o que selecionou.
+       Você pode descomentar se preferir o fluxo rápido.
+    */
+    /*
     const currentSortedIndex = sortedLayers.findIndex(l => l.index === layerIndex);
     const nextLayer = sortedLayers[currentSortedIndex + 1];
-
     if (nextLayer) {
-      setExpandedLayer(nextLayer.index);
-    } else {
-      setExpandedLayer(null); // Fecha tudo se for o último
+      setTimeout(() => setExpandedLayer(nextLayer.index), 400);
     }
+    */
   };
 
-  const getSelectedPatternId = (layerIndex: number) => {
-    return customizations.find(c => c.layer_index === layerIndex)?.pattern_id;
+  const getSelectedPatternInfo = (layerIndex: number) => {
+    return customizations.find(c => c.layer_index === layerIndex);
   };
 
   return (
     <div className={styles.container}>
       {sortedLayers.map((layer) => {
         const isExpanded = expandedLayer === layer.index;
-        const selectedId = getSelectedPatternId(layer.index);
-        const selectedName = customizations.find(c => c.layer_index === layer.index)?.pattern_name;
-
+        const selectedInfo = getSelectedPatternInfo(layer.index);
+        
         return (
-          <div key={layer.index} className={`${styles.layerGroup} ${isExpanded ? styles.active : ''}`}>
+          <div 
+            key={layer.index} 
+            className={`${styles.layerCard} ${isExpanded ? styles.active : ''} ${selectedInfo ? styles.completed : ''}`}
+          >
             <button 
               className={styles.accordionHeader}
               onClick={() => setExpandedLayer(isExpanded ? null : layer.index)}
             >
-              <div className={styles.headerInfo}>
-                <span className={styles.layerTitle}>{layer.name}</span>
-                <span className={styles.layerSelection}>{selectedName || 'Selecione uma opção'}</span>
+              <div className={styles.headerLeft}>
+                <div className={`${styles.statusIndicator} ${selectedInfo ? styles.statusDone : ''}`}>
+                  {selectedInfo ? <FiCheck size={12} /> : <FiLayers size={12} />}
+                </div>
+                <div className={styles.headerText}>
+                  <span className={styles.layerTitle}>{layer.name}</span>
+                  <span className={styles.layerSubtitle}>
+                    {selectedInfo ? selectedInfo.pattern_name : 'Toque para escolher'}
+                  </span>
+                </div>
               </div>
-              {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
+              
+              <div className={styles.headerRight}>
+                {selectedInfo && (
+                  <div className={styles.miniPreview}>
+                     <img src={selectedInfo.pattern_url} alt="selected" />
+                  </div>
+                )}
+                {isExpanded ? <FiChevronDown /> : <FiChevronRight />}
+              </div>
             </button>
 
-            {/* Estrutura alterada para permitir animação CSS (sem renderização condicional) */}
             <div className={`${styles.accordionContent} ${isExpanded ? styles.expanded : ''}`}>
               <div className={styles.patternGrid}>
-                {patterns.map((pattern) => (
-                  <button
-                    key={pattern.id}
-                    className={`${styles.patternOption} ${selectedId === pattern.id ? styles.selected : ''}`}
-                    onClick={() => handleSelectPattern(layer.index, pattern)}
-                    title={pattern.name}
-                  >
-                    <img 
-                      src={pattern.thumbnail_url || pattern.url} 
-                      alt={pattern.name} 
-                      className={styles.patternThumb} 
-                    />
-                    {selectedId === pattern.id && (
-                      <div className={styles.checkOverlay}>
-                        <FiCheck color="#FFF" size={14} />
+                {patterns.map((pattern) => {
+                  const isSelected = selectedInfo?.pattern_id === pattern.id;
+                  return (
+                    <button
+                      key={pattern.id}
+                      className={`${styles.patternOption} ${isSelected ? styles.selected : ''}`}
+                      onClick={() => handleSelectPattern(layer.index, pattern)}
+                      title={pattern.name}
+                    >
+                      <div className={styles.thumbWrapper}>
+                        <img 
+                          src={pattern.thumbnail_url || pattern.url} 
+                          alt={pattern.name} 
+                          className={styles.patternThumb} 
+                          loading="lazy"
+                        />
+                        {isSelected && (
+                          <div className={styles.selectedOverlay}>
+                            <FiCheck size={20} />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </button>
-                ))}
+                      <span className={styles.patternName}>{pattern.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>

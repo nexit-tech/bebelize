@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { FiCheck, FiLayers, FiFolder, FiArrowLeft, FiSearch } from 'react-icons/fi';
+import { FiCheck, FiLayers, FiFolder, FiArrowLeft, FiSearch, FiGrid } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
 import type { LayerCustomization } from '@/types/rendering.types';
 import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
@@ -104,6 +104,7 @@ export default function CatalogoBrowser({
     setViewMode('collections');
     setActiveCollectionId(null);
     setSearchTerm('');
+    handleClearSelection();
   };
 
   // --- Ações ---
@@ -154,8 +155,11 @@ export default function CatalogoBrowser({
       {viewMode === 'collections' && (
         <div className={styles.collectionsView}>
           <div className={styles.header}>
+            <div className={styles.headerIcon}>
+               <FiGrid size={32} />
+            </div>
             <h2 className={styles.title}>Minhas Coleções</h2>
-            <p className={styles.subtitle}>Selecione uma coleção para visualizar os itens</p>
+            <p className={styles.subtitle}>Explore o catálogo por categorias</p>
           </div>
 
           <div className={styles.collectionsGrid}>
@@ -163,14 +167,17 @@ export default function CatalogoBrowser({
               <div key={col.id} className={styles.collectionCard} onClick={() => enterCollection(col.id)}>
                 <div className={styles.collectionPreview}>
                   {col.preview ? (
-                    <img src={col.preview} alt={col.name} />
+                    <img src={col.preview} alt={col.name} loading="lazy" />
                   ) : (
-                    <FiFolder size={48} className={styles.folderIcon} />
+                    <div className={styles.noPreviewIcon}>
+                      <FiFolder size={48} />
+                    </div>
                   )}
-                  <div className={styles.itemCountBadge}>{col.count} itens</div>
+                  <div className={styles.overlayGradient} />
                 </div>
                 <div className={styles.collectionInfo}>
                   <h3 className={styles.collectionName}>{col.name}</h3>
+                  <span className={styles.itemCountBadge}>{col.count} itens</span>
                 </div>
               </div>
             ))}
@@ -182,21 +189,21 @@ export default function CatalogoBrowser({
       {viewMode === 'items' && (
         <div className={styles.itemsView}>
           <div className={styles.itemsHeader}>
-            <button className={styles.backButton} onClick={backToCollections}>
-              <FiArrowLeft size={20} />
-              <span>Voltar</span>
-            </button>
-            <div className={styles.headerContent}>
+            <div className={styles.headerLeft}>
+              <button className={styles.backButton} onClick={backToCollections}>
+                <FiArrowLeft size={20} />
+              </button>
               <h2 className={styles.collectionTitle}>
                 {formatCollectionName(activeCollectionId || '')}
               </h2>
-              <div className={styles.searchWrapper}>
-                <SearchBar 
-                  placeholder="Buscar itens nesta coleção..." 
-                  value={searchTerm} 
-                  onChange={setSearchTerm} 
-                />
-              </div>
+            </div>
+            
+            <div className={styles.searchWrapper}>
+              <SearchBar 
+                placeholder="Buscar nesta coleção..." 
+                value={searchTerm} 
+                onChange={setSearchTerm} 
+              />
             </div>
           </div>
 
@@ -204,10 +211,10 @@ export default function CatalogoBrowser({
           {selectedIds.size > 0 && (
             <div className={styles.selectionToolbar}>
               <div className={styles.selectionInfo}>
-                <span className={styles.countBadge}>{selectedIds.size}</span>
+                <div className={styles.countBadge}>{selectedIds.size}</div>
                 <span className={styles.selectionText}>itens selecionados</span>
                 <div className={styles.divider} />
-                <button className={styles.linkBtn} onClick={handleSelectAll}>Todos</button>
+                <button className={styles.linkBtn} onClick={handleSelectAll}>Selecionar Todos</button>
                 <button className={styles.linkBtn} onClick={handleClearSelection}>Limpar</button>
               </div>
               <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
@@ -227,10 +234,11 @@ export default function CatalogoBrowser({
                       className={`${styles.itemCardWrapper} ${isSelected ? styles.selected : ''}`}
                       onClick={() => handleCardClick(item)}
                     >
-                      {/* Checkbox Overlay - Topo Direito */}
+                      {/* Checkbox Overlay */}
                       <div 
                         className={`${styles.checkbox} ${isSelected ? styles.checked : ''}`}
                         onClick={(e) => toggleSelection(e, item.id)}
+                        title={isSelected ? "Desmarcar" : "Selecionar"}
                       >
                         {isSelected && <FiCheck size={14} color="#FFF" />}
                       </div>
@@ -245,7 +253,8 @@ export default function CatalogoBrowser({
               </div>
             ) : (
               <div className={styles.emptyState}>
-                <p>Nenhum item encontrado.</p>
+                <FiSearch size={48} className={styles.emptyIcon} />
+                <p>Nenhum item encontrado nesta coleção.</p>
               </div>
             )}
           </div>
@@ -267,17 +276,11 @@ function formatCollectionName(rawName: string): string {
   if (!rawName) return 'Geral';
   if (rawName === 'outros') return 'Outros';
 
-  // 1. Remove prefixo "colecao-" ou "colecao_" se existir (case insensitive)
   let cleaned = rawName.replace(/^colecao[-_]/i, '');
-  
-  // 2. Substitui hífens e underscores restantes por espaços
   cleaned = cleaned.replace(/[-_]/g, ' ');
-
-  // 3. Capitaliza cada palavra
   cleaned = cleaned.split(' ')
     .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 
-  // 4. Adiciona o prefixo bonito "Coleção"
   return `Coleção ${cleaned}`;
 }

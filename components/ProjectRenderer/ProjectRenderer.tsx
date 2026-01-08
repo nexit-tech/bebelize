@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FiImage, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import styles from './ProjectRenderer.module.css';
 
 interface ProjectRendererProps {
@@ -19,67 +20,77 @@ export default function ProjectRenderer({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Preview da Renderização</h3>
+        <div className={styles.headerTitleGroup}>
+          <FiImage size={18} />
+          <h3 className={styles.title}>Visualização</h3>
+        </div>
         {renderTime && (
-          <span className={styles.renderTime}>
-            Renderizado em {renderTime}ms
+          <span className={styles.renderTimeBadge}>
+            {renderTime}ms
           </span>
         )}
       </div>
 
-      <div className={styles.previewContainer}>
-        {!previewUrl && !isRendering && (
-          <div className={styles.placeholder}>
-            <svg
-              className={styles.placeholderIcon}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+      <div className={styles.previewStage}>
+        {/* Padrão de grid removido conforme solicitado */}
+        
+        <div className={styles.contentWrapper}>
+          {!previewUrl && !isRendering && (
+            <div className={styles.emptyState}>
+              <div className={styles.iconCircle}>
+                <FiImage size={32} />
+              </div>
+              <p className={styles.emptyText}>
+                Configure as opções ao lado para visualizar o resultado.
+              </p>
+            </div>
+          )}
+
+          {isRendering && (
+            <div className={styles.loadingState}>
+              <div className={styles.spinner} />
+              <p className={styles.loadingText}>Gerando imagem...</p>
+            </div>
+          )}
+
+          {previewUrl && !isRendering && !imageError && (
+            <div className={styles.imageContainer}>
+              <img
+                src={previewUrl}
+                alt="Preview do produto personalizado"
+                className={styles.previewImage}
+                onError={() => setImageError(true)}
               />
-            </svg>
-            <p className={styles.placeholderText}>
-              Configure as texturas e clique em renderizar
-            </p>
-          </div>
-        )}
+            </div>
+          )}
 
-        {isRendering && (
-          <div className={styles.loading}>
-            <div className={styles.spinner}></div>
-            <p className={styles.loadingText}>Renderizando imagem...</p>
-          </div>
-        )}
-
-        {previewUrl && !isRendering && !imageError && (
-          <img
-            src={previewUrl}
-            alt="Preview da renderização"
-            className={styles.previewImage}
-            onError={() => setImageError(true)}
-          />
-        )}
-
-        {imageError && (
-          <div className={styles.error}>
-            <p className={styles.errorText}>Erro ao carregar imagem</p>
-          </div>
-        )}
+          {imageError && (
+            <div className={styles.errorState}>
+              <FiAlertCircle size={32} />
+              <p>Erro ao carregar imagem</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      <button
-        type="button"
-        className={styles.renderButton}
-        onClick={onRender}
-        disabled={isRendering}
-      >
-        {isRendering ? 'Renderizando...' : 'Gerar Renderização'}
-      </button>
+      <div className={styles.footer}>
+        <button
+          type="button"
+          className={styles.renderButton}
+          onClick={onRender}
+          disabled={isRendering}
+        >
+          {isRendering ? (
+            <>
+              <div className={styles.miniSpinner} /> Processando...
+            </>
+          ) : (
+            <>
+              <FiRefreshCw size={18} /> Atualizar Visualização
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

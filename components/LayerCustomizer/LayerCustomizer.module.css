@@ -1,123 +1,207 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
+  padding-bottom: 16px;
 }
 
-.layerGroup {
-  border: 1px solid #E8E8E8;
+.layerCard {
+  background-color: #FFFFFF;
+  border: 1px solid #EAEAEA;
   border-radius: 12px;
   overflow: hidden;
-  background-color: #FFFFFF;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.layerGroup.active {
+.layerCard:hover {
+  border-color: #D4C29A;
+}
+
+.layerCard.active {
   border-color: var(--color-light-tan);
-  box-shadow: 0 4px 12px rgba(166, 142, 128, 0.08);
+  box-shadow: 0 4px 12px rgba(166, 142, 128, 0.1);
+  transform: none; /* Removido pulo para manter estabilidade */
+  z-index: 2;
 }
 
+.layerCard.completed:not(.active) {
+  background-color: #FAFAFA;
+  border-color: #E0E0E0;
+}
+
+/* --- Header --- */
 .accordionHeader {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 20px;
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-light-tan-grey);
-  transition: background-color 0.2s;
+  text-align: left;
 }
 
-.accordionHeader:hover {
-  background-color: rgba(166, 142, 128, 0.03);
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.headerInfo {
+.statusIndicator {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #F0F0F0;
+  color: #A0A0A0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-size: 10px;
+}
+
+.statusIndicator.statusDone {
+  background-color: var(--color-success);
+  color: #FFFFFF;
+}
+
+.headerText {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
 }
 
 .layerTitle {
   font-family: 'Montserrat', sans-serif;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-browning);
-  letter-spacing: 0.3px;
 }
 
-.layerSelection {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--color-light-tan);
+.layerSubtitle {
+  font-size: 11px;
+  color: var(--color-light-tan-grey);
+  margin-top: 2px;
+  font-weight: 500;
 }
 
-/* Container para animação suave */
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-light-tan-grey);
+}
+
+.miniPreview {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px; /* Quadrado arredondado */
+  overflow: hidden;
+  border: 1px solid #E0E0E0;
+}
+
+.miniPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Content (Scroll Invisível) --- */
 .accordionContent {
   max-height: 0;
   opacity: 0;
-  overflow: hidden;
+  overflow-y: auto; /* Permite scroll */
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  background-color: #FFFFFF;
+  
+  /* Esconde Scrollbar (Firefox) */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+.accordionContent::-webkit-scrollbar {
+  display: none; /* Esconde Scrollbar (Chrome/Safari) */
 }
 
 .accordionContent.expanded {
-  max-height: 600px; /* Altura suficiente para acomodar o grid */
+  max-height: 280px; /* Altura fixa para forçar o scroll se tiver muitos itens */
   opacity: 1;
+  border-top: 1px solid #F0F0F0;
 }
 
 .patternGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
-  gap: 10px;
+  /* Diminuído tamanho mínimo para caber mais itens (64px) */
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 12px;
   padding: 20px;
-  background-color: #FAFAFA;
-  border-top: 1px solid #E8E8E8;
 }
 
+/* --- Pattern Option Card --- */
 .patternOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.thumbWrapper {
   position: relative;
+  width: 100%;
   aspect-ratio: 1;
   border-radius: 8px;
-  border: 2px solid #E0E0E0;
-  padding: 0;
-  cursor: pointer;
   overflow: hidden;
-  background-color: #FFF;
+  border: 2px solid #EAEAEA;
   transition: all 0.2s ease;
 }
 
-.patternOption:hover {
+.patternOption:hover .thumbWrapper {
   border-color: var(--color-light-tan);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(166, 142, 128, 0.1);
+  transform: scale(1.05);
 }
 
-.patternOption.selected {
-  border-color: var(--color-light-tan);
-  box-shadow: 0 0 0 2px rgba(166, 142, 128, 0.2);
+.patternOption.selected .thumbWrapper {
+  border-color: var(--color-browning);
+  box-shadow: 0 0 0 2px rgba(89, 78, 74, 0.15);
 }
 
 .patternThumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.checkOverlay {
+.selectedOverlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(166, 142, 128, 0.6);
+  background-color: rgba(89, 78, 74, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(1px);
+  color: #FFFFFF;
   animation: fadeIn 0.2s ease;
+}
+
+.patternName {
+  font-size: 10px;
+  color: var(--color-light-tan-grey);
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.patternOption.selected .patternName {
+  color: var(--color-browning);
+  font-weight: 700;
 }
 
 @keyframes fadeIn {

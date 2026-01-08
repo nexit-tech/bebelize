@@ -8,27 +8,48 @@ export const useAuth = () => {
 
   useEffect(() => {
     const loadUser = async () => {
-      const userId = localStorage.getItem('userId');
-      if (userId) {
-        const user = await authService.getUserById(userId);
-        setCurrentUser(user);
+      try {
+        // Verifica se está no navegador antes de acessar localStorage
+        if (typeof window !== 'undefined') {
+          const userId = localStorage.getItem('userId');
+          
+          if (userId) {
+            const user = await authService.getUserById(userId);
+            if (user) {
+              // Forçamos o tipo aqui para garantir compatibilidade entre DB e Interface
+              setCurrentUser(user as unknown as User);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar sessão:', error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     loadUser();
   }, []);
 
   const login = async (email: string, password: string): Promise<User | null> => {
-    const user = await authService.login(email, password);
-    
-    if (user) {
-      localStorage.setItem('userId', user.id);
-      setCurrentUser(user);
-      return user;
+    try {
+      setIsLoading(true);
+      const user = await authService.login(email, password);
+      
+      if (user) {
+        localStorage.setItem('userId', user.id);
+        const appUser = user as unknown as User;
+        setCurrentUser(appUser);
+        return appUser;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Erro no login:', error);
+      return null;
+    } finally {
+      setIsLoading(false);
     }
-    
-    return null;
   };
 
   const logout = () => {

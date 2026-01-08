@@ -1,6 +1,10 @@
 import type { Metadata } from 'next';
+import { Montserrat } from 'next/font/google';
+import { CartProvider } from '@/context/CartContext';
 import './globals.css';
 import styles from './layout.module.css';
+
+const montserrat = Montserrat({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Bebelize - Gestão de Enxovais Personalizados',
@@ -17,7 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={styles.layout}>{children}</body>
+      <body className={`${montserrat.className} ${styles.layout}`}>
+        <CartProvider>
+          {children}
+        </CartProvider>
+      </body>
     </html>
   );
 }

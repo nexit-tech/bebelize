@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FiEdit3, FiTrash2, FiPlus, FiBox } from 'react-icons/fi';
+import { FiEdit3, FiTrash2, FiPlus, FiBox, FiShoppingBag } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
 import type { LayerCustomization } from '@/types/rendering.types';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
@@ -20,8 +20,7 @@ interface ProjetoCarrinhoDiscoveryProps {
   items: CartItem[];
   onItemsChange: (items: CartItem[]) => void;
   onBrowseMore: () => void;
-  // Nova prop opcional para delegar a edição ao pai
-  onEditItem?: (item: CartItem) => void; 
+  onEditItem?: (item: CartItem) => void;
 }
 
 export default function ProjetoCarrinhoDiscovery({
@@ -38,8 +37,6 @@ export default function ProjetoCarrinhoDiscovery({
   const handleEditClick = (cartItem: CartItem) => {
     if (onEditItem) {
       onEditItem(cartItem);
-    } else {
-      console.warn('Handler de edição não fornecido para ProjetoCarrinhoDiscovery');
     }
   };
 
@@ -58,21 +55,34 @@ export default function ProjetoCarrinhoDiscovery({
     <div className={styles.cartContainer}>
       <div className={styles.cartHeader}>
         <div className={styles.cartTitleGroup}>
-          <FiBox className={styles.titleIcon} />
-          <h3 className={styles.cartTitle}>Itens do Enxoval</h3>
-          <span className={styles.itemBadge}>{items.length}</span>
+          <div className={styles.iconWrapper}>
+            <FiBox size={20} />
+          </div>
+          <div>
+            <h3 className={styles.cartTitle}>Itens Selecionados</h3>
+            <p className={styles.cartSubtitle}>Gerencie os produtos deste enxoval</p>
+          </div>
         </div>
-        <Button variant="secondary" onClick={onBrowseMore}>
-          <FiPlus style={{ marginRight: 8 }} /> Adicionar Item
-        </Button>
+        
+        {items.length > 0 && (
+          <Button variant="secondary" size="small" onClick={onBrowseMore}>
+            <FiPlus /> Adicionar Mais
+          </Button>
+        )}
       </div>
 
       {items.length === 0 ? (
         <div className={styles.emptyCart}>
-          <p>Nenhum item adicionado ainda.</p>
-          <span className={styles.browseLink} onClick={onBrowseMore}>
-            Clique aqui para abrir o catálogo
-          </span>
+          <div className={styles.emptyIconCircle}>
+            <FiShoppingBag size={48} />
+          </div>
+          <h4 className={styles.emptyTitle}>Seu projeto está vazio</h4>
+          <p className={styles.emptyText}>
+            Comece adicionando itens do catálogo para montar o enxoval personalizado.
+          </p>
+          <Button variant="primary" size="large" onClick={onBrowseMore}>
+            <FiPlus size={20} /> Navegar no Catálogo
+          </Button>
         </div>
       ) : (
         <div className={styles.cartGrid}>
@@ -84,35 +94,49 @@ export default function ProjetoCarrinhoDiscovery({
                   alt={cartItem.item.name} 
                   loading="lazy"
                 />
+                <div className={styles.itemBadge}>
+                  {cartItem.customizations.length > 0 ? 'Personalizado' : 'Padrão'}
+                </div>
               </div>
               
               <div className={styles.itemDetails}>
-                <h4 className={styles.itemName}>{cartItem.item.name}</h4>
-                <p className={styles.itemMeta}>
-                  {cartItem.variantId 
-                    ? `Variante: ${cartItem.item.variants?.find(v => v.id === cartItem.variantId)?.name || cartItem.variantId}` 
-                    : 'Configuração Padrão'}
-                </p>
+                <div className={styles.itemInfo}>
+                  <h4 className={styles.itemName}>{cartItem.item.name}</h4>
+                  <p className={styles.itemVariant}>
+                    {cartItem.variantId 
+                      ? `Variante: ${cartItem.item.variants?.find(v => v.id === cartItem.variantId)?.name || 'Selecionada'}` 
+                      : 'Configuração Base'}
+                  </p>
+                </div>
                 
                 <div className={styles.cardActions}>
                   <button 
-                    className={`${styles.iconBtn} ${styles.editBtn}`}
+                    className={`${styles.actionBtn} ${styles.editBtn}`}
                     onClick={() => handleEditClick(cartItem)}
                     type="button"
+                    title="Editar personalização"
                   >
                     <FiEdit3 size={16} /> Editar
                   </button>
                   <button 
-                    className={`${styles.iconBtn} ${styles.deleteBtn}`}
+                    className={`${styles.actionBtn} ${styles.deleteBtn}`}
                     onClick={() => handleRemoveClick(cartItem.id)}
                     type="button"
+                    title="Remover do projeto"
                   >
-                    <FiTrash2 size={16} /> Excluir
+                    <FiTrash2 size={16} />
                   </button>
                 </div>
               </div>
             </div>
           ))}
+          
+          <button className={styles.addMoreCard} onClick={onBrowseMore}>
+            <div className={styles.addMoreIcon}>
+              <FiPlus size={32} />
+            </div>
+            <span>Adicionar outro item</span>
+          </button>
         </div>
       )}
 
@@ -121,10 +145,10 @@ export default function ProjetoCarrinhoDiscovery({
         onClose={() => setDeleteModal({ isOpen: false, itemId: null })}
         onConfirm={confirmRemoveItem}
         title="Remover Item"
-        message="Tem certeza que deseja remover este item do projeto? Esta ação não pode ser desfeita."
+        message="Tem certeza que deseja remover este item do projeto?"
         type="danger"
         confirmText="Sim, Remover"
-        cancelText="Cancelar"
+        cancelText="Manter"
       />
     </div>
   );

@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
-import { useAuth } from '@/hooks';
+import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut, FiMenu, FiX, FiEdit3 } from 'react-icons/fi';
+import { useAuth, useCart } from '@/hooks';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import styles from './Sidebar.module.css';
 
@@ -13,8 +13,12 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout } = useAuth();
+  const { cartItems } = useCart(); // Conectado ao carrinho global
+  
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const hasDraft = cartItems && cartItems.length > 0;
 
   const getMenuItems = () => {
     if (currentUser?.role === 'consultora') {
@@ -116,6 +120,22 @@ export default function Sidebar() {
           />
           <span className={styles.brandName}>Bebelize</span>
         </div>
+
+        {/* --- Área de Rascunho (Novo) --- */}
+        {hasDraft && currentUser?.role === 'consultora' && (
+          <div className={styles.draftSection}>
+            <Link href="/projeto/criar" className={styles.draftCard} onClick={closeMobileSidebar}>
+              <div className={styles.draftHeader}>
+                <span className={styles.draftTitle}>Em Andamento</span>
+                <span className={styles.draftBadge}>{cartItems.length}</span>
+              </div>
+              <p className={styles.draftSubtitle}>Continuar edição do rascunho salvo</p>
+              <div className={styles.draftLink}>
+                Ir para o Criador <FiEdit3 />
+              </div>
+            </Link>
+          </div>
+        )}
 
         <nav className={styles.navigation}>
           {menuItems.map((item) => {

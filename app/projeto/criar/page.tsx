@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiSave, FiEdit3 } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiEdit3, FiShoppingBag, FiArrowRight, FiRotateCcw, FiCloud, FiCheck } from 'react-icons/fi';
 import { useProjects, useAuth } from '@/hooks';
+import { useCart } from '@/hooks/useCart';
 import type { DiscoveredItem } from '@/lib/discovery/types';
 import type { LayerCustomization } from '@/types/rendering.types';
 import Sidebar from '@/components/Sidebar/Sidebar';
@@ -20,11 +21,37 @@ export default function CriarProjetoPage() {
   const router = useRouter();
   const { currentUser } = useAuth();
   const { createProject } = useProjects();
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [showBrowser, setShowBrowser] = useState(false);
   
-  // Estado para controlar o modal de customização
+  const { 
+    cartItems: savedItems, 
+    updateCartItems, 
+    isLoadingCart, 
+    isSavingCart, 
+    clearCart 
+  } = useCart();
+
+  const [step, setStep] = useState(1);
+  const [isSavingProject, setIsSavingProject] = useState(false);
+  const [showBrowser, setShowBrowser] = useState(false);
+  const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
+  
+  // Estado local
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+
+  // 1. Carga Inicial: Se houver rascunho, carrega no estado local
+  useEffect(() => {
+    if (!isLoadingCart && savedItems.length > 0 && !hasLoadedDraft) {
+      setCartItems(savedItems);
+      setHasLoadedDraft(true);
+    }
+  }, [savedItems, isLoadingCart, hasLoadedDraft]);
+
+  // 2. Atualização: Função wrapper para atualizar local e remoto ao mesmo tempo
+  const handleUpdateItems = (newItems: CartItem[]) => {
+    setCartItems(newItems);
+    updateCartItems(newItems);
+  };
+
   const [customizerModal, setCustomizerModal] = useState<{
     isOpen: boolean;
     item: DiscoveredItem | null;
@@ -38,13 +65,25 @@ export default function CriarProjetoPage() {
   const [clientName, setClientName] = useState('');
   const [clientPhone, setClientPhone] = useState('');
   const [productionNotes, setProductionNotes] = useState('');
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const [successModal, setSuccessModal] = useState({
     isOpen: false,
     title: '',
     message: ''
   });
+
+  const handleNextStep = () => {
+    if (cartItems.length === 0) {
+      alert('Adicione pelo menos um item ao projeto antes de prosseguir.');
+      return;
+    }
+    setStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevStep = () => {
+    setStep(1);
+  };
 
   const handleSave = async () => {
     if (!projectName.trim() || !clientName.trim()) {
@@ -63,7 +102,7 @@ export default function CriarProjetoPage() {
     }
 
     try {
-      setIsSaving(true);
+      setIsSavingProject(true);
       
       const payload = {
         name: projectName,
@@ -71,7 +110,7 @@ export default function CriarProjetoPage() {
         client_phone: clientPhone,
         production_notes: productionNotes,
         consultant_id: currentUser.id,
-        status: 'producao', // Define status inicial
+        status: 'producao',
         collection_id: cartItems[0]?.item.collection_id || 'geral',
         customizations_data: {
           cart_items: cartItems.map(i => ({
@@ -88,6 +127,10 @@ export default function CriarProjetoPage() {
 
       await createProject({ project: payload });
       
+      // Limpa rascunho após sucesso
+      await clearCart();
+      setCartItems([]);
+
       setSuccessModal({
         isOpen: true,
         title: 'Projeto Criado!',
@@ -97,11 +140,11 @@ export default function CriarProjetoPage() {
       console.error('Erro ao criar projeto:', error);
       alert(`Erro ao criar projeto: ${error.message || 'Verifique os dados e tente novamente.'}`);
     } finally {
-      setIsSaving(false);
+      setIsSavingProject(false);
     }
   };
 
-  // --- Handlers de Itens (Idênticos à Edição) ---
+  // --- Handlers de Itens ---
 
   const handleSelectSimpleItem = (item: DiscoveredItem) => {
     const newItem: CartItem = {
@@ -111,7 +154,7 @@ export default function CriarProjetoPage() {
       renderUrl: item.image_url || '',
       variantId: item.variants?.[0]?.id
     };
-    setCartItems(prev => [...prev, newItem]);
+    handleUpdateItems([...cartItems, newItem]);
     setShowBrowser(false);
   };
 
@@ -125,12 +168,14 @@ export default function CriarProjetoPage() {
     renderUrl: string,
     variantId?: string
   ) => {
+    let newItemsList: CartItem[];
+
     if (customizerModal.editingCartItem) {
-      setCartItems(prev => prev.map(existing => 
+      newItemsList = cartItems.map(existing => 
         existing.id === customizerModal.editingCartItem!.id
           ? { ...existing, customizations, renderUrl, variantId }
           : existing
-      ));
+      );
     } else {
       const newItem: CartItem = {
         id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -139,9 +184,10 @@ export default function CriarProjetoPage() {
         renderUrl,
         variantId
       };
-      setCartItems(prev => [...prev, newItem]);
+      newItemsList = [...cartItems, newItem];
     }
     
+    handleUpdateItems(newItemsList);
     setCustomizerModal({ isOpen: false, item: null, editingCartItem: undefined });
     setShowBrowser(false);
   };
@@ -154,7 +200,7 @@ export default function CriarProjetoPage() {
       renderUrl: i.renderUrl,
       variantId: i.item.variants?.[0]?.id 
     }));
-    setCartItems(prev => [...prev, ...newItems]);
+    handleUpdateItems([...cartItems, ...newItems]);
     setShowBrowser(false);
   };
 
@@ -183,68 +229,137 @@ export default function CriarProjetoPage() {
             </button>
             <div>
               <h1 className={styles.title}>Nova Ordem de Produção</h1>
-              <p className={styles.subtitle}>Preencha os dados para iniciar um novo enxoval</p>
+              <div className={styles.stepIndicator}>
+                <span className={`${styles.step} ${step >= 1 ? styles.activeStep : ''}`}>
+                  1. Seleção de Itens
+                </span>
+                <span className={styles.stepDivider}>/</span>
+                <span className={`${styles.step} ${step >= 2 ? styles.activeStep : ''}`}>
+                  2. Dados do Cliente
+                </span>
+              </div>
             </div>
           </div>
-          <div className={styles.headerActions}>
-            <Button variant="primary" onClick={handleSave} disabled={isSaving}>
-              <FiSave size={18} /> {isSaving ? 'Criando...' : 'Criar Projeto'}
-            </Button>
+          
+          <div className={styles.autoSaveStatus}>
+             {isSavingCart ? (
+               <><FiRotateCcw className={styles.spin} /> Salvando...</>
+             ) : cartItems.length > 0 ? (
+               <><FiCloud /> Rascunho salvo</>
+             ) : null}
           </div>
         </header>
 
         <div className={styles.contentWrapper}>
-          <div className={styles.detailsColumn}>
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <FiEdit3 size={18} /> Dados do Cliente
-              </h3>
-              <div className={styles.formGrid}>
-                <Input
-                  id="project-name"
-                  type="text"
-                  label="Nome do Projeto"
-                  value={projectName}
-                  onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="Ex: Quarto da Maria"
-                />
-                <Input
-                  id="client-name"
-                  type="text"
-                  label="Nome da Cliente"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Nome completo"
-                />
-                <Input
-                  id="client-phone"
-                  type="tel"
-                  label="WhatsApp / Contato"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="(00) 00000-0000"
-                />
-                <TextArea
-                  label="Observações Iniciais"
-                  value={productionNotes}
-                  onChange={(e) => setProductionNotes(e.target.value)}
-                  placeholder="Detalhes sobre prazos, entrega ou preferências..."
-                  rows={4}
-                />
+          {step === 1 && (
+            <div className={styles.stepContainer}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.iconCircle}>
+                  <FiShoppingBag size={24} />
+                </div>
+                <div>
+                  <h3>Itens do Enxoval</h3>
+                  <p>Adicione os produtos que farão parte deste pedido.</p>
+                </div>
+              </div>
+              
+              <div className={styles.cartWrapper}>
+                {isLoadingCart && !hasLoadedDraft ? (
+                  <div className={styles.loadingState}>
+                    <div className={styles.spin} style={{ marginRight: 8 }}><FiRotateCcw /></div>
+                    Verificando rascunhos...
+                  </div>
+                ) : (
+                  <ProjetoCarrinhoDiscovery
+                    items={cartItems}
+                    onItemsChange={handleUpdateItems} // Usa o handler que salva direto
+                    onBrowseMore={() => setShowBrowser(true)}
+                    onEditItem={handleEditItemFromList} 
+                  />
+                )}
+              </div>
+
+              <div className={styles.actionFooter}>
+                <div className={styles.itemsCount}>
+                  {cartItems.length} {cartItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
+                </div>
+                <Button 
+                  variant="primary" 
+                  size="large"
+                  onClick={handleNextStep} 
+                  disabled={cartItems.length === 0}
+                >
+                  Continuar para Dados <FiArrowRight size={18} />
+                </Button>
               </div>
             </div>
-          </div>
+          )}
 
-          <div className={styles.itemsColumn}>
-            <div className={styles.card}>
-              <ProjetoCarrinhoDiscovery
-                items={cartItems}
-                onItemsChange={setCartItems}
-                onBrowseMore={() => setShowBrowser(true)}
-                onEditItem={handleEditItemFromList} 
-              />
+          {step === 2 && (
+            <div className={styles.stepContainer}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.iconCircle}>
+                  <FiEdit3 size={24} />
+                </div>
+                <div>
+                  <h3>Dados do Projeto</h3>
+                  <p>Preencha as informações do cliente para finalizar.</p>
+                </div>
+              </div>
+
+              <div className={styles.formContainer}>
+                <div className={styles.card}>
+                  <div className={styles.formGrid}>
+                    <Input
+                      id="project-name"
+                      type="text"
+                      label="Nome do Projeto *"
+                      value={projectName}
+                      onChange={(e) => setProjectName(e.target.value)}
+                      placeholder="Ex: Quarto da Maria"
+                    />
+                    <Input
+                      id="client-name"
+                      type="text"
+                      label="Nome da Cliente *"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Nome completo"
+                    />
+                    <Input
+                      id="client-phone"
+                      type="tel"
+                      label="WhatsApp / Contato"
+                      value={clientPhone}
+                      onChange={(e) => setClientPhone(e.target.value)}
+                      placeholder="(00) 00000-0000"
+                    />
+                    <TextArea
+                      label="Observações Iniciais"
+                      value={productionNotes}
+                      onChange={(e) => setProductionNotes(e.target.value)}
+                      placeholder="Detalhes sobre prazos, entrega ou preferências..."
+                      rows={4}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.actionFooter}>
+                <Button variant="secondary" size="large" onClick={handlePrevStep}>
+                  <FiArrowLeft size={18} /> Voltar
+                </Button>
+                <Button 
+                  variant="primary" 
+                  size="large"
+                  onClick={handleSave} 
+                  disabled={isSavingProject}
+                >
+                  <FiSave size={18} /> {isSavingProject ? 'Criando Projeto...' : 'Finalizar e Criar'}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 

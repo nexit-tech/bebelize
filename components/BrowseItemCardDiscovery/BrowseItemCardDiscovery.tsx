@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { FaPlus, FaImage } from 'react-icons/fa';
+import { FaPlus, FaImage, FaCheck } from 'react-icons/fa';
 import styles from './BrowseItemCardDiscovery.module.css';
 import { DiscoveredItem, DiscoveredVariant } from '@/lib/discovery/types';
 
@@ -54,51 +54,58 @@ export default function BrowseItemCardDiscovery({
 
   return (
     <div className={styles.card}>
-      <div className={styles.imageContainer}>
+      <div className={styles.imageStage}>
         {displayImage ? (
-          <Image 
-            src={displayImage} 
-            alt={displayName} 
-            fill
-            className={styles.image}
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-            priority={false}
-          />
+          <div className={styles.imageWrapper}>
+            <Image 
+              src={displayImage} 
+              alt={displayName} 
+              fill
+              className={styles.image}
+              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+              priority={false}
+            />
+          </div>
         ) : (
           <div className={styles.noImage}>
-            <FaImage size={24} style={{ marginBottom: '8px' }} />
-            <span>Sem visualização</span>
+            <div className={styles.noImageIcon}>
+              <FaImage size={20} />
+            </div>
+            <span>Sem imagem</span>
           </div>
         )}
       </div>
 
       <div className={styles.content}>
         <div className={styles.header}>
-          <h3 className={styles.title} title={item.name}>
-            {item.name}
-          </h3>
-          {item.category && (
-            <span className={styles.categoryTag}>{item.category}</span>
-          )}
+          <div className={styles.titleGroup}>
+            {item.category && (
+              <span className={styles.categoryTag}>{item.category}</span>
+            )}
+            <h3 className={styles.title} title={item.name}>
+              {item.name}
+            </h3>
+          </div>
         </div>
 
         {hasVariants && (
           <div className={styles.variantsSection}>
-            <span className={styles.variantLabel}>Opções:</span>
+            <span className={styles.variantLabel}>Modelos disponíveis:</span>
             <div className={styles.variantList}>
-              {item.variants.map((variant) => (
-                <button
-                  key={variant.id || variant.name}
-                  onClick={(e) => handleVariantClick(e, variant)}
-                  className={`${styles.variantChip} ${
-                    selectedVariant?.id === variant.id ? styles.activeChip : ''
-                  }`}
-                  type="button"
-                  title={formatLabel(variant.name)}
-                >
-                  {formatLabel(variant.name)}
-                </button>
-              ))}
+              {item.variants.map((variant) => {
+                const isActive = selectedVariant?.id === variant.id;
+                return (
+                  <button
+                    key={variant.id || variant.name}
+                    onClick={(e) => handleVariantClick(e, variant)}
+                    className={`${styles.variantChip} ${isActive ? styles.activeChip : ''}`}
+                    type="button"
+                    title={formatLabel(variant.name)}
+                  >
+                    {formatLabel(variant.name)}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -110,11 +117,11 @@ export default function BrowseItemCardDiscovery({
             disabled={isProcessing}
           >
             {isProcessing ? (
-              <span>Processando...</span>
+              <span className={styles.loadingText}>Processando...</span>
             ) : (
               <>
                 <FaPlus size={10} />
-                <span>Adicionar</span>
+                <span>Adicionar ao Projeto</span>
               </>
             )}
           </button>

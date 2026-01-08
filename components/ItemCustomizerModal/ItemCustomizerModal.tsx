@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { FiX, FiChevronDown } from 'react-icons/fi';
+import { FiX, FiChevronDown, FiBox, FiCheckCircle } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
 import type { LayerCustomization, RenderResponse } from '@/types/rendering.types';
 import { useDiscoveredPatterns } from '@/hooks/useDiscoveredPatterns';
@@ -14,7 +14,6 @@ interface ItemCustomizerModalProps {
   isOpen: boolean;
   onClose: () => void;
   item: DiscoveredItem | null;
-  // Props para Edição
   initialCustomizations?: LayerCustomization[];
   initialPreviewUrl?: string | null;
   initialVariantId?: string | null;
@@ -43,16 +42,14 @@ export default function ItemCustomizerModal({
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
-  // Sincroniza o estado inicial (Edição ou Criação)
+  // Sincronização de Estado
   useEffect(() => {
     if (isOpen && item) {
       if (initialCustomizations) {
-        // Modo Edição: Carrega o que já existe
         setCustomizations(initialCustomizations);
         setPreviewUrl(initialPreviewUrl || item.image_url || null);
         setSelectedVariantId(initialVariantId || (item.variants?.[0]?.id || null));
       } else {
-        // Modo Criação: Reset padrão
         setCustomizations([]);
         const firstVariantId = item.variants?.[0]?.id || null;
         setSelectedVariantId(firstVariantId);
@@ -79,7 +76,7 @@ export default function ItemCustomizerModal({
 
   const handleVariantChange = (variantId: string) => {
     setSelectedVariantId(variantId);
-    setCustomizations([]); // Ao trocar o modelo, as camadas mudam, então limpamos
+    setCustomizations([]); 
 
     if (item && item.variants) {
       const variant = item.variants.find(v => v.id === variantId);
@@ -134,14 +131,17 @@ export default function ItemCustomizerModal({
       <div className={styles.modalContent}>
         <div className={styles.header}>
           <div className={styles.headerInfo}>
-            <h2 className={styles.title}>
-              {initialCustomizations ? 'Editar Item' : 'Personalizar'}: {item.name}
-            </h2>
+            <div className={styles.titleWrapper}>
+              <FiBox className={styles.titleIcon} />
+              <h2 className={styles.title}>
+                {item.name}
+              </h2>
+            </div>
             <span className={styles.subtitle}>
-              Ajuste as texturas e visualize o resultado
+              Personalize cada detalhe do seu produto exclusivo
             </span>
           </div>
-          <button className={styles.closeButton} onClick={onClose}>
+          <button className={styles.closeButton} onClick={onClose} aria-label="Fechar">
             <FiX size={24} />
           </button>
         </div>
@@ -149,8 +149,8 @@ export default function ItemCustomizerModal({
         <div className={styles.body}>
           <div className={styles.layersPanel}>
             {item.variants && item.variants.length > 1 && (
-              <div className={styles.variantSelector}>
-                <label className={styles.variantLabel}>Modelo Base:</label>
+              <div className={styles.variantSection}>
+                <label className={styles.sectionLabel}>Escolha o Modelo</label>
                 <div className={styles.selectWrapper}>
                   <select 
                     className={styles.variantSelect}
@@ -168,17 +168,23 @@ export default function ItemCustomizerModal({
               </div>
             )}
 
-            <h3 className={styles.panelTitle}>Configurar Camadas</h3>
-            {loadingPatterns ? (
-              <p style={{ fontSize: '13px', color: '#999' }}>Carregando texturas...</p>
-            ) : (
-              <LayerCustomizer
-                layers={visualLayers}
-                patterns={patterns}
-                customizations={customizations}
-                onCustomizationsChange={setCustomizations}
-              />
-            )}
+            <div className={styles.customizationSection}>
+              <div className={styles.sectionHeader}>
+                <label className={styles.sectionLabel}>Personalizar Camadas</label>
+                <span className={styles.layersCount}>{visualLayers.length} partes</span>
+              </div>
+              
+              {loadingPatterns ? (
+                <div className={styles.loadingPatterns}>Carregando texturas...</div>
+              ) : (
+                <LayerCustomizer
+                  layers={visualLayers}
+                  patterns={patterns}
+                  customizations={customizations}
+                  onCustomizationsChange={setCustomizations}
+                />
+              )}
+            </div>
           </div>
 
           <div className={styles.previewPanel}>
@@ -192,16 +198,25 @@ export default function ItemCustomizerModal({
         </div>
 
         <div className={styles.footer}>
-          <Button variant="secondary" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button 
-            variant="primary" 
-            onClick={() => onAddToProject(item, customizations, previewUrl!, selectedVariantId || undefined)}
-            disabled={!previewUrl || isRendering}
-          >
-            {initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto'}
-          </Button>
+          <div className={styles.footerInfo}>
+             {customizations.length > 0 && (
+               <span className={styles.changesSummary}>
+                 <FiCheckCircle size={16} /> {customizations.length} personalizações aplicadas
+               </span>
+             )}
+          </div>
+          <div className={styles.footerActions}>
+            <Button variant="secondary" onClick={onClose}>
+              Cancelar
+            </Button>
+            <Button 
+              variant="primary" 
+              onClick={() => onAddToProject(item, customizations, previewUrl!, selectedVariantId || undefined)}
+              disabled={!previewUrl || isRendering}
+            >
+              {initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto'}
+            </Button>
+          </div>
         </div>
       </div>
     </div>
