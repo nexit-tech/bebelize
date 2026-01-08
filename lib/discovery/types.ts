@@ -22,6 +22,8 @@ export interface DiscoveredItem {
   folder_path: string;
   item_type: 'simple' | 'composite';
   image_url?: string;
+  previewUrl?: string;
+  category?: string;
   variants: DiscoveredVariant[];
   layers: DiscoveredLayer[];
   description?: string;

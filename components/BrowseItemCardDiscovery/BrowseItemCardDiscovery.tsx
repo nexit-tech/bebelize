@@ -1,58 +1,124 @@
-import React from 'react';
-import { FiPlus, FiLayers, FiImage } from 'react-icons/fi';
-import type { DiscoveredItem } from '@/lib/discovery/types';
-import Button from '../Button/Button';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { FaPlus, FaImage } from 'react-icons/fa';
 import styles from './BrowseItemCardDiscovery.module.css';
+import { DiscoveredItem, DiscoveredVariant } from '@/lib/discovery/types';
 
 interface BrowseItemCardDiscoveryProps {
   item: DiscoveredItem;
-  onAction: () => void;
+  onAction: (item: DiscoveredItem, selectedVariant?: DiscoveredVariant) => void;
+  isProcessing?: boolean;
 }
 
 export default function BrowseItemCardDiscovery({
   item,
-  onAction
+  onAction,
+  isProcessing = false
 }: BrowseItemCardDiscoveryProps) {
-  const isComposite = item.item_type === 'composite';
-  const layersCount = item.layers?.length || 0;
+  const [selectedVariant, setSelectedVariant] = useState<DiscoveredVariant | null>(null);
+
+  useEffect(() => {
+    if (item.variants && item.variants.length > 0) {
+      setSelectedVariant(item.variants[0]);
+    }
+  }, [item]);
+
+  const formatLabel = (name: string) => {
+    if (name.toLowerCase().startsWith('opc')) {
+      const number = name.replace(/\D/g, '');
+      return `Opção ${number}`;
+    }
+    return name
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  const handleVariantClick = (e: React.MouseEvent, variant: DiscoveredVariant) => {
+    e.stopPropagation();
+    setSelectedVariant(variant);
+  };
+
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAction(item, selectedVariant || undefined);
+  };
+
+  const displayImage = selectedVariant?.previewUrl || item.previewUrl || item.image_url;
+  const displayName = selectedVariant 
+    ? `${item.name} - ${formatLabel(selectedVariant.name)}`
+    : item.name;
+
+  const hasVariants = item.variants && item.variants.length > 1;
 
   return (
     <div className={styles.card}>
-      <div className={styles.cardHeader}>
-        <div className={styles.typeIndicator}>
-          {isComposite ? (
-            <FiLayers size={16} className={styles.typeIcon} />
-          ) : (
-            <FiImage size={16} className={styles.typeIcon} />
+      <div className={styles.imageContainer}>
+        {displayImage ? (
+          <Image 
+            src={displayImage} 
+            alt={displayName} 
+            fill
+            className={styles.image}
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+            priority={false}
+          />
+        ) : (
+          <div className={styles.noImage}>
+            <FaImage size={24} style={{ marginBottom: '8px' }} />
+            <span>Sem visualização</span>
+          </div>
+        )}
+      </div>
+
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <h3 className={styles.title} title={item.name}>
+            {item.name}
+          </h3>
+          {item.category && (
+            <span className={styles.categoryTag}>{item.category}</span>
           )}
-          <span className={styles.typeLabel}>
-            {isComposite ? 'Personalizável' : 'Simples'}
-          </span>
         </div>
-      </div>
 
-      <div className={styles.cardBody}>
-        <h4 className={styles.itemName}>{item.name}</h4>
-        {item.description && (
-          <p className={styles.description}>{item.description}</p>
+        {hasVariants && (
+          <div className={styles.variantsSection}>
+            <span className={styles.variantLabel}>Opções:</span>
+            <div className={styles.variantList}>
+              {item.variants.map((variant) => (
+                <button
+                  key={variant.id || variant.name}
+                  onClick={(e) => handleVariantClick(e, variant)}
+                  className={`${styles.variantChip} ${
+                    selectedVariant?.id === variant.id ? styles.activeChip : ''
+                  }`}
+                  type="button"
+                  title={formatLabel(variant.name)}
+                >
+                  {formatLabel(variant.name)}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
-        {isComposite && (
-          <span className={styles.layersInfo}>
-            {layersCount} {layersCount === 1 ? 'camada' : 'camadas'}
-          </span>
-        )}
-      </div>
 
-      <div className={styles.cardFooter}>
-        <Button
-          variant="secondary"
-          size="small"
-          onClick={onAction}
-          fullWidth
-        >
-          <FiPlus size={16} />
-          <span>{isComposite ? 'Personalizar' : 'Adicionar'}</span>
-        </Button>
+        <div className={styles.actions}>
+          <button 
+            className={styles.actionButton}
+            onClick={handleActionClick}
+            disabled={isProcessing}
+          >
+            {isProcessing ? (
+              <span>Processando...</span>
+            ) : (
+              <>
+                <FaPlus size={10} />
+                <span>Adicionar</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

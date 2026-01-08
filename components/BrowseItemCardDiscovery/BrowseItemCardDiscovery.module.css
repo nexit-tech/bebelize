@@ -2,77 +2,176 @@
   background-color: rgba(166, 142, 128, 0.03);
   border: 1px solid rgba(166, 142, 128, 0.2);
   border-radius: 10px;
-  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  overflow: hidden;
   transition: all 0.3s ease;
+  height: 100%;
+  position: relative;
 }
 
 .card:hover {
   border-color: var(--color-light-tan);
   background-color: rgba(166, 142, 128, 0.06);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(89, 78, 74, 0.1);
 }
 
-.cardHeader {
+.imageContainer {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background-color: #fff;
+  border-bottom: 1px solid rgba(166, 142, 128, 0.1);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  padding: 24px;
 }
 
-.typeIndicator {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 12px;
-  background-color: rgba(166, 142, 128, 0.12);
+.image {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
 }
 
-.typeIcon {
-  color: var(--color-light-tan);
+.card:hover .image {
+  transform: scale(1.05);
 }
 
-.typeLabel {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--color-light-tan);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.cardBody {
+.noImage {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-light-tan);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  opacity: 0.6;
 }
 
-.itemName {
-  font-size: 16px;
+.content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-browning);
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
 
-.description {
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--color-light-tan-grey);
-  margin: 0;
-  line-height: 1.5;
-}
-
-.layersInfo {
-  font-size: 12px;
-  font-weight: 500;
+.categoryTag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   color: var(--color-light-tan);
-  margin-top: 4px;
+  border: 1px solid rgba(166, 142, 128, 0.2);
+  padding: 3px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
-.cardFooter {
+.variantsSection {
+  margin-top: auto;
   display: flex;
-  padding-top: 12px;
-  border-top: 1px solid rgba(166, 142, 128, 0.15);
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(166, 142, 128, 0.1);
+}
+
+.variantLabel {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-light-tan-grey);
+}
+
+.variantList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.variantChip {
+  font-family: 'Montserrat', sans-serif;
+  background: transparent;
+  border: 1px solid rgba(166, 142, 128, 0.3);
+  color: var(--color-browning);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.variantChip:hover {
+  border-color: var(--color-light-tan);
+  background-color: rgba(166, 142, 128, 0.05);
+}
+
+.activeChip {
+  background-color: var(--color-browning);
+  color: #fff;
+  border-color: var(--color-browning);
+  font-weight: 500;
+}
+
+.activeChip:hover {
+  background-color: #4a403d;
+  border-color: #4a403d;
+}
+
+.actions {
+  margin-top: 10px;
+}
+
+.actionButton {
+  font-family: 'Montserrat', sans-serif;
+  width: 100%;
+  padding: 10px;
+  background-color: var(--color-browning);
+  color: var(--color-pearl);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.actionButton:hover:not(:disabled) {
+  background-color: var(--color-light-tan);
+  transform: translateY(-1px);
+}
+
+.actionButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
 }
