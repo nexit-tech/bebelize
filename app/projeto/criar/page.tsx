@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiSave, FiEdit3, FiShoppingBag, FiArrowRight, FiRotateCcw, FiCloud, FiCheck } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiEdit3, FiShoppingBag, FiArrowRight, FiRotateCcw, FiCloud, FiCheck, FiX } from 'react-icons/fi';
 import { useProjects, useAuth } from '@/hooks';
 import { useCart } from '@/hooks/useCart';
 import type { DiscoveredItem } from '@/lib/discovery/types';
@@ -35,10 +35,8 @@ export default function CriarProjetoPage() {
   const [showBrowser, setShowBrowser] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
   
-  // Estado local
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // 1. Carga Inicial: Se houver rascunho, carrega no estado local
   useEffect(() => {
     if (!isLoadingCart && savedItems.length > 0 && !hasLoadedDraft) {
       setCartItems(savedItems);
@@ -46,7 +44,6 @@ export default function CriarProjetoPage() {
     }
   }, [savedItems, isLoadingCart, hasLoadedDraft]);
 
-  // 2. Atualização: Função wrapper para atualizar local e remoto ao mesmo tempo
   const handleUpdateItems = (newItems: CartItem[]) => {
     setCartItems(newItems);
     updateCartItems(newItems);
@@ -83,6 +80,7 @@ export default function CriarProjetoPage() {
 
   const handlePrevStep = () => {
     setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSave = async () => {
@@ -127,7 +125,6 @@ export default function CriarProjetoPage() {
 
       await createProject({ project: payload });
       
-      // Limpa rascunho após sucesso
       await clearCart();
       setCartItems([]);
 
@@ -143,8 +140,6 @@ export default function CriarProjetoPage() {
       setIsSavingProject(false);
     }
   };
-
-  // --- Handlers de Itens ---
 
   const handleSelectSimpleItem = (item: DiscoveredItem) => {
     const newItem: CartItem = {
@@ -222,22 +217,24 @@ export default function CriarProjetoPage() {
       <Sidebar />
 
       <main className={styles.mainContent}>
-        <header className={styles.header}>
+        
+        <header className={styles.pageHeader}>
           <div className={styles.headerLeft}>
-            <button className={styles.backButton} onClick={() => router.back()}>
-              <FiArrowLeft size={20} />
-            </button>
-            <div>
-              <h1 className={styles.title}>Nova Ordem de Produção</h1>
-              <div className={styles.stepIndicator}>
-                <span className={`${styles.step} ${step >= 1 ? styles.activeStep : ''}`}>
-                  1. Seleção de Itens
-                </span>
-                <span className={styles.stepDivider}>/</span>
-                <span className={`${styles.step} ${step >= 2 ? styles.activeStep : ''}`}>
-                  2. Dados do Cliente
-                </span>
-              </div>
+            <div className={styles.titleRow}>
+              <button className={styles.backButton} onClick={() => router.back()}>
+                <FiArrowLeft size={20} />
+              </button>
+              <h1 className={styles.pageTitle}>Novo Pedido</h1>
+            </div>
+            
+            <div className={styles.stepIndicator}>
+              <span className={`${styles.step} ${step >= 1 ? styles.activeStep : ''}`}>
+                1. Seleção
+              </span>
+              <span className={styles.stepDivider}>/</span>
+              <span className={`${styles.step} ${step >= 2 ? styles.activeStep : ''}`}>
+                2. Dados
+              </span>
             </div>
           </div>
           
@@ -245,131 +242,124 @@ export default function CriarProjetoPage() {
              {isSavingCart ? (
                <><FiRotateCcw className={styles.spin} /> Salvando...</>
              ) : cartItems.length > 0 ? (
-               <><FiCloud /> Rascunho salvo</>
-             ) : null}
+               <><FiCloud /> Salvo</>
+             ) : (
+               <><FiCheck /> Pronto</>
+             )}
           </div>
         </header>
 
-        <div className={styles.contentWrapper}>
+        <div className={styles.contentArea}>
           {step === 1 && (
-            <div className={styles.stepContainer}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.iconCircle}>
-                  <FiShoppingBag size={24} />
+            <div className={styles.contentCard}>
+              {isLoadingCart && !hasLoadedDraft ? (
+                <div className={styles.loadingState}>
+                  <div className={styles.spin}><FiRotateCcw size={24} /></div>
+                  <p>Carregando rascunho...</p>
                 </div>
-                <div>
-                  <h3>Itens do Enxoval</h3>
-                  <p>Adicione os produtos que farão parte deste pedido.</p>
-                </div>
-              </div>
-              
-              <div className={styles.cartWrapper}>
-                {isLoadingCart && !hasLoadedDraft ? (
-                  <div className={styles.loadingState}>
-                    <div className={styles.spin} style={{ marginRight: 8 }}><FiRotateCcw /></div>
-                    Verificando rascunhos...
-                  </div>
-                ) : (
-                  <ProjetoCarrinhoDiscovery
-                    items={cartItems}
-                    onItemsChange={handleUpdateItems} // Usa o handler que salva direto
-                    onBrowseMore={() => setShowBrowser(true)}
-                    onEditItem={handleEditItemFromList} 
-                  />
-                )}
-              </div>
-
-              <div className={styles.actionFooter}>
-                <div className={styles.itemsCount}>
-                  {cartItems.length} {cartItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
-                </div>
-                <Button 
-                  variant="primary" 
-                  size="large"
-                  onClick={handleNextStep} 
-                  disabled={cartItems.length === 0}
-                >
-                  Continuar para Dados <FiArrowRight size={18} />
-                </Button>
-              </div>
+              ) : (
+                <ProjetoCarrinhoDiscovery
+                  items={cartItems}
+                  onItemsChange={handleUpdateItems}
+                  onBrowseMore={() => setShowBrowser(true)}
+                  onEditItem={handleEditItemFromList} 
+                />
+              )}
             </div>
           )}
 
           {step === 2 && (
-            <div className={styles.stepContainer}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.iconCircle}>
-                  <FiEdit3 size={24} />
-                </div>
-                <div>
-                  <h3>Dados do Projeto</h3>
-                  <p>Preencha as informações do cliente para finalizar.</p>
-                </div>
+            <div className={styles.contentCard}>
+              <div className={styles.formHeader}>
+                <h2>Detalhes do Projeto</h2>
+                <p>Preencha os dados do cliente para vincular à produção.</p>
               </div>
 
-              <div className={styles.formContainer}>
-                <div className={styles.card}>
-                  <div className={styles.formGrid}>
-                    <Input
-                      id="project-name"
-                      type="text"
-                      label="Nome do Projeto *"
-                      value={projectName}
-                      onChange={(e) => setProjectName(e.target.value)}
-                      placeholder="Ex: Quarto da Maria"
-                    />
-                    <Input
-                      id="client-name"
-                      type="text"
-                      label="Nome da Cliente *"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Nome completo"
-                    />
-                    <Input
-                      id="client-phone"
-                      type="tel"
-                      label="WhatsApp / Contato"
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      placeholder="(00) 00000-0000"
-                    />
-                    <TextArea
-                      label="Observações Iniciais"
-                      value={productionNotes}
-                      onChange={(e) => setProductionNotes(e.target.value)}
-                      placeholder="Detalhes sobre prazos, entrega ou preferências..."
-                      rows={4}
-                    />
-                  </div>
+              <div className={styles.formGrid}>
+                <div className={styles.fullWidth}>
+                  <Input
+                    id="project-name"
+                    type="text"
+                    label="Nome do Projeto *"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Ex: Quarto da Maria"
+                  />
                 </div>
-              </div>
-
-              <div className={styles.actionFooter}>
-                <Button variant="secondary" size="large" onClick={handlePrevStep}>
-                  <FiArrowLeft size={18} /> Voltar
-                </Button>
-                <Button 
-                  variant="primary" 
-                  size="large"
-                  onClick={handleSave} 
-                  disabled={isSavingProject}
-                >
-                  <FiSave size={18} /> {isSavingProject ? 'Criando Projeto...' : 'Finalizar e Criar'}
-                </Button>
+                <Input
+                  id="client-name"
+                  type="text"
+                  label="Nome da Cliente *"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Nome completo"
+                />
+                <Input
+                  id="client-phone"
+                  type="tel"
+                  label="WhatsApp / Contato"
+                  value={clientPhone}
+                  onChange={(e) => setClientPhone(e.target.value)}
+                  placeholder="(00) 00000-0000"
+                />
+                <div className={styles.fullWidth}>
+                  <TextArea
+                    label="Observações de Produção"
+                    value={productionNotes}
+                    onChange={(e) => setProductionNotes(e.target.value)}
+                    placeholder="Detalhes sobre prazos, entrega ou preferências especiais..."
+                    rows={4}
+                  />
+                </div>
               </div>
             </div>
           )}
         </div>
+
+        <footer className={styles.actionFooter}>
+          <div className={styles.itemsCount}>
+            <span className={styles.countBadge}>{cartItems.length}</span>
+            {cartItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px' }}>
+            {step === 2 && (
+              <Button variant="secondary" size="large" onClick={handlePrevStep}>
+                <FiArrowLeft size={18} /> Voltar
+              </Button>
+            )}
+
+            {step === 1 ? (
+              <Button 
+                variant="primary" 
+                size="large"
+                onClick={handleNextStep} 
+                disabled={cartItems.length === 0}
+              >
+                Continuar <FiArrowRight size={18} />
+              </Button>
+            ) : (
+              <Button 
+                variant="primary" 
+                size="large"
+                onClick={handleSave} 
+                disabled={isSavingProject}
+              >
+                <FiSave size={18} /> 
+                {isSavingProject ? 'Criando...' : 'Finalizar e Criar'}
+              </Button>
+            )}
+          </div>
+        </footer>
       </main>
 
       {showBrowser && (
         <div className={styles.overlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Adicionar Itens ao Projeto</h2>
+              <h2 className={styles.modalTitle}>Catálogo de Produtos</h2>
               <button className={styles.closeButton} onClick={() => setShowBrowser(false)}>
-                Fechar
+                <FiX size={24} />
               </button>
             </div>
             <div className={styles.modalBody}>

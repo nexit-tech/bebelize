@@ -11,18 +11,11 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
   const { layerBuffer, patternUrl, width, height } = options;
 
   try {
-    console.log(`🎨 Aplicando textura: ${patternUrl.split('/').pop()}`);
-
     const response = await fetch(patternUrl);
     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
 
     const arrayBuffer = await response.arrayBuffer();
-    let patternBuffer = Buffer.from(arrayBuffer);
-
-    patternBuffer = await sharp(patternBuffer)
-      .ensureAlpha()
-      .png()
-      .toBuffer();
+    const originalPatternBuffer = Buffer.from(arrayBuffer);
 
     const originalLayerResized = await sharp(layerBuffer)
       .resize(width, height, { 
@@ -37,24 +30,29 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
     const finalWidth = layerMetadata.width || width;
     const finalHeight = layerMetadata.height || height;
 
-    console.log(`📐 Dimensões finais: ${finalWidth}x${finalHeight}`);
+    const scaleFactor = 0.25;
+    const targetPatternWidth = Math.max(32, Math.floor(finalWidth * scaleFactor));
 
-    const patternMetadata = await sharp(patternBuffer).metadata();
-    const patternWidth = patternMetadata.width || 512;
-    const patternHeight = patternMetadata.height || 512;
-    
-    console.log(`🔲 Textura original: ${patternWidth}x${patternHeight}`);
+    const resizedPatternBuffer = await sharp(originalPatternBuffer)
+      .resize({ width: targetPatternWidth })
+      .ensureAlpha()
+      .png()
+      .toBuffer();
+
+    const patternMetadata = await sharp(resizedPatternBuffer).metadata();
+    const patternWidth = patternMetadata.width || targetPatternWidth;
+    const patternHeight = patternMetadata.height || targetPatternWidth;
 
     const tilesX = Math.ceil(finalWidth / patternWidth) + 1;
     const tilesY = Math.ceil(finalHeight / patternHeight) + 1;
-    
-    console.log(`🔳 Criando grid: ${tilesX}x${tilesY} tiles`);
 
-    const tiles = [];
+    // Correção: Tipagem explícita para o array de tiles
+    const tiles: { input: Buffer; left: number; top: number; }[] = [];
+    
     for (let y = 0; y < tilesY; y++) {
       for (let x = 0; x < tilesX; x++) {
         tiles.push({ 
-          input: patternBuffer, 
+          input: resizedPatternBuffer, 
           left: x * patternWidth, 
           top: y * patternHeight 
         });
@@ -63,8 +61,6 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
 
     const tiledWidth = tilesX * patternWidth;
     const tiledHeight = tilesY * patternHeight;
-
-    console.log(`📦 Canvas tiled: ${tiledWidth}x${tiledHeight}`);
 
     const tiledPatternBuffer = await sharp({
       create: {
@@ -99,11 +95,10 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
       .png()
       .toBuffer();
 
-    console.log(`✅ Textura aplicada e recortada com sucesso!`);
     return finalImage;
 
   } catch (error: any) {
-    console.error(`❌ [PatternApplier] Erro: ${error.message}`);
+    console.error(`Erro no PatternApplier: ${error.message}`);
     
     return await sharp(layerBuffer)
       .resize(width, height, { 

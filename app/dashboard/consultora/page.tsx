@@ -11,6 +11,7 @@ import Sidebar from '@/components/Sidebar/Sidebar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
 import Button from '@/components/Button/Button';
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import styles from './dashboard.module.css';
 
 export default function DashboardConsultoraPage() {
@@ -24,8 +25,12 @@ export default function DashboardConsultoraPage() {
     setSearchQuery,
     statusFilter,
     setStatusFilter,
-    isLoading
+    isLoading,
+    deleteProject
   } = useProjects(currentUser?.id);
+
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   const hasDraft = cartItems.length > 0;
 
@@ -35,6 +40,19 @@ export default function DashboardConsultoraPage() {
 
   const handleProjectClick = (id: string) => {
     router.push(`/projeto/${id}`);
+  };
+
+  const handleDeleteClick = (id: string) => {
+    setProjectToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (projectToDelete) {
+      await deleteProject(projectToDelete);
+      setProjectToDelete(null);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Consultora';
@@ -128,7 +146,9 @@ export default function DashboardConsultoraPage() {
                         createdAt={project.created_at}
                         status={project.status as ProjectStatus}
                         statusLabel={getStatusLabel(project.status as ProjectStatus)}
+                        previewImageUrl={project.preview_image_url}
                         onClick={() => handleProjectClick(project.id)}
+                        onDelete={() => handleDeleteClick(project.id)}
                       />
                     </div>
                   ))}
@@ -157,6 +177,17 @@ export default function DashboardConsultoraPage() {
           )}
         </div>
       </main>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Projeto"
+        message="Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita e todos os dados associados serão perdidos."
+        type="danger"
+        confirmText="Sim, Excluir"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

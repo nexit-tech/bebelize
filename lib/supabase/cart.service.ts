@@ -1,8 +1,16 @@
 import { supabase } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 export const cartService = {
   async getCart() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    let user: User | null = session?.user ?? null;
+
+    if (!user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      user = authUser;
+    }
     
     if (!user) return null;
 
@@ -13,16 +21,25 @@ export const cartService = {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Erro ao buscar carrinho:', error);
+      console.error(error);
     }
 
     return data;
   },
 
   async saveCart(items: any[]) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!user) throw new Error('Usuário não autenticado');
+    let user: User | null = session?.user ?? null;
+
+    if (!user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      user = authUser;
+    }
+    
+    if (!user) {
+      throw new Error('Usuário não autenticado');
+    }
 
     const { data, error } = await supabase
       .from('carts')
@@ -40,7 +57,14 @@ export const cartService = {
   },
 
   async clearCart() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    let user: User | null = session?.user ?? null;
+
+    if (!user) {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      user = authUser;
+    }
     
     if (!user) return;
 
