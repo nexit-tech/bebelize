@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { FiArrowLeft, FiSave, FiEdit3, FiShoppingBag, FiArrowRight, FiRotateCcw, FiCloud, FiCheck } from 'react-icons/fi';
+import { FiArrowLeft, FiSave, FiEdit3, FiArrowRight, FiRotateCcw, FiCloud, FiLayout } from 'react-icons/fi';
 import { useProjects, useAuth } from '@/hooks';
 import { useCart } from '@/hooks/useCart';
 import type { DiscoveredItem } from '@/lib/discovery/types';
@@ -32,25 +32,8 @@ export default function CriarProjetoPage() {
 
   const [step, setStep] = useState(1);
   const [isSavingProject, setIsSavingProject] = useState(false);
-  const [showBrowser, setShowBrowser] = useState(false);
   const [hasLoadedDraft, setHasLoadedDraft] = useState(false);
-  
-  // Estado local
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  // 1. Carga Inicial: Se houver rascunho, carrega no estado local
-  useEffect(() => {
-    if (!isLoadingCart && savedItems.length > 0 && !hasLoadedDraft) {
-      setCartItems(savedItems);
-      setHasLoadedDraft(true);
-    }
-  }, [savedItems, isLoadingCart, hasLoadedDraft]);
-
-  // 2. Atualização: Função wrapper para atualizar local e remoto ao mesmo tempo
-  const handleUpdateItems = (newItems: CartItem[]) => {
-    setCartItems(newItems);
-    updateCartItems(newItems);
-  };
 
   const [customizerModal, setCustomizerModal] = useState<{
     isOpen: boolean;
@@ -72,17 +55,39 @@ export default function CriarProjetoPage() {
     message: ''
   });
 
+  useEffect(() => {
+    if (!isLoadingCart && savedItems.length > 0 && !hasLoadedDraft) {
+      setCartItems(savedItems);
+      setHasLoadedDraft(true);
+    }
+  }, [savedItems, isLoadingCart, hasLoadedDraft]);
+
+  const handleUpdateItems = (newItems: CartItem[]) => {
+    setCartItems(newItems);
+    updateCartItems(newItems);
+  };
+
+  const scrollToTop = () => {
+    const mainElement = document.querySelector(`.${styles.main}`);
+    if (mainElement) {
+      mainElement.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const handleNextStep = () => {
     if (cartItems.length === 0) {
       alert('Adicione pelo menos um item ao projeto antes de prosseguir.');
       return;
     }
-    setStep(2);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setStep(prev => prev + 1);
+    scrollToTop();
   };
 
   const handlePrevStep = () => {
-    setStep(1);
+    setStep(prev => prev - 1);
+    scrollToTop();
   };
 
   const handleSave = async () => {
@@ -126,8 +131,6 @@ export default function CriarProjetoPage() {
       };
 
       await createProject({ project: payload });
-      
-      // Limpa rascunho após sucesso
       await clearCart();
       setCartItems([]);
 
@@ -144,8 +147,6 @@ export default function CriarProjetoPage() {
     }
   };
 
-  // --- Handlers de Itens ---
-
   const handleSelectSimpleItem = (item: DiscoveredItem) => {
     const newItem: CartItem = {
       id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
@@ -155,7 +156,6 @@ export default function CriarProjetoPage() {
       variantId: item.variants?.[0]?.id
     };
     handleUpdateItems([...cartItems, newItem]);
-    setShowBrowser(false);
   };
 
   const handleCustomizeCompositeItem = (item: DiscoveredItem) => {
@@ -189,7 +189,6 @@ export default function CriarProjetoPage() {
     
     handleUpdateItems(newItemsList);
     setCustomizerModal({ isOpen: false, item: null, editingCartItem: undefined });
-    setShowBrowser(false);
   };
 
   const handleAddBulkItems = (items: { item: DiscoveredItem, customizations: LayerCustomization[], renderUrl: string }[]) => {
@@ -201,7 +200,6 @@ export default function CriarProjetoPage() {
       variantId: i.item.variants?.[0]?.id 
     }));
     handleUpdateItems([...cartItems, ...newItems]);
-    setShowBrowser(false);
   };
 
   const handleEditItemFromList = (cartItem: CartItem) => {
@@ -218,134 +216,169 @@ export default function CriarProjetoPage() {
   };
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.container}>
       <Sidebar />
 
-      <main className={styles.mainContent}>
+      <main className={styles.main}>
         <header className={styles.header}>
-          <div className={styles.headerLeft}>
-            <button className={styles.backButton} onClick={() => router.back()}>
-              <FiArrowLeft size={20} />
-            </button>
-            <div>
-              <h1 className={styles.title}>Nova Ordem de Produção</h1>
-              <div className={styles.stepIndicator}>
-                <span className={`${styles.step} ${step >= 1 ? styles.activeStep : ''}`}>
-                  1. Seleção de Itens
-                </span>
-                <span className={styles.stepDivider}>/</span>
-                <span className={`${styles.step} ${step >= 2 ? styles.activeStep : ''}`}>
-                  2. Dados do Cliente
-                </span>
+          <div className={styles.headerContent}>
+            <div className={styles.titleWrapper}>
+              <button className={styles.backButton} onClick={() => router.back()}>
+                <FiArrowLeft size={20} />
+              </button>
+              <div>
+                <h1 className={styles.title}>Nova Ordem de Produção</h1>
+                <div className={styles.steps}>
+                  <span className={`${styles.step} ${step === 1 ? styles.active : ''}`}>
+                    1. Seleção
+                  </span>
+                  <span className={styles.stepSeparator}></span>
+                  <span className={`${styles.step} ${step === 2 ? styles.active : ''}`}>
+                    2. Construção
+                  </span>
+                  <span className={styles.stepSeparator}></span>
+                  <span className={`${styles.step} ${step === 3 ? styles.active : ''}`}>
+                    3. Dados
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-          
-          <div className={styles.autoSaveStatus}>
-             {isSavingCart ? (
-               <><FiRotateCcw className={styles.spin} /> Salvando...</>
-             ) : cartItems.length > 0 ? (
-               <><FiCloud /> Rascunho salvo</>
-             ) : null}
+            
+            <div className={styles.actions}>
+               {isSavingCart ? (
+                 <span className={styles.step}><FiRotateCcw className={styles.spin} /> Salvando...</span>
+               ) : cartItems.length > 0 ? (
+                 <span className={styles.step}><FiCloud /> Rascunho salvo</span>
+               ) : null}
+            </div>
           </div>
         </header>
 
-        <div className={styles.contentWrapper}>
-          {step === 1 && (
-            <div className={styles.stepContainer}>
-              <div className={styles.sectionHeader}>
-                <div className={styles.iconCircle}>
-                  <FiShoppingBag size={24} />
-                </div>
-                <div>
-                  <h3>Itens do Enxoval</h3>
-                  <p>Adicione os produtos que farão parte deste pedido.</p>
-                </div>
-              </div>
-              
-              <div className={styles.cartWrapper}>
-                {isLoadingCart && !hasLoadedDraft ? (
-                  <div className={styles.loadingState}>
-                    <div className={styles.spin} style={{ marginRight: 8 }}><FiRotateCcw /></div>
-                    Verificando rascunhos...
-                  </div>
-                ) : (
-                  <ProjetoCarrinhoDiscovery
-                    items={cartItems}
-                    onItemsChange={handleUpdateItems} // Usa o handler que salva direto
-                    onBrowseMore={() => setShowBrowser(true)}
-                    onEditItem={handleEditItemFromList} 
-                  />
-                )}
-              </div>
+        {step === 1 && (
+          <div className={styles.contentGrid}>
+            <div className={styles.catalogSection}>
+              <CatalogoBrowser
+                onSelectSimpleItem={handleSelectSimpleItem}
+                onCustomizeCompositeItem={handleCustomizeCompositeItem}
+                onAddBulkItems={handleAddBulkItems}
+              />
+            </div>
 
-              <div className={styles.actionFooter}>
+            <div className={styles.cartSection}>
+              <ProjetoCarrinhoDiscovery
+                items={cartItems}
+                onItemsChange={handleUpdateItems}
+                onBrowseMore={() => {}}
+                onEditItem={handleEditItemFromList} 
+                showTitle={false}
+                compact={true}
+              />
+
+              <div className={styles.cartSummary}>
                 <div className={styles.itemsCount}>
-                  {cartItems.length} {cartItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
+                  {cartItems.length} {cartItems.length === 1 ? 'item' : 'itens'} no pedido
                 </div>
                 <Button 
                   variant="primary" 
-                  size="large"
+                  fullWidth
                   onClick={handleNextStep} 
                   disabled={cartItems.length === 0}
                 >
-                  Continuar para Dados <FiArrowRight size={18} />
+                  Continuar <FiArrowRight size={18} />
                 </Button>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {step === 2 && (
-            <div className={styles.stepContainer}>
+        {step === 2 && (
+          <div className={styles.contentGrid}>
+            <div className={styles.catalogSection}>
+              <div className={styles.sectionHeader}>
+                <div className={styles.iconCircle}>
+                  <FiLayout size={24} />
+                </div>
+                <div>
+                  <h3 className={styles.sectionTitle}>Construção do Pedido</h3>
+                  <p style={{ color: 'var(--color-browning)', opacity: 0.7 }}>Visualização detalhada e ajustes finais (Em breve).</p>
+                </div>
+              </div>
+
+              <div className={styles.constructionPlaceholder}>
+                <p>Esta etapa de construção detalhada será implementada em breve.</p>
+                <p style={{ fontSize: 14, marginTop: 8 }}>Você pode prosseguir para os dados do cliente com os itens selecionados.</p>
+              </div>
+
+              <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
+                <Button variant="secondary" size="large" onClick={handlePrevStep}>
+                  <FiArrowLeft size={18} /> Voltar
+                </Button>
+                <Button variant="primary" size="large" onClick={handleNextStep}>
+                  Continuar <FiArrowRight size={18} />
+                </Button>
+              </div>
+            </div>
+
+            <div className={styles.cartSection}>
+               <ProjetoCarrinhoDiscovery
+                items={cartItems}
+                onItemsChange={handleUpdateItems}
+                onBrowseMore={() => {}}
+                showTitle={true}
+                compact={true}
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className={styles.contentGrid}>
+            <div className={styles.catalogSection}>
               <div className={styles.sectionHeader}>
                 <div className={styles.iconCircle}>
                   <FiEdit3 size={24} />
                 </div>
                 <div>
-                  <h3>Dados do Projeto</h3>
-                  <p>Preencha as informações do cliente para finalizar.</p>
+                  <h3 className={styles.sectionTitle}>Dados do Cliente</h3>
+                  <p style={{ color: 'var(--color-browning)', opacity: 0.7 }}>Preencha as informações para finalizar a ordem.</p>
                 </div>
               </div>
 
-              <div className={styles.formContainer}>
-                <div className={styles.card}>
-                  <div className={styles.formGrid}>
-                    <Input
-                      id="project-name"
-                      type="text"
-                      label="Nome do Projeto *"
-                      value={projectName}
-                      onChange={(e) => setProjectName(e.target.value)}
-                      placeholder="Ex: Quarto da Maria"
-                    />
-                    <Input
-                      id="client-name"
-                      type="text"
-                      label="Nome da Cliente *"
-                      value={clientName}
-                      onChange={(e) => setClientName(e.target.value)}
-                      placeholder="Nome completo"
-                    />
-                    <Input
-                      id="client-phone"
-                      type="tel"
-                      label="WhatsApp / Contato"
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      placeholder="(00) 00000-0000"
-                    />
-                    <TextArea
-                      label="Observações Iniciais"
-                      value={productionNotes}
-                      onChange={(e) => setProductionNotes(e.target.value)}
-                      placeholder="Detalhes sobre prazos, entrega ou preferências..."
-                      rows={4}
-                    />
-                  </div>
-                </div>
+              <div className={styles.formGrid}>
+                  <Input
+                    id="project-name"
+                    type="text"
+                    label="Nome do Projeto *"
+                    value={projectName}
+                    onChange={(e) => setProjectName(e.target.value)}
+                    placeholder="Ex: Quarto da Maria"
+                  />
+                  <Input
+                    id="client-name"
+                    type="text"
+                    label="Nome da Cliente *"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Nome completo"
+                  />
+                  <Input
+                    id="client-phone"
+                    type="tel"
+                    label="WhatsApp / Contato"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                  />
+                  <TextArea
+                    label="Observações Iniciais"
+                    value={productionNotes}
+                    onChange={(e) => setProductionNotes(e.target.value)}
+                    placeholder="Detalhes sobre prazos, entrega ou preferências..."
+                    rows={4}
+                  />
               </div>
 
-              <div className={styles.actionFooter}>
+              <div style={{ marginTop: 24, display: 'flex', gap: 16 }}>
                 <Button variant="secondary" size="large" onClick={handlePrevStep}>
                   <FiArrowLeft size={18} /> Voltar
                 </Button>
@@ -359,29 +392,19 @@ export default function CriarProjetoPage() {
                 </Button>
               </div>
             </div>
-          )}
-        </div>
-      </main>
 
-      {showBrowser && (
-        <div className={styles.overlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h2 className={styles.modalTitle}>Adicionar Itens ao Projeto</h2>
-              <button className={styles.closeButton} onClick={() => setShowBrowser(false)}>
-                Fechar
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <CatalogoBrowser
-                onSelectSimpleItem={handleSelectSimpleItem}
-                onCustomizeCompositeItem={handleCustomizeCompositeItem}
-                onAddBulkItems={handleAddBulkItems}
+            <div className={styles.cartSection} style={{ opacity: 0.9 }}>
+               <ProjetoCarrinhoDiscovery
+                items={cartItems}
+                onItemsChange={handleUpdateItems}
+                onBrowseMore={() => {}}
+                showTitle={true}
+                compact={true}
               />
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
 
       <ItemCustomizerModal
         isOpen={customizerModal.isOpen}

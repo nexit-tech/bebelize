@@ -33,7 +33,6 @@ export default function CatalogoBrowser({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
 
-  // 1. Agrupar Coleções
   const collections = useMemo(() => {
     const map = new Map<string, { count: number, preview: string | null }>();
     
@@ -43,7 +42,6 @@ export default function CatalogoBrowser({
       
       map.set(colId, {
         count: current.count + 1,
-        // Pega a primeira imagem válida como capa da coleção
         preview: current.preview || item.image_url || null
       });
     });
@@ -56,7 +54,6 @@ export default function CatalogoBrowser({
     })).sort((a, b) => a.name.localeCompare(b.name));
   }, [items]);
 
-  // 2. Filtrar Itens da Coleção Ativa
   const activeItems = useMemo(() => {
     if (!activeCollectionId) return [];
     
@@ -69,8 +66,6 @@ export default function CatalogoBrowser({
 
     return result;
   }, [items, activeCollectionId, searchTerm]);
-
-  // --- Handlers de Seleção ---
 
   const toggleSelection = (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation();
@@ -92,8 +87,6 @@ export default function CatalogoBrowser({
     setSelectedIds(new Set());
   };
 
-  // --- Navegação ---
-
   const enterCollection = (colId: string) => {
     setActiveCollectionId(colId);
     setViewMode('items');
@@ -107,10 +100,7 @@ export default function CatalogoBrowser({
     handleClearSelection();
   };
 
-  // --- Ações ---
-
   const handleCardClick = (item: DiscoveredItem) => {
-    // Se estiver em modo de seleção, o clique alterna a seleção
     if (selectedIds.size > 0) {
       const newSelection = new Set(selectedIds);
       if (newSelection.has(item.id)) {
@@ -122,7 +112,6 @@ export default function CatalogoBrowser({
       return;
     }
 
-    // Caso contrário, abre a customização
     const hasLayers = item.layers && item.layers.length > 0 && item.layers.some(l => l.type !== 'fixed');
     if (hasLayers) {
       onCustomizeCompositeItem(item);
@@ -151,15 +140,14 @@ export default function CatalogoBrowser({
   return (
     <div className={styles.container}>
       
-      {/* --- View: Lista de Coleções --- */}
       {viewMode === 'collections' && (
         <div className={styles.collectionsView}>
           <div className={styles.header}>
             <div className={styles.headerIcon}>
                <FiGrid size={32} />
             </div>
-            <h2 className={styles.title}>Minhas Coleções</h2>
-            <p className={styles.subtitle}>Explore o catálogo por categorias</p>
+            <h2 className={styles.title}>Coleções</h2>
+            <p className={styles.subtitle}>Selecione uma categoria para ver os itens</p>
           </div>
 
           <div className={styles.collectionsGrid}>
@@ -185,7 +173,6 @@ export default function CatalogoBrowser({
         </div>
       )}
 
-      {/* --- View: Itens da Coleção --- */}
       {viewMode === 'items' && (
         <div className={styles.itemsView}>
           <div className={styles.itemsHeader}>
@@ -200,25 +187,24 @@ export default function CatalogoBrowser({
             
             <div className={styles.searchWrapper}>
               <SearchBar 
-                placeholder="Buscar nesta coleção..." 
+                placeholder="Buscar item..." 
                 value={searchTerm} 
                 onChange={setSearchTerm} 
               />
             </div>
           </div>
 
-          {/* Barra de Seleção (Bulk Actions) */}
           {selectedIds.size > 0 && (
             <div className={styles.selectionToolbar}>
               <div className={styles.selectionInfo}>
                 <div className={styles.countBadge}>{selectedIds.size}</div>
-                <span className={styles.selectionText}>itens selecionados</span>
+                <span>selecionados</span>
                 <div className={styles.divider} />
-                <button className={styles.linkBtn} onClick={handleSelectAll}>Selecionar Todos</button>
+                <button className={styles.linkBtn} onClick={handleSelectAll}>Todos</button>
                 <button className={styles.linkBtn} onClick={handleClearSelection}>Limpar</button>
               </div>
-              <Button variant="primary" onClick={() => setIsBulkModalOpen(true)}>
-                <FiLayers size={16} /> Personalizar Seleção
+              <Button variant="primary" size="small" onClick={() => setIsBulkModalOpen(true)}>
+                <FiLayers size={14} /> Personalizar
               </Button>
             </div>
           )}
@@ -234,7 +220,6 @@ export default function CatalogoBrowser({
                       className={`${styles.itemCardWrapper} ${isSelected ? styles.selected : ''}`}
                       onClick={() => handleCardClick(item)}
                     >
-                      {/* Checkbox Overlay */}
                       <div 
                         className={`${styles.checkbox} ${isSelected ? styles.checked : ''}`}
                         onClick={(e) => toggleSelection(e, item.id)}
@@ -253,8 +238,8 @@ export default function CatalogoBrowser({
               </div>
             ) : (
               <div className={styles.emptyState}>
-                <FiSearch size={48} className={styles.emptyIcon} />
-                <p>Nenhum item encontrado nesta coleção.</p>
+                <FiSearch size={32} className={styles.emptyIcon} />
+                <p>Nenhum item encontrado.</p>
               </div>
             )}
           </div>
@@ -271,7 +256,6 @@ export default function CatalogoBrowser({
   );
 }
 
-// Helper de Formatação
 function formatCollectionName(rawName: string): string {
   if (!rawName) return 'Geral';
   if (rawName === 'outros') return 'Outros';
@@ -282,5 +266,5 @@ function formatCollectionName(rawName: string): string {
     .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join(' ');
 
-  return `Coleção ${cleaned}`;
+  return cleaned;
 }

@@ -1,41 +1,63 @@
+/* components/StatusTag/StatusTag.module.css */
 .tag {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 6px 14px;
+  font-family: 'Montserrat', sans-serif;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 20px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.medium {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.small {
+  padding: 4px 10px;
+  font-size: 10px;
+  border-radius: 16px;
+  letter-spacing: 0.3px;
 }
 
 .rascunho {
-  background-color: rgba(166, 154, 148, 0.15);
-  color: #A69A94;
+  background-color: #F0F0F0;
+  color: #8C8C8C;
+  border: 1px solid #E0E0E0;
 }
 
 .negociacao {
-  background-color: rgba(212, 194, 154, 0.15);
-  color: #B8A167;
+  background-color: #FFF8E1;
+  color: #B8860B;
+  border: 1px solid #FFE082;
 }
 
 .aprovado {
-  background-color: rgba(163, 181, 159, 0.15);
-  color: #7A9176;
+  background-color: #E8F5E9;
+  color: #2E7D32;
+  border: 1px solid #A5D6A7;
 }
 
 .producao {
-  background-color: rgba(176, 196, 222, 0.15);
-  color: #7B92B0;
+  background-color: #E3F2FD;
+  color: #1565C0;
+  border: 1px solid #90CAF9;
 }
 
 .finalizado {
-  background-color: rgba(163, 181, 159, 0.2);
-  color: #6B8167;
+  background-color: #F3E5F5;
+  color: #7B1FA2;
+  border: 1px solid #CE93D8;
 }
 
 .cancelado {
-  background-color: rgba(217, 166, 160, 0.15);
-  color: #B8817A;
+  background-color: #FFEBEE;
+  color: #C62828;
+  border: 1px solid #EF9A9A;
 }

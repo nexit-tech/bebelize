@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiPlus, FiFilter, FiFolder, FiSearch, FiRotateCcw } from 'react-icons/fi';
 import { useAuth, useProjects } from '@/hooks';
@@ -11,6 +11,7 @@ import Sidebar from '@/components/Sidebar/Sidebar';
 import SearchBar from '@/components/SearchBar/SearchBar';
 import ProjectCard from '@/components/ProjectCard/ProjectCard';
 import Button from '@/components/Button/Button';
+import ConfirmModal from '@/components/ConfirmModal/ConfirmModal';
 import styles from './dashboard.module.css';
 
 export default function DashboardConsultoraPage() {
@@ -24,8 +25,13 @@ export default function DashboardConsultoraPage() {
     setSearchQuery,
     statusFilter,
     setStatusFilter,
-    isLoading
+    isLoading,
+    deleteProject
   } = useProjects(currentUser?.id);
+
+  // Estados para controle do Modal de Exclusão
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
   const hasDraft = cartItems.length > 0;
 
@@ -35,6 +41,32 @@ export default function DashboardConsultoraPage() {
 
   const handleProjectClick = (id: string) => {
     router.push(`/projeto/${id}`);
+  };
+
+  // Abre o modal solicitando confirmação
+  const handleRequestDelete = (id: string) => {
+    setProjectToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Executa a exclusão após confirmação no modal
+  const handleConfirmDelete = async () => {
+    if (projectToDelete) {
+      const success = await deleteProject(projectToDelete);
+      
+      if (!success) {
+        alert('Erro ao excluir o projeto. Tente novamente.');
+      }
+      
+      // Limpa o estado e fecha o modal
+      setIsDeleteModalOpen(false);
+      setProjectToDelete(null);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsDeleteModalOpen(false);
+    setProjectToDelete(null);
   };
 
   const firstName = currentUser?.name ? currentUser.name.split(' ')[0] : 'Consultora';
@@ -122,13 +154,13 @@ export default function DashboardConsultoraPage() {
                   {projects.map((project) => (
                     <div key={project.id} className={styles.gridItem}>
                       <ProjectCard
-                        id={project.id}
                         name={project.name}
                         clientName={project.client_name}
                         createdAt={project.created_at}
                         status={project.status as ProjectStatus}
                         statusLabel={getStatusLabel(project.status as ProjectStatus)}
                         onClick={() => handleProjectClick(project.id)}
+                        onDelete={() => handleRequestDelete(project.id)}
                       />
                     </div>
                   ))}
@@ -156,6 +188,17 @@ export default function DashboardConsultoraPage() {
             </>
           )}
         </div>
+
+        <ConfirmModal 
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirmDelete}
+          title="Excluir Projeto"
+          message="Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita e todos os dados serão perdidos."
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          type="danger"
+        />
       </main>
     </div>
   );

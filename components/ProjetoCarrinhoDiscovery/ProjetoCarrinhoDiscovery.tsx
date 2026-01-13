@@ -21,13 +21,17 @@ interface ProjetoCarrinhoDiscoveryProps {
   onItemsChange: (items: CartItem[]) => void;
   onBrowseMore: () => void;
   onEditItem?: (item: CartItem) => void;
+  showTitle?: boolean; // Nova prop
+  compact?: boolean;   // Nova prop
 }
 
 export default function ProjetoCarrinhoDiscovery({
   items,
   onItemsChange,
   onBrowseMore,
-  onEditItem
+  onEditItem,
+  showTitle = true,
+  compact = false
 }: ProjetoCarrinhoDiscoveryProps) {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; itemId: string | null }>({
     isOpen: false,
@@ -51,38 +55,54 @@ export default function ProjetoCarrinhoDiscovery({
     setDeleteModal({ isOpen: false, itemId: null });
   };
 
+  // Classes condicionais para o container principal
+  const containerClasses = [
+    styles.cartContainer,
+    compact ? styles.compact : ''
+  ].filter(Boolean).join(' ');
+
   return (
-    <div className={styles.cartContainer}>
-      <div className={styles.cartHeader}>
-        <div className={styles.cartTitleGroup}>
-          <div className={styles.iconWrapper}>
-            <FiBox size={20} />
+    <div className={containerClasses}>
+      
+      {/* Cabeçalho Condicional */}
+      {showTitle && (
+        <div className={styles.cartHeader}>
+          <div className={styles.cartTitleGroup}>
+            <div className={styles.iconWrapper}>
+              <FiBox size={20} />
+            </div>
+            <div>
+              <h3 className={styles.cartTitle}>Itens Selecionados</h3>
+              <p className={styles.cartSubtitle}>Gerencie os produtos deste enxoval</p>
+            </div>
           </div>
-          <div>
-            <h3 className={styles.cartTitle}>Itens Selecionados</h3>
-            <p className={styles.cartSubtitle}>Gerencie os produtos deste enxoval</p>
-          </div>
+          
+          {items.length > 0 && !compact && (
+            <Button variant="secondary" size="small" onClick={onBrowseMore}>
+              <FiPlus /> Adicionar Mais
+            </Button>
+          )}
         </div>
-        
-        {items.length > 0 && (
-          <Button variant="secondary" size="small" onClick={onBrowseMore}>
-            <FiPlus /> Adicionar Mais
-          </Button>
-        )}
-      </div>
+      )}
 
       {items.length === 0 ? (
         <div className={styles.emptyCart}>
           <div className={styles.emptyIconCircle}>
-            <FiShoppingBag size={48} />
+            <FiShoppingBag size={compact ? 32 : 48} />
           </div>
-          <h4 className={styles.emptyTitle}>Seu projeto está vazio</h4>
-          <p className={styles.emptyText}>
-            Comece adicionando itens do catálogo para montar o enxoval personalizado.
-          </p>
-          <Button variant="primary" size="large" onClick={onBrowseMore}>
-            <FiPlus size={20} /> Navegar no Catálogo
-          </Button>
+          <h4 className={styles.emptyTitle}>
+            {compact ? 'Carrinho vazio' : 'Seu projeto está vazio'}
+          </h4>
+          {!compact && (
+            <>
+              <p className={styles.emptyText}>
+                Comece adicionando itens do catálogo para montar o enxoval personalizado.
+              </p>
+              <Button variant="primary" size="large" onClick={onBrowseMore}>
+                <FiPlus size={20} /> Navegar no Catálogo
+              </Button>
+            </>
+          )}
         </div>
       ) : (
         <div className={styles.cartGrid}>
@@ -116,7 +136,7 @@ export default function ProjetoCarrinhoDiscovery({
                     type="button"
                     title="Editar personalização"
                   >
-                    <FiEdit3 size={16} /> Editar
+                    <FiEdit3 size={16} /> {compact ? '' : 'Editar'}
                   </button>
                   <button 
                     className={`${styles.actionBtn} ${styles.deleteBtn}`}
@@ -131,12 +151,15 @@ export default function ProjetoCarrinhoDiscovery({
             </div>
           ))}
           
-          <button className={styles.addMoreCard} onClick={onBrowseMore}>
-            <div className={styles.addMoreIcon}>
-              <FiPlus size={32} />
-            </div>
-            <span>Adicionar outro item</span>
-          </button>
+          {/* Ocultamos o card gigante de "Adicionar" no modo compacto */}
+          {!compact && (
+            <button className={styles.addMoreCard} onClick={onBrowseMore}>
+              <div className={styles.addMoreIcon}>
+                <FiPlus size={32} />
+              </div>
+              <span>Adicionar outro item</span>
+            </button>
+          )}
         </div>
       )}
 

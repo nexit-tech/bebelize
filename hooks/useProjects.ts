@@ -33,7 +33,6 @@ interface ProjectWithDetails extends Project {
   clientEmail?: string;
   createdAtFormatted?: string;
   deliveryDateFormatted?: string;
-  // Novo campo para descrição textual
   customizationDescription?: string[]; 
 }
 
@@ -47,7 +46,6 @@ export function useProjects(consultantId?: string) {
     loadProjects();
   }, [consultantId]);
 
-  // Função auxiliar para formatar nome da coleção
   const formatCollectionName = (slug: string) => {
     if (!slug) return 'Coleção Geral';
     return slug
@@ -56,7 +54,6 @@ export function useProjects(consultantId?: string) {
       .join(' ');
   };
 
-  // Função auxiliar para gerar descrição legível das personalizações
   const generateCustomizationDescription = (data: any): string[] => {
     if (!data || !data.cart_items || data.cart_items.length === 0) {
       return ['Nenhum item personalizado neste projeto.'];
@@ -149,7 +146,6 @@ export function useProjects(consultantId?: string) {
         productionNotes: data.production_notes,
         createdAtFormatted: new Date(data.created_at).toLocaleDateString('pt-BR'),
         deliveryDateFormatted: data.delivery_date ? new Date(data.delivery_date).toLocaleDateString('pt-BR') : null,
-        // Aqui geramos a descrição textual real baseada no JSON
         customizationDescription: generateCustomizationDescription(data.customizations_data)
       };
     } catch (error) {

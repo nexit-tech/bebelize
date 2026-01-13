@@ -4,12 +4,24 @@ import styles from './StatusTag.module.css';
 
 interface StatusTagProps {
   status: ProjectStatus;
+  size?: 'small' | 'medium';
   children: React.ReactNode;
 }
 
-export default function StatusTag({ status, children }: StatusTagProps) {
+export default function StatusTag({ 
+  status, 
+  size = 'medium', 
+  children 
+}: StatusTagProps) {
+  
+  const classNames = [
+    styles.tag,
+    styles[status],
+    size !== 'medium' ? styles[size] : ''
+  ].filter(Boolean).join(' ');
+
   return (
-    <span className={`${styles.tag} ${styles[status]}`}>
+    <span className={classNames}>
       {children}
     </span>
   );
