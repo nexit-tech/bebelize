@@ -1,5 +1,5 @@
 import React from 'react';
-import { FiCalendar, FiUser, FiTrash2 } from 'react-icons/fi';
+import { FiCalendar, FiUser } from 'react-icons/fi';
 import { ProjectStatus } from '@/types';
 import { formatDate } from '@/utils';
 import StatusTag from '../StatusTag/StatusTag';
@@ -12,9 +12,7 @@ interface ProjectCardProps {
   createdAt: string;
   status: ProjectStatus;
   statusLabel: string;
-  previewImageUrl?: string | null;
   onClick?: () => void;
-  onDelete?: () => void;
 }
 
 export default function ProjectCard({
@@ -24,73 +22,30 @@ export default function ProjectCard({
   createdAt,
   status,
   statusLabel,
-  previewImageUrl,
-  onClick,
-  onDelete
+  onClick
 }: ProjectCardProps) {
-  
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onDelete) {
-      onDelete();
-    }
-  };
-
   return (
     <div 
       className={styles.card} 
-      onClick={onClick}
-      role="button"
+      onClick={onClick} 
+      role="button" 
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
     >
-      <div className={styles.previewArea}>
-        {previewImageUrl ? (
-          <img 
-            src={previewImageUrl} 
-            alt={`Preview do projeto ${name}`} 
-            className={styles.previewImage}
-            loading="lazy"
-          />
-        ) : (
-          <div className={styles.placeholderPattern} />
-        )}
-
-        {onDelete && (
-          <button 
-            className={styles.deleteButton}
-            onClick={handleDelete}
-            title="Excluir projeto"
-            type="button"
-          >
-            <FiTrash2 size={16} />
-          </button>
-        )}
+      <div className={styles.cardHeader}>
+        <h3 className={styles.projectName}>{name}</h3>
+        <StatusTag status={status}>{statusLabel}</StatusTag>
       </div>
 
-      <div className={styles.content}>
-        <div className={styles.header}>
-          <h3 className={styles.projectName} title={name}>
-            {name}
-          </h3>
-          
-          <div className={styles.clientInfo}>
-            <FiUser size={14} />
-            <span>{clientName || 'Cliente sem nome'}</span>
-          </div>
+      <div className={styles.cardInfo}>
+        <div className={styles.infoItem}>
+          <FiUser size={16} className={styles.icon} />
+          <span className={styles.infoText}>{clientName}</span>
         </div>
-
-        <div className={styles.divider} />
-
-        <div className={styles.footer}>
-          <div className={styles.date}>
-            <FiCalendar size={14} />
-            <span>{formatDate(createdAt)}</span>
-          </div>
-          
-          <StatusTag status={status}>
-            {statusLabel}
-          </StatusTag>
+        
+        <div className={styles.infoItem}>
+          <FiCalendar size={16} className={styles.icon} />
+          <span className={styles.infoText}>{formatDate(createdAt)}</span>
         </div>
       </div>
     </div>

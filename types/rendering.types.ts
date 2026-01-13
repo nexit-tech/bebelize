@@ -21,23 +21,11 @@ export interface Layer {
   description?: string;
 }
 
-export interface OverlayState {
-  url: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation?: number;
-}
-
 export interface LayerCustomization {
   layer_index: number;
   pattern_id: string;
   pattern_url: string;
   pattern_name: string;
-  layerId?: string;
-  type?: 'color' | 'pattern';
-  color?: string;
 }
 
 export interface ItemMetadata {
@@ -49,10 +37,7 @@ export interface ItemMetadata {
 export interface RenderRequest {
   item_id: string;
   collection_id: string;
-  variant_id?: string | null;
   customizations: LayerCustomization[];
-  layers?: Layer[];
-  overlay?: OverlayState | null;
 }
 
 export interface RenderResponse {
