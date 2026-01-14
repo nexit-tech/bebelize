@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiX, FiChevronDown, FiBox, FiCheckCircle } from 'react-icons/fi';
 import type { DiscoveredItem } from '@/lib/discovery/types';
-import type { LayerCustomization, RenderResponse } from '@/types/rendering.types';
+import type { LayerCustomization, RenderResponse, BrasaoCustomization } from '@/types/rendering.types';
 import { useDiscoveredPatterns } from '@/hooks/useDiscoveredPatterns';
 import Button from '../Button/Button';
 import LayerCustomizer from '../LayerCustomizer/LayerCustomizer';
 import ProjectRenderer from '../ProjectRenderer/ProjectRenderer';
+import BrasaoControl from '../BrasaoControl/BrasaoControl';
 import styles from './ItemCustomizerModal.module.css';
 
 interface ItemCustomizerModalProps {
@@ -15,13 +16,15 @@ interface ItemCustomizerModalProps {
   onClose: () => void;
   item: DiscoveredItem | null;
   initialCustomizations?: LayerCustomization[];
+  initialBrasao?: BrasaoCustomization;
   initialPreviewUrl?: string | null;
   initialVariantId?: string | null;
   onAddToProject: (
     item: DiscoveredItem, 
     customizations: LayerCustomization[], 
     renderUrl: string, 
-    variantId?: string
+    variantId?: string,
+    brasao?: BrasaoCustomization
   ) => void;
 }
 
@@ -30,6 +33,7 @@ export default function ItemCustomizerModal({
   onClose,
   item,
   initialCustomizations,
+  initialBrasao,
   initialPreviewUrl,
   initialVariantId,
   onAddToProject
@@ -37,20 +41,22 @@ export default function ItemCustomizerModal({
   const { patterns, isLoading: loadingPatterns } = useDiscoveredPatterns();
   
   const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
+  const [brasao, setBrasao] = useState<BrasaoCustomization | undefined>(undefined);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
-  // Sincronização de Estado
   useEffect(() => {
     if (isOpen && item) {
       if (initialCustomizations) {
         setCustomizations(initialCustomizations);
+        setBrasao(initialBrasao);
         setPreviewUrl(initialPreviewUrl || item.image_url || null);
         setSelectedVariantId(initialVariantId || (item.variants?.[0]?.id || null));
       } else {
         setCustomizations([]);
+        setBrasao(undefined);
         const firstVariantId = item.variants?.[0]?.id || null;
         setSelectedVariantId(firstVariantId);
         
@@ -59,7 +65,7 @@ export default function ItemCustomizerModal({
       }
       setRenderTime(undefined);
     }
-  }, [isOpen, item, initialCustomizations, initialPreviewUrl, initialVariantId]);
+  }, [isOpen, item, initialCustomizations, initialBrasao, initialPreviewUrl, initialVariantId]);
 
   const allLayersForRender = useMemo(() => {
     if (!item) return [];
@@ -111,7 +117,7 @@ export default function ItemCustomizerModal({
       const data: RenderResponse = await response.json();
 
       if (data.success) {
-        setPreviewUrl(data.preview_url);
+        setPreviewUrl(`${data.preview_url}?t=${Date.now()}`);
         setRenderTime(data.render_time_ms);
       } else {
         alert(`Erro ao renderizar: ${data.error}`);
@@ -177,12 +183,22 @@ export default function ItemCustomizerModal({
               {loadingPatterns ? (
                 <div className={styles.loadingPatterns}>Carregando texturas...</div>
               ) : (
-                <LayerCustomizer
-                  layers={visualLayers}
-                  patterns={patterns}
-                  customizations={customizations}
-                  onCustomizationsChange={setCustomizations}
-                />
+                <>
+                  <LayerCustomizer
+                    layers={visualLayers}
+                    patterns={patterns}
+                    customizations={customizations}
+                    onCustomizationsChange={setCustomizations}
+                  />
+                  
+                  <div style={{ marginTop: '24px' }}>
+                    <BrasaoControl 
+                      value={brasao}
+                      onChange={setBrasao}
+                      itemId={item.id}
+                    />
+                  </div>
+                </>
               )}
             </div>
           </div>
@@ -193,15 +209,18 @@ export default function ItemCustomizerModal({
               isRendering={isRendering}
               onRender={handleRender}
               renderTime={renderTime}
+              brasao={brasao}
+              onBrasaoChange={setBrasao}
             />
           </div>
         </div>
 
         <div className={styles.footer}>
           <div className={styles.footerInfo}>
-             {customizations.length > 0 && (
+             {(customizations.length > 0 || brasao) && (
                <span className={styles.changesSummary}>
-                 <FiCheckCircle size={16} /> {customizations.length} personalizações aplicadas
+                 <FiCheckCircle size={16} /> 
+                 {customizations.length + (brasao ? 1 : 0)} personalizações aplicadas
                </span>
              )}
           </div>
@@ -211,7 +230,13 @@ export default function ItemCustomizerModal({
             </Button>
             <Button 
               variant="primary" 
-              onClick={() => onAddToProject(item, customizations, previewUrl!, selectedVariantId || undefined)}
+              onClick={() => onAddToProject(
+                item, 
+                customizations, 
+                previewUrl!, 
+                selectedVariantId || undefined,
+                brasao
+              )}
               disabled={!previewUrl || isRendering}
             >
               {initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto'}

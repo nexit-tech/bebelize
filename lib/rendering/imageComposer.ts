@@ -1,17 +1,18 @@
-// lib/rendering/imageComposer.ts
 import sharp from 'sharp';
+import type { OverlayOptions } from 'sharp';
 import { applyPattern } from './patternApplier';
-import type { Layer, LayerCustomization, CompositionResult } from '@/types/rendering.types';
+import type { Layer, LayerCustomization, CompositionResult, BrasaoCustomization } from '@/types/rendering.types';
 
 interface ComposeImageOptions {
   layers: Layer[];
   customizations: LayerCustomization[];
+  brasao?: BrasaoCustomization;
   width?: number;
   height?: number;
 }
 
 export async function composeImage(options: ComposeImageOptions): Promise<CompositionResult> {
-  const { layers, customizations, width = 2000, height = 2000 } = options;
+  const { layers, customizations, brasao, width = 2000, height = 2000 } = options;
 
   console.log(`[Composer] Iniciando composição ${width}x${height}`);
 
@@ -20,7 +21,7 @@ export async function composeImage(options: ComposeImageOptions): Promise<Compos
 
   const sortedLayers = [...paintableLayers].sort((a, b) => a.index - b.index);
 
-  const compositeInputs = [];
+  const compositeInputs: OverlayOptions[] = [];
 
   for (const layer of sortedLayers) {
     console.log(`[Composer] Processando camada ${layer.index}: ${layer.file}`);
@@ -40,7 +41,6 @@ export async function composeImage(options: ComposeImageOptions): Promise<Compos
         height
       });
     } else {
-      // Se não tem customização, apenas redimensiona
       layerBuffer = await sharp(layerBuffer)
         .resize(width, height, { 
           fit: 'contain', 
@@ -53,7 +53,33 @@ export async function composeImage(options: ComposeImageOptions): Promise<Compos
     compositeInputs.push({ input: layerBuffer });
   }
 
-  // Adicionar camada base por cima (se existir)
+  if (brasao) {
+    console.log(`[Composer] Aplicando brasão: ${brasao.url}`);
+    try {
+      const brasaoResponse = await fetch(brasao.url);
+      const brasaoArrayBuffer = await brasaoResponse.arrayBuffer();
+      let brasaoBuffer = Buffer.from(brasaoArrayBuffer);
+
+      const resizedBrasao = await sharp(brasaoBuffer)
+        .resize({
+          width: Math.round(brasao.width),
+          height: Math.round(brasao.height),
+          fit: 'fill',
+          background: { r: 0, g: 0, b: 0, alpha: 0 }
+        })
+        .png()
+        .toBuffer();
+
+      compositeInputs.push({
+        input: resizedBrasao,
+        left: Math.round(brasao.x),
+        top: Math.round(brasao.y)
+      });
+    } catch (error: any) {
+      console.error(`[Composer] Erro ao aplicar brasão: ${error.message}`);
+    }
+  }
+
   if (baseLayer) {
     console.log(`[Composer] Adicionando camada base: ${baseLayer.file}`);
     

@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import type { OverlayOptions } from 'sharp';
 
 interface ApplyPatternOptions {
   layerBuffer: Buffer;
@@ -50,7 +51,7 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
     
     console.log(`🔳 Criando grid: ${tilesX}x${tilesY} tiles`);
 
-    const tiles = [];
+    const tiles: OverlayOptions[] = [];
     for (let y = 0; y < tilesY; y++) {
       for (let x = 0; x < tilesX; x++) {
         tiles.push({ 

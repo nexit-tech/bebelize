@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { item_id, customizations, layers } = body;
+    const { item_id, customizations, layers, brasao } = body;
 
     if (!item_id || !layers) {
       return NextResponse.json(
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
     console.log(`[Render] Iniciando render para Item: ${item_id}`);
     console.log(`[Render] Camadas recebidas: ${layers.length}`);
     console.log(`[Render] Customizações: ${customizations?.length || 0}`);
+    if (brasao) console.log(`[Render] Brasão detectado: ${brasao.url}`);
 
     const layersToRender = layers.map((layer: any) => ({
       index: layer.index,
@@ -32,6 +33,7 @@ export async function POST(request: NextRequest) {
       result = await composeImage({
         layers: layersToRender,
         customizations: customizations || [],
+        brasao,
         width: 1000, 
         height: 1000
       });

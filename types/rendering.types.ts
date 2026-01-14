@@ -28,6 +28,14 @@ export interface LayerCustomization {
   pattern_name: string;
 }
 
+export interface BrasaoCustomization {
+  url: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface ItemMetadata {
   item_id: string;
   item_name: string;
@@ -38,6 +46,7 @@ export interface RenderRequest {
   item_id: string;
   collection_id: string;
   customizations: LayerCustomization[];
+  brasao?: BrasaoCustomization;
 }
 
 export interface RenderResponse {
