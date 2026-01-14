@@ -2,32 +2,30 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { cartService } from '@/lib/supabase/cart.service';
-import { CartItem } from '@/components/ProjetoCarrinhoDiscovery/ProjetoCarrinhoDiscovery';
+import { CustomizedItem } from '@/types/customizedItem.types';
 
 interface CartContextType {
-  cartItems: CartItem[];
-  updateCartItems: (items: CartItem[]) => void;
+  cartItems: CustomizedItem[];
+  updateCartItems: (items: CustomizedItem[]) => Promise<void>;
   isLoadingCart: boolean;
   isSavingCart: boolean;
   clearCart: () => Promise<void>;
   refreshCart: () => Promise<void>;
+  addItem: (item: CustomizedItem) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CustomizedItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Carrega o carrinho inicial
   const loadCart = useCallback(async () => {
     try {
-      // setIsLoading(true); // Opcional: Evita flash se não quiser loading em todo refresh
       const cartData = await cartService.getCart();
       if (cartData && cartData.items) {
-        const parsedItems = Array.isArray(cartData.items) ? cartData.items : [];
-        setItems(parsedItems as CartItem[]);
+        setItems(cartData.items as CustomizedItem[]);
       }
     } catch (error) {
       console.error('Erro ao carregar carrinho:', error);
@@ -40,19 +38,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     loadCart();
   }, [loadCart]);
 
-  const updateCartItems = async (newItems: CartItem[]) => {
-    // 1. Atualiza visualmente na hora (Optimistic UI)
+  const updateCartItems = async (newItems: CustomizedItem[]) => {
     setItems(newItems);
-    
-    // 2. Salva no banco em segundo plano
     try {
       setIsSaving(true);
       await cartService.saveCart(newItems);
     } catch (error) {
-      console.error('Erro ao salvar rascunho:', error);
+      console.error('Erro ao salvar carrinho:', error);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const addItem = async (newItem: CustomizedItem) => {
+    const newCartList = [...items, newItem];
+    await updateCartItems(newCartList);
   };
 
   const clearCart = async () => {
@@ -68,21 +68,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     <CartContext.Provider value={{ 
       cartItems: items, 
       updateCartItems, 
+      addItem, 
       isLoadingCart: isLoading, 
-      isSavingCart: isSaving,
-      clearCart,
-      refreshCart: loadCart
+      isSavingCart: isSaving, 
+      clearCart, 
+      refreshCart: loadCart 
     }}>
       {children}
     </CartContext.Provider>
   );
 }
 
-// Hook interno para acessar o contexto (usado pelo hook público)
 export function useCartContext() {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCartContext must be used within a CartProvider');
+    throw new Error('useCartContext deve ser usado dentro de um CartProvider');
   }
   return context;
 }

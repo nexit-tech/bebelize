@@ -9,9 +9,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { item_id, customizations, layers, brasao } = body;
 
-    if (!item_id || !layers) {
+    if (!item_id || !layers || !Array.isArray(layers)) {
       return NextResponse.json(
-        { success: false, error: 'Dados incompletos (item_id ou layers faltando)' },
+        { success: false, error: 'Dados incompletos (item_id ou layers inválidos)' },
         { status: 400 }
       );
     }
@@ -21,12 +21,27 @@ export async function POST(request: NextRequest) {
     console.log(`[Render] Customizações: ${customizations?.length || 0}`);
     if (brasao) console.log(`[Render] Brasão detectado: ${brasao.url}`);
 
-    const layersToRender = layers.map((layer: any) => ({
-      index: layer.index,
-      url: layer.url,
-      type: 'pattern',
-      zone: `layer-${layer.index}`
-    }));
+    
+    const layersToRender = layers.map((layer: any) => {
+      if (!layer.url) {
+        console.warn(`[Render] Camada ${layer.index} sem URL. Ignorando ou tratando.`);
+      }
+      return {
+        index: layer.index,
+        url: layer.url,
+        file: layer.file || `layer-${layer.index}.png`, 
+        type: 'pattern', 
+        zone: `layer-${layer.index}`,
+        ...layer 
+      };
+    }).filter(l => !!l.url); 
+
+    if (layersToRender.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Nenhuma camada válida com URL encontrada.' },
+        { status: 400 }
+      );
+    }
 
     let result;
     try {

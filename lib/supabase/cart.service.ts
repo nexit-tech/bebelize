@@ -1,54 +1,55 @@
+// lib/supabase/cart.service.ts
 import { supabase } from '@/lib/supabase/client';
+import { CustomizedItem } from '@/types/customizedItem.types';
 
 export const cartService = {
+  
   async getCart() {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return null;
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return { items: [] };
 
     const { data, error } = await supabase
       .from('carts')
-      .select('*')
-      .eq('user_id', user.id)
+      .select('items')
+      .eq('user_id', session.user.id)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== 'PGRST116') { 
       console.error('Erro ao buscar carrinho:', error);
+      return { items: [] };
     }
 
-    return data;
+    return { items: (data?.items as CustomizedItem[]) || [] };
   },
 
-  async saveCart(items: any[]) {
-    const { data: { user } } = await supabase.auth.getUser();
+  async saveCart(items: CustomizedItem[]) {
+    const { data: { session } } = await supabase.auth.getSession();
     
-    if (!user) throw new Error('Usuário não autenticado');
-
-    const { data, error } = await supabase
-      .from('carts')
-      .upsert({
-        user_id: user.id,
-        items: items, 
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' })
-      .select()
-      .single();
-
-    if (error) throw error;
-    
-    return data;
-  },
-
-  async clearCart() {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) return;
+    if (!session) {
+      throw new Error('Usuário não autenticado. Faça login para salvar.');
+    }
 
     const { error } = await supabase
       .from('carts')
-      .delete()
-      .eq('user_id', user.id);
+      .upsert(
+        { 
+          user_id: session.user.id, 
+          items: items, 
+          updated_at: new Date().toISOString() 
+        },
+        { onConflict: 'user_id' }
+      );
 
     if (error) throw error;
+  },
+
+  async clearCart() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    await supabase
+      .from('carts')
+      .update({ items: [] })
+      .eq('user_id', session.user.id);
   }
 };

@@ -12,15 +12,13 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
   const { layerBuffer, patternUrl, width, height } = options;
 
   try {
-    console.log(`🎨 Aplicando textura: ${patternUrl.split('/').pop()}`);
+    console.log(`[PatternApplier] Aplicando textura: ${patternUrl.split('/').pop()}`);
 
     const response = await fetch(patternUrl);
     if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
 
     const arrayBuffer = await response.arrayBuffer();
-    let patternBuffer = Buffer.from(arrayBuffer);
-
-    patternBuffer = await sharp(patternBuffer)
+    const patternBuffer = await sharp(Buffer.from(arrayBuffer))
       .ensureAlpha()
       .png()
       .toBuffer();
@@ -38,18 +36,12 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
     const finalWidth = layerMetadata.width || width;
     const finalHeight = layerMetadata.height || height;
 
-    console.log(`📐 Dimensões finais: ${finalWidth}x${finalHeight}`);
-
     const patternMetadata = await sharp(patternBuffer).metadata();
     const patternWidth = patternMetadata.width || 512;
     const patternHeight = patternMetadata.height || 512;
     
-    console.log(`🔲 Textura original: ${patternWidth}x${patternHeight}`);
-
     const tilesX = Math.ceil(finalWidth / patternWidth) + 1;
     const tilesY = Math.ceil(finalHeight / patternHeight) + 1;
-    
-    console.log(`🔳 Criando grid: ${tilesX}x${tilesY} tiles`);
 
     const tiles: OverlayOptions[] = [];
     for (let y = 0; y < tilesY; y++) {
@@ -64,8 +56,6 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
 
     const tiledWidth = tilesX * patternWidth;
     const tiledHeight = tilesY * patternHeight;
-
-    console.log(`📦 Canvas tiled: ${tiledWidth}x${tiledHeight}`);
 
     const tiledPatternBuffer = await sharp({
       create: {
@@ -100,11 +90,10 @@ export async function applyPattern(options: ApplyPatternOptions): Promise<Buffer
       .png()
       .toBuffer();
 
-    console.log(`✅ Textura aplicada e recortada com sucesso!`);
     return finalImage;
 
   } catch (error: any) {
-    console.error(`❌ [PatternApplier] Erro: ${error.message}`);
+    console.error(`[PatternApplier] Erro: ${error.message}`);
     
     return await sharp(layerBuffer)
       .resize(width, height, { 

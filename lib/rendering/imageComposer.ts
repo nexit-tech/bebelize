@@ -12,7 +12,7 @@ interface ComposeImageOptions {
 }
 
 export async function composeImage(options: ComposeImageOptions): Promise<CompositionResult> {
-  const { layers, customizations, brasao, width = 2000, height = 2000 } = options;
+  const { layers, customizations, brasao, width = 1000, height = 1000 } = options;
 
   console.log(`[Composer] Iniciando composição ${width}x${height}`);
 
@@ -24,81 +24,104 @@ export async function composeImage(options: ComposeImageOptions): Promise<Compos
   const compositeInputs: OverlayOptions[] = [];
 
   for (const layer of sortedLayers) {
-    console.log(`[Composer] Processando camada ${layer.index}: ${layer.file}`);
-    
-    const layerResponse = await fetch(layer.url);
-    const layerArrayBuffer = await layerResponse.arrayBuffer();
-    let layerBuffer = Buffer.from(layerArrayBuffer);
-
-    const customization = customizations.find(c => c.layer_index === layer.index);
-
-    if (customization && layer.type === 'pattern') {
-      console.log(`[Composer] Aplicando textura na camada ${layer.index}`);
-      layerBuffer = await applyPattern({
-        layerBuffer,
-        patternUrl: customization.pattern_url,
-        width,
-        height
-      });
-    } else {
-      layerBuffer = await sharp(layerBuffer)
-        .resize(width, height, { 
-          fit: 'contain', 
-          background: { r: 0, g: 0, b: 0, alpha: 0 } 
-        })
-        .png()
-        .toBuffer();
+    // Correção: Verifica se a URL existe antes de processar
+    if (!layer.url) {
+      console.warn(`[Composer] Camada ${layer.index} ignorada: URL não definida.`);
+      continue;
     }
 
-    compositeInputs.push({ input: layerBuffer });
+    console.log(`[Composer] Processando camada ${layer.index}: ${layer.file || 'sem-nome'}`);
+    
+    try {
+      const layerResponse = await fetch(layer.url);
+      if (!layerResponse.ok) throw new Error(`Falha ao baixar layer ${layer.url}`);
+      
+      const layerArrayBuffer = await layerResponse.arrayBuffer();
+      let layerBuffer = Buffer.from(layerArrayBuffer);
+
+      const customization = customizations.find(c => c.layer_index === layer.index);
+
+      // Correção: Verifica se pattern_url existe antes de chamar applyPattern
+      if (customization && customization.pattern_url && layer.type === 'pattern') {
+        layerBuffer = await applyPattern({
+          layerBuffer,
+          patternUrl: customization.pattern_url,
+          width,
+          height
+        });
+      } else {
+        layerBuffer = await sharp(layerBuffer)
+          .resize(width, height, { 
+            fit: 'contain', 
+            background: { r: 0, g: 0, b: 0, alpha: 0 } 
+          })
+          .png()
+          .toBuffer();
+      }
+
+      compositeInputs.push({ input: layerBuffer });
+    } catch (err) {
+      console.warn(`[Composer] Erro ao processar camada ${layer.index}, pulando:`, err);
+    }
   }
 
-  if (brasao) {
+  // Correção: Verifica se baseLayer e sua URL existem
+  if (baseLayer && baseLayer.url) {
+    console.log(`[Composer] Adicionando camada base: ${baseLayer.file || 'base'}`);
+    try {
+      const baseResponse = await fetch(baseLayer.url);
+      if (baseResponse.ok) {
+        const baseArrayBuffer = await baseResponse.arrayBuffer();
+        const baseBuffer = Buffer.from(baseArrayBuffer);
+
+        const resizedBase = await sharp(baseBuffer)
+          .resize(width, height, { 
+            fit: 'contain', 
+            background: { r: 0, g: 0, b: 0, alpha: 0 } 
+          })
+          .png()
+          .toBuffer();
+
+        compositeInputs.push({ input: resizedBase });
+      }
+    } catch (err) {
+      console.warn('[Composer] Erro ao processar base layer:', err);
+    }
+  }
+
+  // Correção: Verifica se brasao.url existe
+  if (brasao && brasao.url) {
     console.log(`[Composer] Aplicando brasão: ${brasao.url}`);
     try {
       const brasaoResponse = await fetch(brasao.url);
-      const brasaoArrayBuffer = await brasaoResponse.arrayBuffer();
-      let brasaoBuffer = Buffer.from(brasaoArrayBuffer);
+      if (brasaoResponse.ok) {
+        const brasaoArrayBuffer = await brasaoResponse.arrayBuffer();
+        const brasaoBuffer = Buffer.from(brasaoArrayBuffer);
 
-      const resizedBrasao = await sharp(brasaoBuffer)
-        .resize({
-          width: Math.round(brasao.width),
-          height: Math.round(brasao.height),
-          fit: 'fill',
-          background: { r: 0, g: 0, b: 0, alpha: 0 }
-        })
-        .png()
-        .toBuffer();
+        // Garante números válidos para o Sharp
+        const safeWidth = Math.max(1, Math.round(brasao.width || 100));
+        const safeHeight = Math.max(1, Math.round(brasao.height || 100));
 
-      compositeInputs.push({
-        input: resizedBrasao,
-        left: Math.round(brasao.x),
-        top: Math.round(brasao.y)
-      });
+        const resizedBrasao = await sharp(brasaoBuffer)
+          .resize({
+            width: safeWidth,
+            height: safeHeight,
+            fit: 'fill',
+            background: { r: 0, g: 0, b: 0, alpha: 0 }
+          })
+          .png()
+          .toBuffer();
+
+        compositeInputs.push({
+          input: resizedBrasao,
+          left: Math.round(brasao.x || 0),
+          top: Math.round(brasao.y || 0)
+        });
+      }
     } catch (error: any) {
       console.error(`[Composer] Erro ao aplicar brasão: ${error.message}`);
     }
   }
-
-  if (baseLayer) {
-    console.log(`[Composer] Adicionando camada base: ${baseLayer.file}`);
-    
-    const baseResponse = await fetch(baseLayer.url);
-    const baseArrayBuffer = await baseResponse.arrayBuffer();
-    const baseBuffer = Buffer.from(baseArrayBuffer);
-
-    const resizedBase = await sharp(baseBuffer)
-      .resize(width, height, { 
-        fit: 'contain', 
-        background: { r: 0, g: 0, b: 0, alpha: 0 } 
-      })
-      .png()
-      .toBuffer();
-
-    compositeInputs.push({ input: resizedBase });
-  }
-
-  console.log(`[Composer] Composição final de ${compositeInputs.length} camadas`);
 
   const finalImage = await sharp({
     create: {
@@ -113,8 +136,6 @@ export async function composeImage(options: ComposeImageOptions): Promise<Compos
     .toBuffer();
 
   const metadata = await sharp(finalImage).metadata();
-
-  console.log(`[Composer] ✅ Composição concluída: ${metadata.width}x${metadata.height}`);
 
   return {
     buffer: finalImage,

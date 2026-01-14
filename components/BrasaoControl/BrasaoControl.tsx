@@ -20,10 +20,10 @@ export default function BrasaoControl({ value, onChange, itemId }: BrasaoControl
     if (active) {
       onChange({
         url: '',
-        x: 800, 
-        y: 600,
-        width: 400,
-        height: 400
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
       });
     } else {
       onChange(undefined);
@@ -44,7 +44,9 @@ export default function BrasaoControl({ value, onChange, itemId }: BrasaoControl
 
       const { error: uploadErr } = await supabase.storage
         .from('projects')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          upsert: true
+        });
 
       if (uploadErr) throw uploadErr;
 
@@ -53,7 +55,7 @@ export default function BrasaoControl({ value, onChange, itemId }: BrasaoControl
         .getPublicUrl(filePath);
 
       onChange({
-        ...(value || { x: 800, y: 600, width: 400, height: 400 }),
+        ...(value || { x: 0, y: 0, width: 0, height: 0 }),
         url: data.publicUrl
       });
 

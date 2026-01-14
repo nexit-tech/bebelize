@@ -26,12 +26,17 @@ export default function ProjectRenderer({
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [shouldCenterBrasao, setShouldCenterBrasao] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  
+  const prevBrasaoUrlRef = useRef<string | undefined>(undefined);
 
   useEffect(() => {
-    if (previewUrl) {
-      setShouldCenterBrasao(true);
+    if (brasao?.url !== prevBrasaoUrlRef.current) {
+      if (brasao?.url) {
+        setShouldCenterBrasao(true);
+      }
+      prevBrasaoUrlRef.current = brasao?.url;
     }
-  }, [previewUrl]);
+  }, [brasao?.url]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -60,9 +65,8 @@ export default function ProjectRenderer({
     if (brasao && onBrasaoChange && shouldCenterBrasao && currentNaturalWidth > 0) {
       const defaultWidth = currentNaturalWidth * 0.25; 
       const defaultHeight = defaultWidth;
-
-      const targetWidth = brasao.width || defaultWidth;
-      const targetHeight = brasao.height || defaultHeight;
+      const targetWidth = brasao.width > 0 ? brasao.width : defaultWidth;
+      const targetHeight = brasao.height > 0 ? brasao.height : defaultHeight;
 
       const centerX = (currentNaturalWidth - targetWidth) / 2;
       const centerY = (currentNaturalHeight - targetHeight) / 2;

@@ -103,7 +103,8 @@ export default function ItemCustomizerModal({
         variant_id: selectedVariantId,
         collection_id: item.collection_id,
         customizations,
-        layers: allLayersForRender
+        layers: allLayersForRender,
+        brasao
       };
 
       const response = await fetch('/api/render', {

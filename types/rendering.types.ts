@@ -1,3 +1,5 @@
+// types/rendering.types.ts
+
 export interface Pattern {
   id: string;
   name: string;
@@ -19,13 +21,22 @@ export interface Layer {
   type: 'fixed' | 'pattern';
   zone?: string;
   description?: string;
+  mask?: string;
 }
 
+// CORREÇÃO AQUI: Padronizamos para camelCase para bater com o CustomizedItem
 export interface LayerCustomization {
-  layer_index: number;
-  pattern_id: string;
-  pattern_url: string;
-  pattern_name: string;
+  layerId: string;
+  patternId: string;
+  color?: string;
+  scale?: number;
+  opacity?: number;
+  blendMode?: string;
+  
+  // Mantemos esses opcionais caso algum componente antigo ainda use
+  layer_index?: number;
+  pattern_url?: string;
+  pattern_name?: string;
 }
 
 export interface BrasaoCustomization {
@@ -44,15 +55,17 @@ export interface ItemMetadata {
 
 export interface RenderRequest {
   item_id: string;
+  variant_id?: string | null;
   collection_id: string;
   customizations: LayerCustomization[];
   brasao?: BrasaoCustomization;
+  layers?: Layer[];
 }
 
 export interface RenderResponse {
   success: boolean;
   preview_url: string;
-  technical_plant_url: string;
+  technical_plant_url?: string;
   render_time_ms: number;
   error?: string;
 }
