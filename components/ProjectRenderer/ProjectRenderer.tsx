@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FiImage, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
+import { FiImage, FiRefreshCw, FiAlertCircle, FiLoader } from 'react-icons/fi';
 import { Rnd } from 'react-rnd';
 import styles from './ProjectRenderer.module.css';
 import type { BrasaoCustomization } from '@/types/rendering.types';
@@ -24,8 +24,6 @@ export default function ProjectRenderer({
   onBrasaoChange
 }: ProjectRendererProps) {
   const [imageError, setImageError] = useState(false);
-  
-  // Dimensões exatas da imagem renderizada na tela (viewport)
   const [viewport, setViewport] = useState({ width: 0, height: 0, left: 0, top: 0 });
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   
@@ -38,7 +36,6 @@ export default function ProjectRenderer({
       const rect = img.getBoundingClientRect();
       const containerRect = containerRef.current.getBoundingClientRect();
 
-      // Calcula a posição relativa da imagem dentro do container
       setViewport({
         width: rect.width,
         height: rect.height,
@@ -54,10 +51,10 @@ export default function ProjectRenderer({
   }, [calculateViewport]);
 
   useEffect(() => {
-    if (isImageLoaded) {
+    if (isImageLoaded && !isRendering) {
       calculateViewport();
     }
-  }, [isImageLoaded, calculateViewport, previewUrl]);
+  }, [isImageLoaded, calculateViewport, previewUrl, isRendering]);
 
   const handleImageLoad = () => {
     setImageError(false);
@@ -65,7 +62,6 @@ export default function ProjectRenderer({
     calculateViewport();
   };
 
-  // Conversão: Viewport (px) -> Backend (1000x1000)
   const toBackendCoords = (viewX: number, viewY: number, viewW: number, viewH: number) => {
     const ratio = BASE_SIZE / viewport.width;
     return {
@@ -76,7 +72,6 @@ export default function ProjectRenderer({
     };
   };
 
-  // Conversão: Backend (1000x1000) -> Viewport (px)
   const toViewCoords = () => {
     if (!brasao || viewport.width === 0) return { x: 0, y: 0, width: 0, height: 0 };
     const ratio = viewport.width / BASE_SIZE;
@@ -114,87 +109,95 @@ export default function ProjectRenderer({
           <FiImage size={18} />
           <h3 className={styles.title}>Visualização</h3>
         </div>
-        {renderTime && (
+        {!isRendering && renderTime && (
           <span className={styles.renderTimeBadge}>{renderTime}ms</span>
         )}
       </div>
 
       <div className={styles.previewStage} ref={containerRef}>
-        {!previewUrl && !isRendering && (
+        
+        {isRendering ? (
           <div className={styles.stateContainer}>
-            <div className={styles.iconCircle}><FiImage size={32} /></div>
-            <p>Configure as opções ao lado para visualizar.</p>
-          </div>
-        )}
-
-        {isRendering && (
-          <div className={styles.loadingOverlay}>
             <div className={styles.spinner} />
-            <p className={styles.loadingText}>Gerando prévia...</p>
+            <p className={styles.loadingText}>Processando imagem...</p>
           </div>
-        )}
-
-        {imageError && (
-          <div className={styles.stateContainer}>
-            <FiAlertCircle size={32} color="var(--color-danger)" />
-            <p className={styles.errorText}>Erro ao carregar imagem</p>
-          </div>
-        )}
-
-        {previewUrl && !imageError && (
+        ) : (
           <>
-            <img
-              ref={imgRef}
-              src={previewUrl}
-              alt="Produto"
-              className={styles.previewImage}
-              onLoad={handleImageLoad}
-              onError={() => setImageError(true)}
-            />
 
-            {/* Overlay Layer - Sincronizado exatamente com a imagem */}
-            {isImageLoaded && brasao?.url && onBrasaoChange && (
-              <div 
-                style={{
-                  position: 'absolute',
-                  left: viewport.left,
-                  top: viewport.top,
-                  width: viewport.width,
-                  height: viewport.height,
-                  pointerEvents: 'none', // Permite clique através para elementos não-Rnd
-                  overflow: 'hidden'
-                }}
-              >
-                <Rnd
-                  size={{ width: viewCoords.width, height: viewCoords.height }}
-                  position={{ x: viewCoords.x, y: viewCoords.y }}
-                  onDragStop={handleDragStop}
-                  onResizeStop={handleResizeStop}
-                  bounds="parent"
-                  lockAspectRatio={true}
-                  minWidth={20}
-                  minHeight={20}
-                  style={{ pointerEvents: 'auto', zIndex: 10 }}
-                >
-                  <div className={styles.brasaoContent}>
-                    <img 
-                      src={brasao.url} 
-                      alt="Brasão" 
-                      draggable={false} 
-                      className={styles.brasaoImage}
-                    />
-                    <div className={styles.selectionBorder} />
-                    <div className={styles.resizeHandle} />
-                  </div>
-                </Rnd>
+            {!previewUrl && (
+              <div className={styles.stateContainer}>
+                <div className={styles.iconCircle}><FiImage size={32} /></div>
+                <p>Configure as opções ao lado para visualizar.</p>
               </div>
+            )}
+
+            {imageError && previewUrl && (
+              <div className={styles.stateContainer}>
+                <FiAlertCircle size={32} color="var(--color-danger)" />
+                <p className={styles.errorText}>Erro ao carregar imagem</p>
+              </div>
+            )}
+
+            {previewUrl && !imageError && (
+              <>
+                <img
+                  ref={imgRef}
+                  src={previewUrl}
+                  alt="Produto"
+                  className={styles.previewImage}
+                  onLoad={handleImageLoad}
+                  onError={() => setImageError(true)}
+                />
+
+                {isImageLoaded && brasao?.url && onBrasaoChange && (
+                  <div 
+                    style={{
+                      position: 'absolute',
+                      left: viewport.left,
+                      top: viewport.top,
+                      width: viewport.width,
+                      height: viewport.height,
+                      pointerEvents: 'none',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <Rnd
+                      size={{ width: viewCoords.width, height: viewCoords.height }}
+                      position={{ x: viewCoords.x, y: viewCoords.y }}
+                      onDragStop={handleDragStop}
+                      onResizeStop={handleResizeStop}
+                      bounds="parent"
+                      lockAspectRatio={true}
+                      minWidth={20}
+                      minHeight={20}
+                      style={{ pointerEvents: 'auto', zIndex: 10 }}
+                      className={styles.rndItem}
+                    >
+                      <div className={styles.brasaoContent}>
+                        <img 
+                          src={brasao.url} 
+                          alt="Brasão" 
+                          draggable={false} 
+                          className={styles.brasaoImage}
+                        />
+                        <div className={styles.selectionBorder} />
+                        <div className={styles.resizeHandle} />
+                      </div>
+                    </Rnd>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
       </div>
 
       <div className={styles.footer}>
-        <button className={styles.renderButton} onClick={onRender} disabled={isRendering}>
+        <button 
+          className={styles.renderButton} 
+          onClick={onRender} 
+          disabled={isRendering || !previewUrl}
+        >
           {isRendering ? (
             'Processando...'
           ) : (

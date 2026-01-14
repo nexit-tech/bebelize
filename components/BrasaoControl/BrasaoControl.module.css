@@ -12,7 +12,7 @@
 }
 
 .title {
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #594E4A;
   text-transform: uppercase;
@@ -21,71 +21,156 @@
 }
 
 .uploadArea {
+  position: relative;
   width: 100%;
-  height: 100px;
-  border: 2px dashed #A68E80;
-  border-radius: 8px;
-  background-color: #F9F7F5;
+  height: 110px;
+  border: 1px dashed #C2B4AB;
+  border-radius: 12px;
+  background-color: #FAFAFA;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #594E4A;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #8C7365;
+  overflow: hidden;
 }
 
-.uploadArea:hover {
-  background-color: #F2EFEC;
+.uploadArea:hover:not(.uploading) {
+  background-color: #F5F2F0;
   border-color: #8C7365;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(140, 115, 101, 0.08);
 }
 
-.uploadArea:active {
+.uploadArea:active:not(.uploading) {
+  transform: translateY(0);
   background-color: #EBE5E0;
 }
 
-.loadingState {
+.uploadArea.uploading {
+  cursor: default;
+  border-style: solid;
+  border-color: #E5E5E5;
+  background-color: #FFFFFF;
+}
+
+.iconCircle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #F0EAE6;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
+  justify-content: center;
   color: #8C7365;
+  margin-bottom: 0.75rem;
+  transition: transform 0.3s ease;
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
-}
-
-.iconWrapper {
-  margin-bottom: 0.5rem;
-  color: #A68E80;
+.uploadArea:hover .iconCircle {
+  transform: scale(1.1) rotate(-5deg);
+  background-color: #E6DCD5;
+  color: #594E4A;
 }
 
 .uploadText {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   text-align: center;
 }
 
 .uploadText strong {
+  display: block;
   font-size: 0.9rem;
   font-weight: 600;
+  color: #594E4A;
+  margin-bottom: 0.25rem;
 }
 
 .uploadText span {
   font-size: 0.75rem;
+  color: #999;
+}
+
+.loadingContent {
+  width: 100%;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.spinnerWrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.circularLoader {
+  width: 100%;
+  height: 100%;
+  animation: rotate 2s linear infinite;
+  transform-origin: center center;
+}
+
+.loaderPath {
+  stroke: #8C7365;
+  stroke-linecap: round;
+  animation: dash 1.5s ease-in-out infinite;
+}
+
+.logoIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: #8C7365;
-  margin-top: 2px;
+  opacity: 0.5;
+}
+
+.loadingTextGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.loadingTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #594E4A;
+  margin-bottom: 0.5rem;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background-color: #F0EAE6;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #A68E80, #8C7365);
+  border-radius: 3px;
+  transition: width 0.3s ease-out;
 }
 
 .activeCard {
   background: #FFFFFF;
   border: 1px solid #E5E5E5;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 0.75rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+}
+
+.activeCard:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-color: #D4C5BC;
 }
 
 .previewSection {
@@ -95,26 +180,28 @@
 }
 
 .imageWrapper {
-  width: 64px;
-  height: 64px;
-  border-radius: 6px;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #EEE;
+  border: 1px solid #F0F0F0;
   background-color: #FAFAFA;
   background-image:
-    linear-gradient(45deg, #E5E5E5 25%, transparent 25%),
-    linear-gradient(-45deg, #E5E5E5 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #E5E5E5 75%),
-    linear-gradient(-45deg, transparent 75%, #E5E5E5 75%);
-  background-size: 10px 10px;
-  background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    linear-gradient(45deg, #EFEFEF 25%, transparent 25%),
+    linear-gradient(-45deg, #EFEFEF 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #EFEFEF 75%),
+    linear-gradient(-45deg, transparent 75%, #EFEFEF 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
   flex-shrink: 0;
+  padding: 4px;
 }
 
 .imageWrapper img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
 .infoGroup {
@@ -126,51 +213,94 @@
 
 .coordsRow {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 .coordsRow span {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  gap: 0.35rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #594E4A;
-  background: #F2F2F2;
-  padding: 2px 6px;
-  border-radius: 4px;
+  background: #F5F2F0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+}
+
+.activeCard:hover .coordsRow span {
+  border-color: #E6DCD5;
+  background: #FAF8F7;
 }
 
 .helperText {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: #999;
-  font-style: italic;
+  font-weight: 500;
 }
 
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editButton,
 .deleteButton {
-  background: none;
-  border: none;
-  padding: 8px;
-  color: #999;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.2s;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton {
+  color: #8C7365;
+}
+
+.editButton:hover {
+  background-color: #F0EAE6;
+  color: #594E4A;
+  border-color: #E6DCD5;
+}
+
+.deleteButton {
+  color: #BDBDBD;
 }
 
 .deleteButton:hover {
-  background-color: #FFF0F0;
+  background-color: #FFF5F5;
   color: #D32F2F;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  border-color: #FFEBEE;
 }
 
 .hiddenInput {
   display: none;
+}
+
+@keyframes rotate {
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
 }
