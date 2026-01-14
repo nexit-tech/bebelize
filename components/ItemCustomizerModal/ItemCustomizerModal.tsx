@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { FiX, FiChevronDown, FiBox, FiCheckCircle } from 'react-icons/fi';
-import type { DiscoveredItem } from '@/lib/discovery/types';
+import type { DiscoveredItem, DiscoveredPattern } from '@/lib/discovery/types';
 import type { LayerCustomization, RenderResponse, BrasaoCustomization } from '@/types/rendering.types';
 import { useDiscoveredPatterns } from '@/hooks/useDiscoveredPatterns';
 import Button from '../Button/Button';
@@ -44,6 +44,7 @@ export default function ItemCustomizerModal({
   const [brasao, setBrasao] = useState<BrasaoCustomization | undefined>(undefined);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
@@ -66,6 +67,17 @@ export default function ItemCustomizerModal({
       setRenderTime(undefined);
     }
   }, [isOpen, item, initialCustomizations, initialBrasao, initialPreviewUrl, initialVariantId]);
+
+  const adaptedPatterns: DiscoveredPattern[] = useMemo(() => {
+    return patterns.map(p => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      file: p.file || '',
+      url: p.url,
+      thumbnail_url: p.thumbnail_url || p.url
+    }));
+  }, [patterns]);
 
   const allLayersForRender = useMemo(() => {
     if (!item) return [];
@@ -93,7 +105,7 @@ export default function ItemCustomizerModal({
   };
 
   const handleRender = async () => {
-    if (!item) return;
+    if (!item) return null;
 
     try {
       setIsRendering(true);
@@ -118,16 +130,43 @@ export default function ItemCustomizerModal({
       const data: RenderResponse = await response.json();
 
       if (data.success) {
-        setPreviewUrl(`${data.preview_url}?t=${Date.now()}`);
+        const finalUrl = `${data.preview_url}?t=${Date.now()}`;
+        setPreviewUrl(finalUrl);
         setRenderTime(data.render_time_ms);
+        return finalUrl;
       } else {
         alert(`Erro ao renderizar: ${data.error}`);
+        return null;
       }
     } catch (error) {
       console.error(error);
       alert('Falha na comunicação com o servidor de renderização.');
+      return null;
     } finally {
       setIsRendering(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (!item) return;
+
+    try {
+      setIsSaving(true);
+      const finalUrl = await handleRender();
+      
+      if (finalUrl) {
+        onAddToProject(
+          item,
+          customizations,
+          finalUrl,
+          selectedVariantId || undefined,
+          brasao
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -187,7 +226,7 @@ export default function ItemCustomizerModal({
                 <>
                   <LayerCustomizer
                     layers={visualLayers}
-                    patterns={patterns}
+                    patterns={adaptedPatterns}
                     customizations={customizations}
                     onCustomizationsChange={setCustomizations}
                   />
@@ -231,16 +270,10 @@ export default function ItemCustomizerModal({
             </Button>
             <Button 
               variant="primary" 
-              onClick={() => onAddToProject(
-                item, 
-                customizations, 
-                previewUrl!, 
-                selectedVariantId || undefined,
-                brasao
-              )}
-              disabled={!previewUrl || isRendering}
+              onClick={handleConfirm}
+              disabled={!previewUrl || isRendering || isSaving}
             >
-              {initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto'}
+              {isSaving ? 'Processando...' : (initialCustomizations ? 'Salvar Alterações' : 'Adicionar ao Projeto')}
             </Button>
           </div>
         </div>

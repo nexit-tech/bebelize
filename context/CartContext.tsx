@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cartService } from '@/lib/supabase/cart.service';
 import { CustomizedItem } from '@/types/customizedItem.types';
 
@@ -21,18 +22,26 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  const supabase = createClientComponentClient();
+
   const loadCart = useCallback(async () => {
     try {
-      const cartData = await cartService.getCart();
-      if (cartData && cartData.items) {
-        setItems(cartData.items as CustomizedItem[]);
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        const cartData = await cartService.getCart();
+        if (cartData && cartData.items) {
+          setItems(cartData.items as CustomizedItem[]);
+        }
+      } else {
+        setItems([]); 
       }
     } catch (error) {
       console.error('Erro ao carregar carrinho:', error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     loadCart();
@@ -40,9 +49,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const updateCartItems = async (newItems: CustomizedItem[]) => {
     setItems(newItems);
+    
     try {
-      setIsSaving(true);
-      await cartService.saveCart(newItems);
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        setIsSaving(true);
+        await cartService.saveCart(newItems);
+      }
     } catch (error) {
       console.error('Erro ao salvar carrinho:', error);
     } finally {
@@ -57,7 +71,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = async () => {
     try {
-      await cartService.clearCart();
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        await cartService.clearCart();
+      }
       setItems([]);
     } catch (error) {
       console.error('Erro ao limpar carrinho:', error);

@@ -2,25 +2,33 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { FiChevronDown } from 'react-icons/fi';
+import { FiChevronDown, FiCheck } from 'react-icons/fi';
 import { usePatterns } from '@/hooks/usePatterns';
 import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
+import { useCartContext } from '@/context/CartContext';
 import LayerCustomizer from '@/components/LayerCustomizer/LayerCustomizer';
 import ProjectRenderer from '@/components/ProjectRenderer/ProjectRenderer';
-import { LayerCustomization, RenderResponse } from '@/types/rendering.types';
+import BrasaoControl from '@/components/BrasaoControl/BrasaoControl';
+import { LayerCustomization, RenderResponse, BrasaoCustomization } from '@/types/rendering.types';
 import type { DiscoveredItem, DiscoveredPattern } from '@/lib/discovery/types';
+import type { CustomizedItem } from '@/types/customizedItem.types';
 import styles from './page.module.css';
 
 export default function PersonalizarItemPage() {
   const params = useParams();
   const router = useRouter();
   const itemId = params.itemId as string;
+  
   const { patterns, isLoading: patternsLoading } = usePatterns();
   const { getItemById, isLoading: itemsLoading } = useItemsDiscovery();
+  const { addItem } = useCartContext();
+  
   const [item, setItem] = useState<DiscoveredItem | null>(null);
   const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
+  const [brasao, setBrasao] = useState<BrasaoCustomization | undefined>(undefined);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRendering, setIsRendering] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [renderTime, setRenderTime] = useState<number | undefined>(undefined);
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
@@ -36,7 +44,7 @@ export default function PersonalizarItemPage() {
 
       setItem(foundItem);
 
-      let initialVariantId = null;
+      let initialVariantId: string | null = null;
       if (foundItem.variants && foundItem.variants.length > 0) {
         initialVariantId = foundItem.variants[0].id;
       }
@@ -85,7 +93,7 @@ export default function PersonalizarItemPage() {
   };
 
   const handleRender = async () => {
-    if (!item) return;
+    if (!item) return null;
 
     try {
       setIsRendering(true);
@@ -94,7 +102,8 @@ export default function PersonalizarItemPage() {
         item_id: item.id,
         collection_id: item.collection_id,
         customizations,
-        layers: allLayersForRender
+        layers: allLayersForRender,
+        brasao
       };
 
       const response = await fetch('/api/render', {
@@ -106,16 +115,66 @@ export default function PersonalizarItemPage() {
       const data: RenderResponse = await response.json();
 
       if (data.success) {
-        setPreviewUrl(data.preview_url);
+        const finalUrl = `${data.preview_url}?t=${Date.now()}`;
+        setPreviewUrl(finalUrl);
         setRenderTime(data.render_time_ms);
+        return finalUrl;
       } else {
         alert(`Erro na renderização: ${data.error}`);
+        return null;
       }
     } catch (error) {
       console.error('Render error:', error);
       alert('Erro ao renderizar imagem');
+      return null;
     } finally {
       setIsRendering(false);
+    }
+  };
+
+  const handleAddToProject = async () => {
+    if (!item) return;
+
+    try {
+      setIsSaving(true);
+
+      const finalRenderUrl = await handleRender();
+      if (!finalRenderUrl) return;
+
+      const customizedItem: CustomizedItem = {
+        ...item,
+        cartItemId: `cart-${Date.now()}`,
+        item_id: item.id,
+        base_image_url: finalRenderUrl,
+        quantity: 1,
+        variant_id: selectedVariantId,
+        customization_data: {
+          layers: customizations.map(c => ({
+            layerId: c.layerId,
+            patternId: c.patternId,
+            color: c.color,
+            scale: c.scale,
+            opacity: c.opacity,
+            blendMode: c.blendMode
+          })),
+          brasao: brasao ? {
+            url: brasao.url,
+            x: brasao.x,
+            y: brasao.y,
+            width: brasao.width,
+            height: brasao.height
+          } : undefined
+        }
+      };
+
+      await addItem(customizedItem);
+      router.push('/projeto/criar');
+
+    } catch (error) {
+      console.error('Erro ao adicionar ao projeto:', error);
+      alert('Não foi possível salvar o item. Tente novamente.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -179,6 +238,14 @@ export default function PersonalizarItemPage() {
             customizations={customizations}
             onCustomizationsChange={setCustomizations}
           />
+          
+          <div style={{ marginTop: '32px' }}>
+            <BrasaoControl 
+              value={brasao}
+              onChange={setBrasao}
+              itemId={item.id}
+            />
+          </div>
         </div>
 
         <div className={styles.rightPanel}>
@@ -187,7 +254,26 @@ export default function PersonalizarItemPage() {
             isRendering={isRendering}
             onRender={handleRender}
             renderTime={renderTime}
+            brasao={brasao}
+            onBrasaoChange={setBrasao}
           />
+
+          <div className={styles.actionsFooter}>
+            <button 
+              className={styles.saveButton}
+              onClick={handleAddToProject}
+              disabled={isRendering || isSaving || !previewUrl}
+            >
+              {isSaving ? (
+                'Salvando...'
+              ) : (
+                <>
+                  <FiCheck size={20} />
+                  Adicionar ao Projeto
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

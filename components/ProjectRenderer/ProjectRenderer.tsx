@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FiImage, FiRefreshCw, FiAlertCircle } from 'react-icons/fi';
 import { Rnd } from 'react-rnd';
 import styles from './ProjectRenderer.module.css';
@@ -13,6 +13,8 @@ interface ProjectRendererProps {
   onBrasaoChange?: (val: BrasaoCustomization) => void;
 }
 
+const BASE_SIZE = 1000;
+
 export default function ProjectRenderer({
   previewUrl,
   isRendering,
@@ -22,95 +24,88 @@ export default function ProjectRenderer({
   onBrasaoChange
 }: ProjectRendererProps) {
   const [imageError, setImageError] = useState(false);
-  const [displayedSize, setDisplayedSize] = useState({ width: 0, height: 0 });
-  const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
-  const [shouldCenterBrasao, setShouldCenterBrasao] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
   
-  const prevBrasaoUrlRef = useRef<string | undefined>(undefined);
+  // Dimensões exatas da imagem renderizada na tela (viewport)
+  const [viewport, setViewport] = useState({ width: 0, height: 0, left: 0, top: 0 });
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-  useEffect(() => {
-    if (brasao?.url !== prevBrasaoUrlRef.current) {
-      if (brasao?.url) {
-        setShouldCenterBrasao(true);
-      }
-      prevBrasaoUrlRef.current = brasao?.url;
+  const calculateViewport = useCallback(() => {
+    if (imgRef.current && containerRef.current) {
+      const img = imgRef.current;
+      const rect = img.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
+
+      // Calcula a posição relativa da imagem dentro do container
+      setViewport({
+        width: rect.width,
+        height: rect.height,
+        left: rect.left - containerRect.left,
+        top: rect.top - containerRect.top
+      });
     }
-  }, [brasao?.url]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (imgRef.current) {
-        setDisplayedSize({
-          width: imgRef.current.offsetWidth,
-          height: imgRef.current.offsetHeight
-        });
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    const currentDisplayWidth = img.offsetWidth;
-    const currentDisplayHeight = img.offsetHeight;
-    const currentNaturalWidth = img.naturalWidth;
-    const currentNaturalHeight = img.naturalHeight;
+  useEffect(() => {
+    window.addEventListener('resize', calculateViewport);
+    return () => window.removeEventListener('resize', calculateViewport);
+  }, [calculateViewport]);
 
-    setDisplayedSize({ width: currentDisplayWidth, height: currentDisplayHeight });
-    setNaturalSize({ width: currentNaturalWidth, height: currentNaturalHeight });
-    setImageError(false);
-
-    if (brasao && onBrasaoChange && shouldCenterBrasao && currentNaturalWidth > 0) {
-      const defaultWidth = currentNaturalWidth * 0.25; 
-      const defaultHeight = defaultWidth;
-      const targetWidth = brasao.width > 0 ? brasao.width : defaultWidth;
-      const targetHeight = brasao.height > 0 ? brasao.height : defaultHeight;
-
-      const centerX = (currentNaturalWidth - targetWidth) / 2;
-      const centerY = (currentNaturalHeight - targetHeight) / 2;
-
-      onBrasaoChange({
-        ...brasao,
-        width: targetWidth,
-        height: targetHeight,
-        x: centerX,
-        y: centerY
-      });
-
-      setShouldCenterBrasao(false);
+  useEffect(() => {
+    if (isImageLoaded) {
+      calculateViewport();
     }
+  }, [isImageLoaded, calculateViewport, previewUrl]);
+
+  const handleImageLoad = () => {
+    setImageError(false);
+    setIsImageLoaded(true);
+    calculateViewport();
   };
 
-  const ratio = naturalSize.width > 0 && displayedSize.width > 0 
-    ? naturalSize.width / displayedSize.width 
-    : 1;
+  // Conversão: Viewport (px) -> Backend (1000x1000)
+  const toBackendCoords = (viewX: number, viewY: number, viewW: number, viewH: number) => {
+    const ratio = BASE_SIZE / viewport.width;
+    return {
+      x: Math.round(viewX * ratio),
+      y: Math.round(viewY * ratio),
+      width: Math.round(viewW * ratio),
+      height: Math.round(viewH * ratio)
+    };
+  };
 
-  const handleDragStop = (d: any) => {
+  // Conversão: Backend (1000x1000) -> Viewport (px)
+  const toViewCoords = () => {
+    if (!brasao || viewport.width === 0) return { x: 0, y: 0, width: 0, height: 0 };
+    const ratio = viewport.width / BASE_SIZE;
+    return {
+      x: brasao.x * ratio,
+      y: brasao.y * ratio,
+      width: brasao.width * ratio,
+      height: brasao.height * ratio
+    };
+  };
+
+  const viewCoords = toViewCoords();
+
+  const handleDragStop = (e: any, d: { x: number; y: number }) => {
     if (!brasao || !onBrasaoChange) return;
-    onBrasaoChange({
-      ...brasao,
-      x: Math.round(d.x * ratio),
-      y: Math.round(d.y * ratio)
-    });
+    const newCoords = toBackendCoords(d.x, d.y, viewCoords.width, viewCoords.height);
+    onBrasaoChange({ ...brasao, x: newCoords.x, y: newCoords.y });
   };
 
-  const handleResizeStop = (ref: HTMLElement, position: { x: number; y: number }) => {
+  const handleResizeStop = (e: any, dir: any, ref: HTMLElement, delta: any, position: { x: number; y: number }) => {
     if (!brasao || !onBrasaoChange) return;
-    onBrasaoChange({
-      ...brasao,
-      width: Math.round(parseFloat(ref.style.width) * ratio),
-      height: Math.round(parseFloat(ref.style.height) * ratio),
-      x: Math.round(position.x * ratio),
-      y: Math.round(position.y * ratio)
-    });
+    const newCoords = toBackendCoords(
+      position.x,
+      position.y,
+      parseFloat(ref.style.width),
+      parseFloat(ref.style.height)
+    );
+    onBrasaoChange({ ...brasao, ...newCoords });
   };
-
-  const visualX = brasao ? brasao.x / ratio : 0;
-  const visualY = brasao ? brasao.y / ratio : 0;
-  const visualWidth = brasao ? brasao.width / ratio : 100;
-  const visualHeight = brasao ? brasao.height / ratio : 100;
 
   return (
     <div className={styles.container}>
@@ -124,7 +119,7 @@ export default function ProjectRenderer({
         )}
       </div>
 
-      <div className={styles.previewStage}>
+      <div className={styles.previewStage} ref={containerRef}>
         {!previewUrl && !isRendering && (
           <div className={styles.stateContainer}>
             <div className={styles.iconCircle}><FiImage size={32} /></div>
@@ -133,7 +128,7 @@ export default function ProjectRenderer({
         )}
 
         {isRendering && (
-          <div className={styles.stateContainer}>
+          <div className={styles.loadingOverlay}>
             <div className={styles.spinner} />
             <p className={styles.loadingText}>Gerando prévia...</p>
           </div>
@@ -146,8 +141,8 @@ export default function ProjectRenderer({
           </div>
         )}
 
-        {previewUrl && !isRendering && !imageError && (
-          <div className={styles.contentWrapper}>
+        {previewUrl && !imageError && (
+          <>
             <img
               ref={imgRef}
               src={previewUrl}
@@ -157,31 +152,44 @@ export default function ProjectRenderer({
               onError={() => setImageError(true)}
             />
 
-            {brasao?.url && onBrasaoChange && displayedSize.width > 0 && (
-              <Rnd
-                size={{ width: visualWidth, height: visualHeight }}
-                position={{ x: visualX, y: visualY }}
-                onDragStop={(e, d) => handleDragStop(d)}
-                onResizeStop={(e, dir, ref, delta, pos) => handleResizeStop(ref, pos)}
-                bounds="parent"
-                lockAspectRatio={true}
-                minWidth={30}
-                minHeight={30}
-                className={styles.rndWrapper}
+            {/* Overlay Layer - Sincronizado exatamente com a imagem */}
+            {isImageLoaded && brasao?.url && onBrasaoChange && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  left: viewport.left,
+                  top: viewport.top,
+                  width: viewport.width,
+                  height: viewport.height,
+                  pointerEvents: 'none', // Permite clique através para elementos não-Rnd
+                  overflow: 'hidden'
+                }}
               >
-                <div className={styles.brasaoContent}>
-                  <img 
-                    src={brasao.url} 
-                    alt="Brasão" 
-                    draggable={false} 
-                    className={styles.brasaoImage}
-                  />
-                  <div className={styles.selectionBorder} />
-                  <div className={styles.resizeHandle} />
-                </div>
-              </Rnd>
+                <Rnd
+                  size={{ width: viewCoords.width, height: viewCoords.height }}
+                  position={{ x: viewCoords.x, y: viewCoords.y }}
+                  onDragStop={handleDragStop}
+                  onResizeStop={handleResizeStop}
+                  bounds="parent"
+                  lockAspectRatio={true}
+                  minWidth={20}
+                  minHeight={20}
+                  style={{ pointerEvents: 'auto', zIndex: 10 }}
+                >
+                  <div className={styles.brasaoContent}>
+                    <img 
+                      src={brasao.url} 
+                      alt="Brasão" 
+                      draggable={false} 
+                      className={styles.brasaoImage}
+                    />
+                    <div className={styles.selectionBorder} />
+                    <div className={styles.resizeHandle} />
+                  </div>
+                </Rnd>
+              </div>
             )}
-          </div>
+          </>
         )}
       </div>
 

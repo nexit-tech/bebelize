@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { composeImage } from '@/lib/rendering/imageComposer';
 import { renderingService } from '@/lib/supabase/rendering.service';
+import { RenderRequest } from '@/types/rendering.types';
+
+export const maxDuration = 60; 
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    const body = await request.json();
+    const body: RenderRequest = await request.json();
     const { item_id, customizations, layers, brasao } = body;
 
     if (!item_id || !layers || !Array.isArray(layers)) {
@@ -21,20 +24,19 @@ export async function POST(request: NextRequest) {
     console.log(`[Render] Customizações: ${customizations?.length || 0}`);
     if (brasao) console.log(`[Render] Brasão detectado: ${brasao.url}`);
 
-    
     const layersToRender = layers.map((layer: any) => {
       if (!layer.url) {
-        console.warn(`[Render] Camada ${layer.index} sem URL. Ignorando ou tratando.`);
+        console.warn(`[Render] Camada ${layer.index} sem URL. Usando fallback ou ignorando.`);
       }
       return {
         index: layer.index,
         url: layer.url,
-        file: layer.file || `layer-${layer.index}.png`, 
-        type: 'pattern', 
-        zone: `layer-${layer.index}`,
-        ...layer 
+        file: layer.file || `layer-${layer.index}.png`,
+        type: layer.type || 'pattern',
+        zone: layer.zone || `layer-${layer.index}`,
+        ...layer
       };
-    }).filter(l => !!l.url); 
+    }).filter(l => !!l.url);
 
     if (layersToRender.length === 0) {
       return NextResponse.json(
@@ -48,8 +50,8 @@ export async function POST(request: NextRequest) {
       result = await composeImage({
         layers: layersToRender,
         customizations: customizations || [],
-        brasao,
-        width: 1000, 
+        brasao, 
+        width: 1000,
         height: 1000
       });
     } catch (composeError: any) {
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
     
     let previewUrl;
     try {
+
       previewUrl = await renderingService.uploadImage(result.buffer, previewPath);
     } catch (uploadError: any) {
       console.error('[Render] Erro ao fazer upload para Supabase:', uploadError);
