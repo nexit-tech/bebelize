@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { FiChevronDown, FiCheck } from 'react-icons/fi';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { FiChevronDown, FiCheck, FiSave } from 'react-icons/fi';
 import { usePatterns } from '@/hooks/usePatterns';
 import { useItemsDiscovery } from '@/hooks/useItemsDiscovery';
 import { useCartContext } from '@/context/CartContext';
@@ -16,13 +16,14 @@ import styles from './page.module.css';
 
 export default function PersonalizarItemPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
-  const itemId = params.itemId as string;
   
+  const itemId = params.itemId as string;
+  const editCartId = searchParams.get('edit'); 
   const { patterns, isLoading: patternsLoading } = usePatterns();
   const { getItemById, isLoading: itemsLoading } = useItemsDiscovery();
-  const { addItem } = useCartContext();
-  
+  const { addItem, updateCartItems, cartItems } = useCartContext();
   const [item, setItem] = useState<DiscoveredItem | null>(null);
   const [customizations, setCustomizations] = useState<LayerCustomization[]>([]);
   const [brasao, setBrasao] = useState<BrasaoCustomization | undefined>(undefined);
@@ -37,24 +38,57 @@ export default function PersonalizarItemPage() {
       const foundItem = getItemById(itemId);
       
       if (!foundItem) {
-        alert('Item não encontrado');
+        alert('Item base não encontrado no catálogo.');
         router.push('/catalogo');
         return;
       }
 
       setItem(foundItem);
 
-      let initialVariantId: string | null = null;
-      if (foundItem.variants && foundItem.variants.length > 0) {
-        initialVariantId = foundItem.variants[0].id;
+      if (!editCartId) {
+        let initialVariantId: string | null = null;
+        if (foundItem.variants && foundItem.variants.length > 0) {
+          initialVariantId = foundItem.variants[0].id;
+        }
+        setSelectedVariantId(initialVariantId);
+        const variant = foundItem.variants?.find(v => v.id === initialVariantId);
+        setPreviewUrl(variant?.previewUrl || foundItem.image_url || null);
       }
-      setSelectedVariantId(initialVariantId);
-
-      const variant = foundItem.variants?.find(v => v.id === initialVariantId);
-      const initialImage = variant?.previewUrl || foundItem.image_url || null;
-      setPreviewUrl(initialImage);
     }
-  }, [itemId, itemsLoading, getItemById, router]);
+  }, [itemId, itemsLoading, getItemById, router, editCartId]);
+
+  useEffect(() => {
+    if (editCartId && item && cartItems.length > 0) {
+      const existingItem = cartItems.find(i => i.cartItemId === editCartId);
+      
+      if (existingItem) {
+        if (existingItem.variant_id) {
+          setSelectedVariantId(existingItem.variant_id);
+        }
+
+        if (existingItem.customization_data.brasao) {
+          setBrasao(existingItem.customization_data.brasao);
+        }
+
+        if (existingItem.customization_data.layers) {
+          const rehydratedLayers: LayerCustomization[] = existingItem.customization_data.layers.map(l => ({
+            layerId: l.layerId,
+            patternId: l.patternId,
+            color: l.color,
+            scale: l.scale,
+            opacity: l.opacity,
+            blendMode: l.blendMode,
+            layer_index: Number(l.layerId) 
+          }));
+          setCustomizations(rehydratedLayers);
+        }
+
+        if (existingItem.base_image_url) {
+          setPreviewUrl(existingItem.base_image_url);
+        }
+      }
+    }
+  }, [editCartId, item, cartItems]);
 
   const adaptedPatterns: DiscoveredPattern[] = useMemo(() => {
     return patterns.map(p => ({
@@ -132,7 +166,7 @@ export default function PersonalizarItemPage() {
     }
   };
 
-  const handleAddToProject = async () => {
+  const handleSaveProject = async () => {
     if (!item) return;
 
     try {
@@ -141,37 +175,56 @@ export default function PersonalizarItemPage() {
       const finalRenderUrl = await handleRender();
       if (!finalRenderUrl) return;
 
-      const customizedItem: CustomizedItem = {
-        ...item,
-        cartItemId: `cart-${Date.now()}`,
-        item_id: item.id,
-        base_image_url: finalRenderUrl,
-        quantity: 1,
-        variant_id: selectedVariantId,
-        customization_data: {
-          layers: customizations.map(c => ({
-            layerId: c.layerId,
-            patternId: c.patternId,
-            color: c.color,
-            scale: c.scale,
-            opacity: c.opacity,
-            blendMode: c.blendMode
-          })),
-          brasao: brasao ? {
-            url: brasao.url,
-            x: brasao.x,
-            y: brasao.y,
-            width: brasao.width,
-            height: brasao.height
-          } : undefined
-        }
+      const customizationData = {
+        layers: customizations.map(c => ({
+          layerId: c.layerId,
+          patternId: c.patternId,
+          color: c.color,
+          scale: c.scale,
+          opacity: c.opacity,
+          blendMode: c.blendMode
+        })),
+        brasao: brasao ? {
+          url: brasao.url,
+          x: brasao.x,
+          y: brasao.y,
+          width: brasao.width,
+          height: brasao.height
+        } : undefined
       };
 
-      await addItem(customizedItem);
+      if (editCartId) {
+        const updatedList = cartItems.map(cartItem => {
+          if (cartItem.cartItemId === editCartId) {
+            return {
+              ...cartItem,
+              base_image_url: finalRenderUrl,
+              variant_id: selectedVariantId,
+              customization_data: customizationData,
+              updated_at: new Date().toISOString()
+            };
+          }
+          return cartItem;
+        });
+        
+        await updateCartItems(updatedList);
+      } else {
+        const newItem: CustomizedItem = {
+          ...item,
+          cartItemId: `cart-${Date.now()}`,
+          item_id: item.id,
+          base_image_url: finalRenderUrl,
+          quantity: 1,
+          variant_id: selectedVariantId,
+          customization_data: customizationData
+        };
+        await addItem(newItem);
+      }
+
       router.push('/projeto/criar');
 
     } catch (error) {
-      console.error('Erro ao adicionar ao projeto:', error);
+      console.error('Erro ao salvar projeto:', error);
       alert('Não foi possível salvar o item. Tente novamente.');
     } finally {
       setIsSaving(false);
@@ -182,7 +235,7 @@ export default function PersonalizarItemPage() {
     return (
       <div className={styles.loading}>
         <div className={styles.spinner}></div>
-        <p>Carregando...</p>
+        <p>Carregando personalização...</p>
       </div>
     );
   }
@@ -190,7 +243,7 @@ export default function PersonalizarItemPage() {
   if (!item) {
     return (
       <div className={styles.error}>
-        <p>Item não encontrado</p>
+        <p>Item não disponível.</p>
       </div>
     );
   }
@@ -205,7 +258,13 @@ export default function PersonalizarItemPage() {
         >
           ← Voltar
         </button>
-        <h1 className={styles.title}>Personalizar: {item.name}</h1>
+        <div className={styles.headerInfo}>
+          <h1 className={styles.title}>
+            {editCartId ? 'Editar Item: ' : 'Personalizar: '} 
+            {item.name}
+          </h1>
+          {editCartId && <span className={styles.editBadge}>Modo Edição</span>}
+        </div>
       </header>
 
       <div className={styles.content}>
@@ -261,15 +320,15 @@ export default function PersonalizarItemPage() {
           <div className={styles.actionsFooter}>
             <button 
               className={styles.saveButton}
-              onClick={handleAddToProject}
+              onClick={handleSaveProject}
               disabled={isRendering || isSaving || !previewUrl}
             >
               {isSaving ? (
-                'Salvando...'
+                'Processando...'
               ) : (
                 <>
-                  <FiCheck size={20} />
-                  Adicionar ao Projeto
+                  {editCartId ? <FiSave size={20} /> : <FiCheck size={20} />}
+                  {editCartId ? 'Salvar Alterações' : 'Adicionar ao Projeto'}
                 </>
               )}
             </button>

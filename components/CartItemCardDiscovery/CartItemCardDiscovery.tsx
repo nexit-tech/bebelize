@@ -1,60 +1,92 @@
+'use client';
+
 import React from 'react';
-import { FiTrash2, FiLayers, FiImage } from 'react-icons/fi';
-import type { DiscoveredItem } from '@/lib/discovery/types';
-import type { LayerCustomization } from '@/types/rendering.types';
+import { useRouter } from 'next/navigation';
+import { FiTrash2, FiEdit3, FiLayers, FiShield } from 'react-icons/fi';
+import { CustomizedItem } from '@/types/customizedItem.types';
 import styles from './CartItemCardDiscovery.module.css';
 
-interface CartItem {
-  cartItemId: string;
-  item: DiscoveredItem;
-  customizations?: LayerCustomization[];
-  renderUrl?: string;
-}
-
 interface CartItemCardDiscoveryProps {
-  cartItem: CartItem;
-  onRemove: () => void;
+  item: CustomizedItem;
+  onRemove: (cartItemId: string) => void;
 }
 
-export default function CartItemCardDiscovery({
-  cartItem,
-  onRemove
-}: CartItemCardDiscoveryProps) {
-  const { item, customizations } = cartItem;
-  const isComposite = item.item_type === 'composite';
-  const customizationCount = customizations?.length || 0;
+export default function CartItemCardDiscovery({ item, onRemove }: CartItemCardDiscoveryProps) {
+  const router = useRouter();
+
+  const handleEdit = () => {
+    router.push(`/projeto/personalizar/${item.item_id}?edit=${item.cartItemId}`);
+  };
+
+  const layerCount = item.customization_data?.layers?.length || 0;
+  const hasBrasao = !!item.customization_data?.brasao;
 
   return (
     <div className={styles.card}>
-      <div className={styles.iconContainer}>
-        {isComposite ? (
-          <FiLayers size={20} className={styles.icon} />
+      <div className={styles.imageContainer}>
+        {item.base_image_url ? (
+          <img 
+            src={item.base_image_url} 
+            alt={item.name} 
+            className={styles.image}
+          />
         ) : (
-          <FiImage size={20} className={styles.icon} />
+          <div className={styles.placeholder}>
+            Sem imagem
+          </div>
         )}
       </div>
 
-      <div className={styles.itemInfo}>
-        <h5 className={styles.itemName}>{item.name}</h5>
-        <div className={styles.itemDetails}>
-          <span className={styles.itemType}>
-            {isComposite ? 'Personalizável' : 'Item Simples'}
+      <div className={styles.content}>
+        <div className={styles.header}>
+          <h3 className={styles.title}>{item.name}</h3>
+          <span className={styles.price}>
+             Sob Consulta
           </span>
-          {customizationCount > 0 && (
-            <span style={{ fontSize: '11px', color: '#A68E80', marginLeft: '8px' }}>
-              • {customizationCount} {customizationCount === 1 ? 'item alterado' : 'itens alterados'}
+        </div>
+
+        <div className={styles.details}>
+          {item.variant_id && (
+            <span className={styles.variantBadge}>
+              Modelo: {item.variant_id}
             </span>
           )}
+          
+          <div className={styles.specs}>
+            <span className={styles.specItem} title="Camadas personalizadas">
+              <FiLayers size={14} /> {layerCount} camada{layerCount !== 1 ? 's' : ''}
+            </span>
+            
+            {hasBrasao && (
+              <span className={`${styles.specItem} ${styles.highlight}`} title="Brasão aplicado">
+                <FiShield size={14} /> Com Brasão
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.actions}>
+          <button 
+            onClick={handleEdit} 
+            className={styles.editButton}
+            title="Editar personalização"
+          >
+            <FiEdit3 size={16} />
+            <span>Editar</span>
+          </button>
+          
+          <div className={styles.divider} />
+          
+          <button 
+            onClick={() => onRemove(item.cartItemId!)} 
+            className={styles.removeButton}
+            title="Remover item"
+          >
+            <FiTrash2 size={16} />
+            <span>Remover</span>
+          </button>
         </div>
       </div>
-
-      <button
-        className={styles.removeButton}
-        onClick={onRemove}
-        aria-label={`Remover ${item.name}`}
-      >
-        <FiTrash2 size={16} />
-      </button>
     </div>
   );
 }
