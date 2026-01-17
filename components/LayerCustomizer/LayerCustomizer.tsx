@@ -19,9 +19,7 @@ export default function LayerCustomizer({
   customizations,
   onCustomizationsChange
 }: LayerCustomizerProps) {
-  const [expandedLayer, setExpandedLayer] = useState<number | null>(
-    layers.length > 0 ? layers[0].index : null
-  );
+  const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
 
   const sortedLayers = [...layers].sort((a, b) => a.index - b.index);
 
@@ -29,9 +27,17 @@ export default function LayerCustomizer({
     const newCustomizations = [...customizations];
     const existingIndex = newCustomizations.findIndex(c => c.layer_index === layerIndex);
 
+    // Lógica de Toggle: Se clicar na mesma textura já selecionada, remove a seleção
+    if (existingIndex >= 0 && newCustomizations[existingIndex].patternId === pattern.id) {
+      newCustomizations.splice(existingIndex, 1);
+      onCustomizationsChange(newCustomizations);
+      return;
+    }
+
     const newEntry: LayerCustomization = {
+      layerId: layerIndex.toString(),
+      patternId: pattern.id,
       layer_index: layerIndex,
-      pattern_id: pattern.id,
       pattern_url: pattern.url,
       pattern_name: pattern.name
     };
@@ -43,19 +49,6 @@ export default function LayerCustomizer({
     }
 
     onCustomizationsChange(newCustomizations);
-
-    // Auto-advance logic
-    /* Comentado para não forçar o fechamento imediato, 
-       permitindo que o usuário veja o que selecionou.
-       Você pode descomentar se preferir o fluxo rápido.
-    */
-    /*
-    const currentSortedIndex = sortedLayers.findIndex(l => l.index === layerIndex);
-    const nextLayer = sortedLayers[currentSortedIndex + 1];
-    if (nextLayer) {
-      setTimeout(() => setExpandedLayer(nextLayer.index), 400);
-    }
-    */
   };
 
   const getSelectedPatternInfo = (layerIndex: number) => {
@@ -102,7 +95,7 @@ export default function LayerCustomizer({
             <div className={`${styles.accordionContent} ${isExpanded ? styles.expanded : ''}`}>
               <div className={styles.patternGrid}>
                 {patterns.map((pattern) => {
-                  const isSelected = selectedInfo?.pattern_id === pattern.id;
+                  const isSelected = selectedInfo?.patternId === pattern.id;
                   return (
                     <button
                       key={pattern.id}

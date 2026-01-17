@@ -1,68 +1,74 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  padding-bottom: 16px;
+  gap: 16px;
+  padding-bottom: 24px;
 }
 
 .layerCard {
   background-color: #FFFFFF;
   border: 1px solid #EAEAEA;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .layerCard:hover {
-  border-color: #D4C29A;
+  border-color: #D4C5B9;
 }
 
 .layerCard.active {
   border-color: var(--color-light-tan);
-  box-shadow: 0 4px 12px rgba(166, 142, 128, 0.1);
-  transform: none; /* Removido pulo para manter estabilidade */
-  z-index: 2;
+  box-shadow: 0 8px 24px rgba(166, 142, 128, 0.12);
+  transform: translateY(-2px);
 }
 
 .layerCard.completed:not(.active) {
   background-color: #FAFAFA;
-  border-color: #E0E0E0;
+  border-color: var(--color-success);
 }
 
-/* --- Header --- */
 .accordionHeader {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
-  background: transparent;
+  padding: 18px 24px;
+  background: none;
   border: none;
   cursor: pointer;
-  text-align: left;
+  outline: none;
+  transition: background-color 0.2s ease;
+}
+
+.accordionHeader:hover {
+  background-color: #F9F9F9;
 }
 
 .headerLeft {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .statusIndicator {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background-color: #F0F0F0;
-  color: #A0A0A0;
+  background-color: #F2F2F2;
+  color: #A6A6A6;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  font-size: 10px;
 }
 
-.statusIndicator.statusDone {
+.active .statusIndicator {
+  background-color: var(--color-light-tan);
+  color: #FFFFFF;
+}
+
+.completed .statusIndicator.statusDone {
   background-color: var(--color-success);
   color: #FFFFFF;
 }
@@ -70,33 +76,34 @@
 .headerText {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .layerTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--color-browning);
 }
 
 .layerSubtitle {
-  font-size: 11px;
-  color: var(--color-light-tan-grey);
-  margin-top: 2px;
-  font-weight: 500;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  color: #999;
 }
 
 .headerRight {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--color-light-tan-grey);
+  color: #999;
 }
 
 .miniPreview {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px; /* Quadrado arredondado */
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   overflow: hidden;
   border: 1px solid #E0E0E0;
 }
@@ -107,104 +114,119 @@
   object-fit: cover;
 }
 
-/* --- Content (Scroll Invisível) --- */
 .accordionContent {
   max-height: 0;
   opacity: 0;
-  overflow-y: auto; /* Permite scroll */
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  overflow-y: hidden;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   background-color: #FFFFFF;
-  
-  /* Esconde Scrollbar (Firefox) */
-  scrollbar-width: none; 
-  -ms-overflow-style: none;
 }
 
-.accordionContent::-webkit-scrollbar {
-  display: none; /* Esconde Scrollbar (Chrome/Safari) */
-}
-
-.accordionContent.expanded {
-  max-height: 280px; /* Altura fixa para forçar o scroll se tiver muitos itens */
+.expanded {
+  max-height: 380px; /* Altura fixa para forçar o scroll interno */
   opacity: 1;
   border-top: 1px solid #F0F0F0;
+  overflow-y: auto; /* Habilita rolagem */
+  
+  /* Esconde a scrollbar mantendo a funcionalidade */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.expanded::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
 }
 
 .patternGrid {
   display: grid;
-  /* Diminuído tamanho mínimo para caber mais itens (64px) */
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
   gap: 12px;
-  padding: 20px;
+  padding: 20px 24px 24px;
 }
 
-/* --- Pattern Option Card --- */
 .patternOption {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: transparent;
+  gap: 8px;
+  background: none;
   border: none;
   cursor: pointer;
   padding: 0;
+  transition: transform 0.2s ease;
+}
+
+.patternOption:hover {
+  transform: translateY(-2px);
 }
 
 .thumbWrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #EAEAEA;
+  border: 2px solid transparent;
   transition: all 0.2s ease;
-}
-
-.patternOption:hover .thumbWrapper {
-  border-color: var(--color-light-tan);
-  transform: scale(1.05);
-}
-
-.patternOption.selected .thumbWrapper {
-  border-color: var(--color-browning);
-  box-shadow: 0 0 0 2px rgba(89, 78, 74, 0.15);
+  background-color: #F5F5F5;
 }
 
 .patternThumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.patternOption:hover .patternThumb {
+  transform: scale(1.05);
+}
+
+.selected .thumbWrapper {
+  border-color: var(--color-light-tan);
+  box-shadow: 0 4px 12px rgba(166, 142, 128, 0.25);
 }
 
 .selectedOverlay {
   position: absolute;
   inset: 0;
-  background-color: rgba(89, 78, 74, 0.5);
+  background-color: rgba(166, 142, 128, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
+  backdrop-filter: blur(2px);
   animation: fadeIn 0.2s ease;
 }
 
 .patternName {
-  font-size: 10px;
-  color: var(--color-light-tan-grey);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  color: #666;
   text-align: center;
-  font-weight: 500;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  width: 100%;
+  max-width: 100%;
 }
 
-.patternOption.selected .patternName {
-  color: var(--color-browning);
-  font-weight: 700;
+.selected .patternName {
+  color: var(--color-light-tan);
+  font-weight: 600;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+  .accordionHeader {
+    padding: 16px;
+  }
+  
+  .patternGrid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    padding: 16px;
+  }
 }

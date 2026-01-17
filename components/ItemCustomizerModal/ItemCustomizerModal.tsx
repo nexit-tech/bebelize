@@ -116,7 +116,6 @@ export default function ItemCustomizerModal({
         collection_id: item.collection_id,
         customizations,
         layers: allLayersForRender,
-        brasao
       };
 
       const response = await fetch('/api/render', {
@@ -152,6 +151,7 @@ export default function ItemCustomizerModal({
 
     try {
       setIsSaving(true);
+
       const finalUrl = await handleRender();
       
       if (finalUrl) {
@@ -160,7 +160,7 @@ export default function ItemCustomizerModal({
           customizations,
           finalUrl,
           selectedVariantId || undefined,
-          brasao
+          brasao 
         );
       }
     } catch (error) {
@@ -231,7 +231,10 @@ export default function ItemCustomizerModal({
                     onCustomizationsChange={setCustomizations}
                   />
                   
-                  <div style={{ marginTop: '24px' }}>
+                  <div style={{ marginTop: '32px' }}>
+                    <div className={styles.sectionHeader}>
+                      <label className={styles.sectionLabel}>Brasão</label>
+                    </div>
                     <BrasaoControl 
                       value={brasao}
                       onChange={setBrasao}

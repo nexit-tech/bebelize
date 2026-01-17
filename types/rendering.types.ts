@@ -24,7 +24,6 @@ export interface Layer {
   mask?: string;
 }
 
-// CORREÇÃO AQUI: Padronizamos para camelCase para bater com o CustomizedItem
 export interface LayerCustomization {
   layerId: string;
   patternId: string;
@@ -32,8 +31,6 @@ export interface LayerCustomization {
   scale?: number;
   opacity?: number;
   blendMode?: string;
-  
-  // Mantemos esses opcionais caso algum componente antigo ainda use
   layer_index?: number;
   pattern_url?: string;
   pattern_name?: string;
@@ -45,6 +42,7 @@ export interface BrasaoCustomization {
   y: number;
   width: number;
   height: number;
+  rotation?: number; 
 }
 
 export interface ItemMetadata {
