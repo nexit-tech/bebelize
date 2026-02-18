@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut, FiMenu, FiX, FiEdit3 } from 'react-icons/fi';
+import { FiGrid, FiPackage, FiUsers, FiSettings, FiLogOut, FiMenu, FiX, FiEdit3, FiFolder } from 'react-icons/fi';
 import { useAuth, useCart } from '@/hooks';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import styles from './Sidebar.module.css';
@@ -13,7 +13,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout } = useAuth();
-  const { cartItems } = useCart(); // Conectado ao carrinho global
+  const { cartItems } = useCart();
   
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -62,6 +62,11 @@ export default function Sidebar() {
           label: 'Usuários',
           href: '/admin/usuarios',
           icon: FiUsers
+        },
+        {
+          label: 'Bucket',
+          href: '/dashboard/admin/bucket',
+          icon: FiFolder
         },
         {
           label: 'Catálogo',
@@ -121,7 +126,6 @@ export default function Sidebar() {
           <span className={styles.brandName}>Bebelize</span>
         </div>
 
-        {/* --- Área de Rascunho (Novo) --- */}
         {hasDraft && currentUser?.role === 'consultora' && (
           <div className={styles.draftSection}>
             <Link href="/projeto/criar" className={styles.draftCard} onClick={closeMobileSidebar}>

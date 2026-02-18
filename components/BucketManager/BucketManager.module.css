@@ -1,0 +1,218 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.browserSection {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-white);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid #E8E8E8;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.crumbBtn {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-browning);
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+.crumbBtn:hover:not(:disabled) {
+  color: var(--color-light-tan);
+  background-color: var(--color-pearl);
+}
+
+.crumbBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.crumbWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.crumbIcon {
+  color: var(--color-light-tan-grey);
+  font-size: 16px;
+}
+
+.explorer {
+  border: 1px solid #E8E8E8;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  margin-bottom: var(--spacing-lg);
+}
+
+.explorerHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-xl);
+  background-color: var(--color-pearl);
+  border-bottom: 1px solid #E8E8E8;
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--color-light-tan);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-left: -8px;
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.backBtn:hover:not(:disabled) {
+  background-color: rgba(166, 142, 128, 0.1);
+}
+
+.backBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.currentPathLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-light-tan-grey);
+}
+
+.spacer {
+  width: 76px;
+}
+
+.explorerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--spacing-md);
+  padding: var(--spacing-xl);
+  min-height: 240px;
+  max-height: 400px;
+  overflow-y: auto;
+  background-color: var(--color-white);
+}
+
+.itemCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  border: 1px solid transparent;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.folderCard {
+  cursor: pointer;
+}
+
+.folderCard:hover {
+  background-color: var(--color-pearl);
+  border-color: #E8E8E8;
+}
+
+.fileCard {
+  opacity: 0.85;
+}
+
+.fileCard:hover {
+  opacity: 1;
+}
+
+.itemIconFolder {
+  font-size: 48px;
+  color: var(--color-light-tan);
+}
+
+.itemIconFile {
+  font-size: 48px;
+  color: var(--color-light-tan-grey);
+}
+
+.itemName {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-browning);
+  word-break: break-all;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+.loadingState,
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-light-tan-grey);
+  font-size: 14px;
+  font-weight: 500;
+  height: 100%;
+  min-height: 150px;
+}
+
+.actionsBar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid #E8E8E8;
+}
+
+.createFolderForm {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--spacing-md);
+  flex: 1;
+  max-width: 500px;
+}
+
+.inputWrapper {
+  flex: 1;
+}
+
+.uploadWrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hiddenInput {
+  display: none;
+}
